@@ -1,0 +1,109 @@
+/* ============================================================================
+ * Unraid Themer — runtime helper
+ * Loaded (deferred, same-origin) on every page when the theme is enabled.
+ * Does the things CSS cannot:
+ *   1. Docker "update available" badge — turns the (non-clickable) status name
+ *      into a clear "?" marker with a hover tooltip.
+ *   2. Shadow-DOM style bridge — lets a preset push selector-based CSS INTO the
+ *      Unraid 7 Vue web-components (open shadow roots), which page CSS can't reach.
+ * Everything is defensive: if a hook target is absent, it silently no-ops.
+ * ========================================================================== */
+(function () {
+  "use strict";
+
+  /* ---- 1. Docker "update available" badge -------------------------------- *
+   * Unraid flags containers with a pending image update by giving the name
+   * <span class="blue-text"> inside #docker_view. That is a STATUS, not a link.
+   * We append a small "?" badge with a native tooltip so it reads as "info",
+   * not "click me". The Docker tile re-renders async, so we re-run on mutation.
+   */
+  var BADGE_FLAG = "data-ut-badge";
+
+  function decorateUpdates(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var names = scope.querySelectorAll("#docker_view .blue-text:not([" + BADGE_FLAG + "])");
+    for (var i = 0; i < names.length; i++) {
+      var el = names[i];
+      el.setAttribute(BADGE_FLAG, "1");
+      var badge = document.createElement("span");
+      badge.className = "ut-update-badge";
+      badge.textContent = "?";
+      badge.title = "Update available";
+      badge.setAttribute("aria-label", "Update available");
+      el.appendChild(document.createTextNode(" "));
+      el.appendChild(badge);
+    }
+  }
+
+  // one small style rule for the badge (page-level, safe)
+  function injectBadgeStyle() {
+    if (document.getElementById("ut-badge-style")) return;
+    var s = document.createElement("style");
+    s.id = "ut-badge-style";
+    s.textContent =
+      ".ut-update-badge{display:inline-flex;align-items:center;justify-content:center;" +
+      "width:14px;height:14px;margin-left:2px;border-radius:50%;font-size:10px;" +
+      "font-weight:700;line-height:1;color:#fff;background:var(--brand-orange,#c67100);" +
+      "cursor:help;vertical-align:1px;font-family:var(--font-sans,sans-serif);}";
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  /* ---- 2. Shadow-DOM style bridge ---------------------------------------- *
+   * Unraid 7 web-components use OPEN shadow roots, so we can push a stylesheet
+   * into them. A preset may define window.UNRAID_THEMER_SHADOW_CSS (a string)
+   * to style component internals that CSS variables don't cover. No-op if unset.
+   */
+  function shadowCss() {
+    return (typeof window !== "undefined" && window.UNRAID_THEMER_SHADOW_CSS) || "";
+  }
+
+  var _sheet = null;
+  function getSheet() {
+    var css = shadowCss();
+    if (!css) return null;
+    if (!_sheet && "adoptedStyleSheets" in Document.prototype && "replaceSync" in CSSStyleSheet.prototype) {
+      try { _sheet = new CSSStyleSheet(); _sheet.replaceSync(css); } catch (e) { _sheet = null; }
+    }
+    return _sheet;
+  }
+
+  function styleShadowHosts(root) {
+    var sheet = getSheet();
+    if (!sheet) return;
+    var scope = root && root.querySelectorAll ? root : document;
+    // Unraid custom elements are prefixed unraid-* / uui-*
+    var hosts = scope.querySelectorAll("[data-unraid], unraid-user-profile, unraid-header-os-version, uui-toaster");
+    for (var i = 0; i < hosts.length; i++) {
+      var sr = hosts[i].shadowRoot;
+      if (sr && sr.adoptedStyleSheets && sr.adoptedStyleSheets.indexOf(sheet) === -1) {
+        try { sr.adoptedStyleSheets = sr.adoptedStyleSheets.concat(sheet); } catch (e) {}
+      }
+    }
+  }
+
+  /* ---- run + observe ----------------------------------------------------- */
+  function run(root) {
+    injectBadgeStyle();
+    decorateUpdates(root);
+    styleShadowHosts(root);
+  }
+
+  function start() {
+    run(document);
+    // Docker tile + web-components mount/re-render after load → observe.
+    if (window.MutationObserver) {
+      var obs = new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+          if (muts[i].addedNodes && muts[i].addedNodes.length) { run(document); return; }
+        }
+      });
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();

@@ -1,0 +1,95 @@
+Menu="Utilities"
+Title="Unraid Themer"
+Icon="paint-brush"
+---
+<?php
+/* Unraid Themer — settings page (Settings → Utilities → Unraid Themer).
+ * Lets the user enable the theme, pick a preset, and add custom CSS overrides.
+ * Source of truth is flash (/boot/config/plugins/unraid.themer); files are
+ * mirrored to the RAM webroot so nginx can serve them.
+ */
+require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+
+$name        = "unraid.themer";
+$flash       = "/boot/config/plugins/$name";
+$webroot     = "/usr/local/emhttp/plugins/$name";
+$cfg_path    = "$flash/$name.cfg";
+$custom_flash= "$flash/custom.css";
+$custom_web  = "$webroot/custom.css";
+$msg = "";
+
+// --- SAVE ---
+if ($_POST && isset($_POST['SAVE_CONFIG'])) {
+    $service = ($_POST['SERVICE'] ?? "disabled") === "enabled" ? "enabled" : "disabled";
+    $preset  = preg_replace('/[^A-Za-z0-9._-]/', '', $_POST['PRESET'] ?? 'bebamu');
+    if ($preset === '') $preset = 'none';
+    @mkdir($flash, 0755, true);
+    file_put_contents($cfg_path, "SERVICE=\"$service\"\nPRESET=\"$preset\"\n");
+
+    if (isset($_POST['custom_css'])) {
+        // normalise newlines, store on flash, mirror to webroot
+        $css = str_replace("\r\n", "\n", $_POST['custom_css']);
+        file_put_contents($custom_flash, $css);
+        @copy($custom_flash, $custom_web);
+    }
+    $msg = "Settings saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.";
+}
+
+// --- INIT / READ ---
+if (!file_exists($custom_flash)) {
+    @mkdir($flash, 0755, true);
+    file_put_contents($custom_flash, "/* Your custom CSS overrides — loaded on top of the selected preset. */\n");
+    @copy($custom_flash, $custom_web);
+}
+$settings   = parse_plugin_cfg($name);
+$service    = $settings['SERVICE'] ?? "disabled";
+$preset_sel = $settings['PRESET']  ?? "bebamu";
+$custom_css = file_exists($custom_flash) ? file_get_contents($custom_flash) : "";
+
+// discover presets shipped in the webroot
+$presets = [];
+foreach (glob("$webroot/presets/*.css") as $p) $presets[] = basename($p, '.css');
+sort($presets);
+?>
+
+<div markdown="1">
+<?php if ($msg): ?>
+<span class="green"><?= htmlspecialchars($msg) ?></span>
+<?php endif; ?>
+</div>
+
+<form markdown="1" method="POST" action="/Settings/UnraidThemer">
+
+Enable Unraid Themer:
+: <select name="SERVICE" size="1">
+    <?= mk_option($service, "enabled", "Yes") ?>
+    <?= mk_option($service, "disabled", "No") ?>
+  </select>
+  <span>When disabled, the webGUI is 100% stock — nothing is injected.</span>
+
+Theme preset:
+: <select name="PRESET" size="1">
+    <?php foreach ($presets as $p): ?>
+    <?= mk_option($preset_sel, $p, ucwords(str_replace(['-','_'],' ',$p))) ?>
+    <?php endforeach; ?>
+    <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
+  </select>
+  <span>Applies on top of the active Dynamix theme. "bebamu" ships a Light + Dark pair (switch via Settings → Display → Dynamix color theme, White/Black).</span>
+
+Custom CSS overrides:
+: <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
+  <span>Optional. Loaded <em>after</em> the preset, so these rules win. Use Unraid CSS variables, e.g. <code>:root { --background-color:#101010; }</code>.</span>
+
+&nbsp;
+: <span class="buttons-spaced">
+    <input type="submit" name="SAVE_CONFIG" value="_(Apply)_">
+    <input type="button" value="_(Done)_" onclick="done()">
+  </span>
+
+&nbsp;
+: <span class="description" style="max-width:640px; margin:0; padding:15px; background:rgba(0,0,0,0.1); border-radius:6px;">
+    <strong>How it works.</strong> Unraid Themer injects the selected preset's stylesheet into every page (via a <code>Buttons</code> loader page), plus a small deferred script for shadow-DOM tweaks and Docker "update available" badges.<br/><br/>
+    <strong>Presets</strong> are CSS files in <code>/boot/config/plugins/unraid.themer/presets/</code> — drop your own <code>&lt;name&gt;.css</code> there to add one.<br/><br/>
+    Explore Unraid's variables in <a href="/webGui/styles/themes/white.css" target="_blank">white.css</a> / <a href="/webGui/styles/themes/black.css" target="_blank">black.css</a>. Semantic status colors (disk health, array state) are intentionally left untouched by all presets.
+  </span>
+</form>

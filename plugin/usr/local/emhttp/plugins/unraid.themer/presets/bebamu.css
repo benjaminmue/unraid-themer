@@ -1,0 +1,230 @@
+/* ============================================================
+   bebamu Unraid Theme v1.7 — Feld "Global CSS"
+   WICHTIG: "Additional CSS for Black Theme"-Feld LEEREN.
+   Dark läuft hier über html.Theme--black (höhere Spezifität,
+   keine Reihenfolge-Leaks -> kein weisser Balken mehr).
+   Enable Custom CSS = Yes -> Apply -> Done -> Cmd-Shift-R.
+   ============================================================ */
+:root {
+  --bb-signal: #E63312;
+  --bb-signal-dark: #b71f08;
+  --bb-paper: #F7F6F2;
+  --bb-ink: #0a0a0a;
+  --bb-coal: #1A1A1A;
+  --bb-chalk: #F0F0F0;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* Akzent: Unraid-Orange UND -Blau -> bebamu-Rot (mono-signal) */
+  --orange-100: #ffd8cf;
+  --orange-200: var(--bb-signal);
+  --orange-300: var(--bb-signal-dark);
+  --orange-400: var(--bb-signal-dark);
+  --orange-500: var(--bb-signal);
+  --orange-800: var(--bb-signal-dark);
+  --orange-900: var(--bb-signal-dark);
+  --blue-700: var(--bb-signal);
+  --blue-800: var(--bb-signal);
+  --brand-orange: var(--bb-signal);
+  --brand-red: var(--bb-signal-dark);
+
+  /* ---------------- LIGHT (White) ---------------- */
+  --text-color: var(--bb-ink);
+  --alt-text-color: rgba(0, 0, 0, 0.5);
+  --link-text-color: var(--bb-signal);
+
+  --background-color: var(--bb-paper);
+  --mild-background-color: #ffffff;
+
+  --border-color: rgba(0, 0, 0, 0.14);
+  --input-border-color: rgba(0, 0, 0, 0.85);
+  --table-border-color: rgba(0, 0, 0, 0.12);
+  --table-background-color: var(--bb-paper);
+  --table-header-background-color: #efece6;
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: rgba(0, 0, 0, 0.14);
+  --shade-bg-color: #efece6;
+  --focus-input-bg-color: #ffffff;
+
+  /* Header + Nav: dunkel, konsistent. Web-Component-Text via header-text-primary */
+  --header-background-color: #141414;
+  --header-text-color: var(--bb-chalk);
+  --header-text-primary: var(--bb-chalk);
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: #ece9e3;
+
+  --footer-text: var(--bb-ink);
+  --footer-background-color: #efece6;
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--bb-ink);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--bb-signal);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--bb-signal);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--bb-ink);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.35);
+  --scrollbar-hover-color: var(--bb-signal);
+  --small-shadow: none;
+
+  --dynamix-tablesorter-tbody-row-bg-color: var(--bb-paper);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: #efece6;
+  --dynamix-tablesorter-thead-th-bg-color: #efece6;
+}
+
+/* ---------------- DARK (Dynamix "Black") ----------------
+   html.Theme--black gewinnt per Spezifität über :root. */
+html.Theme--black {
+  --text-color: var(--bb-chalk);
+  --alt-text-color: rgba(240, 240, 240, 0.55);
+  --link-text-color: var(--bb-signal);
+
+  --background-color: var(--bb-coal);
+  --mild-background-color: #202020;
+
+  --border-color: rgba(255, 255, 255, 0.12);
+  --input-border-color: rgba(255, 255, 255, 0.25);
+  --table-border-color: rgba(255, 255, 255, 0.10);
+  --table-background-color: #1f1f1f;
+  --table-header-background-color: #242424;
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: rgba(255, 255, 255, 0.12);
+  --shade-bg-color: #242424;
+  --focus-input-bg-color: #242424;
+
+  /* FIX weisser Balken: Header/Nav war stock gray-100 (hell) -> jetzt dunkel */
+  --header-background-color: #111111;
+  --header-text-color: var(--bb-chalk);
+  --header-text-primary: var(--bb-chalk);
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: #242424;
+
+  --footer-text: var(--bb-chalk);
+  --footer-background-color: #111111;
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--bb-chalk);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--bb-signal);
+  --button-border: 1px solid var(--bb-signal);
+  --hover-button-border: var(--bb-chalk);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--bb-signal);
+  --small-shadow: none;
+
+  --dynamix-tablesorter-tbody-row-bg-color: #1f1f1f;
+  --dynamix-tablesorter-tbody-row-alt-bg-color: #242424;
+  --dynamix-tablesorter-thead-th-bg-color: #242424;
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach rot — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--bb-signal) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--bb-signal) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links (Settings-Labels, Share-Namen, Internal Boot ...) -> Rot */
+a.blue-text, .blue-text { color: var(--bb-signal) !important; }
+/* ABER: Docker "Update verfügbar" ist KEIN Link, nur Status -> Amber */
+#docker_view .blue-text { color: #c67100 !important; }
+
+/* Aktiver Nav-Tab: roter Text + roter Unterstrich (.nav-item.active:after) */
+#menu .nav-item.active a { color: var(--bb-signal) !important; }
+#menu .nav-item.active:after { background: var(--bb-signal) !important; }
+
+/* Auslastungsbalken: grün -> Ink/Chalk, rot = Signal, orange = Warnung */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--bb-signal) !important; }
+.orangebar { background: #c67100 !important; }
+
+/* Sektions-Titelbalken (Main-Seite): roter Links-Akzent */
+div.title { border-left: 3px solid var(--bb-signal); }
+
+/* ==================== v1.6: editoriale Dashboard-Boxen ==================== */
+/* Jede Box = table.dashboard tbody: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* roter Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--bb-signal);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== Unraid 7 UUI / shadcn web-component tokens ====================
+   These inherit through the open shadow DOM of the Vue components (header etc.),
+   so the new UI recolors along with the classic Dynamix surface. */
+:root {
+  --ui-bg: var(--bb-paper);
+  --ui-bg-muted: #efece6;
+  --ui-bg-elevated: #ffffff;
+  --ui-bg-accented: #efece6;
+  --ui-text: var(--bb-ink);
+  --ui-text-muted: rgba(0,0,0,0.5);
+  --ui-text-dimmed: rgba(0,0,0,0.5);
+  --ui-text-highlighted: var(--bb-ink);
+  --ui-border: rgba(0,0,0,0.14);
+  --ui-primary: var(--bb-signal);
+  --primary: var(--bb-signal);
+  --background: var(--bb-paper);
+  --foreground: var(--bb-ink);
+  --card: #ffffff;
+  --popover: #ffffff;
+  --border: rgba(0,0,0,0.14);
+  --ring: var(--bb-signal);
+  --accent: var(--bb-signal);
+}
+html.Theme--black {
+  --ui-bg: var(--bb-coal);
+  --ui-bg-muted: #202020;
+  --ui-bg-elevated: #242424;
+  --ui-bg-accented: #242424;
+  --ui-text: var(--bb-chalk);
+  --ui-text-muted: rgba(240,240,240,0.55);
+  --ui-text-dimmed: rgba(240,240,240,0.55);
+  --ui-text-highlighted: var(--bb-chalk);
+  --ui-border: rgba(255,255,255,0.12);
+  --ui-primary: var(--bb-signal);
+  --primary: var(--bb-signal);
+  --background: var(--bb-coal);
+  --foreground: var(--bb-chalk);
+  --card: #1f1f1f;
+  --popover: #1f1f1f;
+  --border: rgba(255,255,255,0.12);
+  --ring: var(--bb-signal);
+  --accent: var(--bb-signal);
+}

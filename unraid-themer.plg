@@ -1,0 +1,1316 @@
+<?xml version='1.0' standalone='yes'?>
+<!DOCTYPE PLUGIN [
+  <!ENTITY name      "unraid.themer">
+  <!ENTITY author    "benjaminmue">
+  <!ENTITY version   "2026.07.24">
+  <!ENTITY launch    "Settings/UnraidThemer">
+  <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
+  <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
+]>
+<PLUGIN name="&name;" author="&author;" version="&version;" launch="&launch;" pluginURL="&pluginURL;" support="&support;" min="7.0.0" icon="paint-brush">
+
+<CHANGES>
+## Unraid Themer
+## 2026.07.24
+- Initial scaffold.
+- Buttons-loader injection (enabled/disabled), preset dropdown, custom CSS overrides.
+- Presets: bebamu (Light/Dark), Nord, Dracula, Solarized Dark, Monokai, Gruvbox Dark.
+- Runtime JS: Docker "update available" badge + tooltip, shadow-DOM style bridge.
+</CHANGES>
+
+<FILE Run="/bin/bash">
+<INLINE>
+# --- Unraid Themer: prepare directories ---
+rm -rf /usr/local/emhttp/plugins/unraid.themer
+mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js
+mkdir -p /boot/config/plugins/unraid.themer/presets
+exit 0
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/README.md">
+<INLINE>
+<![CDATA[# Unraid Themer
+
+A generic theming plugin for the Unraid 7 webGUI. Pick a **preset** (or drop your
+own CSS), toggle it on/off, and the whole UI restyles — classic Dynamix pages
+*and* the new Vue web-components, via CSS custom properties.
+
+**Settings → Utilities → Unraid Themer**
+
+- Presets: bebamu (Light + Dark), Nord, Dracula, Solarized Dark, Monokai, Gruvbox Dark
+- Custom CSS overrides loaded on top of the preset
+- Semantic status colors (disk health, array state) are left untouched
+- Zero footprint when disabled
+
+Add your own preset by dropping `<name>.css` in
+`/boot/config/plugins/unraid.themer/presets/`.
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/UnraidThemer.page">
+<INLINE>
+<![CDATA[Menu="Utilities"
+Title="Unraid Themer"
+Icon="paint-brush"
+---
+<?php
+/* Unraid Themer — settings page (Settings → Utilities → Unraid Themer).
+ * Lets the user enable the theme, pick a preset, and add custom CSS overrides.
+ * Source of truth is flash (/boot/config/plugins/unraid.themer); files are
+ * mirrored to the RAM webroot so nginx can serve them.
+ */
+require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+
+$name        = "unraid.themer";
+$flash       = "/boot/config/plugins/$name";
+$webroot     = "/usr/local/emhttp/plugins/$name";
+$cfg_path    = "$flash/$name.cfg";
+$custom_flash= "$flash/custom.css";
+$custom_web  = "$webroot/custom.css";
+$msg = "";
+
+// --- SAVE ---
+if ($_POST && isset($_POST['SAVE_CONFIG'])) {
+    $service = ($_POST['SERVICE'] ?? "disabled") === "enabled" ? "enabled" : "disabled";
+    $preset  = preg_replace('/[^A-Za-z0-9._-]/', '', $_POST['PRESET'] ?? 'bebamu');
+    if ($preset === '') $preset = 'none';
+    @mkdir($flash, 0755, true);
+    file_put_contents($cfg_path, "SERVICE=\"$service\"\nPRESET=\"$preset\"\n");
+
+    if (isset($_POST['custom_css'])) {
+        // normalise newlines, store on flash, mirror to webroot
+        $css = str_replace("\r\n", "\n", $_POST['custom_css']);
+        file_put_contents($custom_flash, $css);
+        @copy($custom_flash, $custom_web);
+    }
+    $msg = "Settings saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.";
+}
+
+// --- INIT / READ ---
+if (!file_exists($custom_flash)) {
+    @mkdir($flash, 0755, true);
+    file_put_contents($custom_flash, "/* Your custom CSS overrides — loaded on top of the selected preset. */\n");
+    @copy($custom_flash, $custom_web);
+}
+$settings   = parse_plugin_cfg($name);
+$service    = $settings['SERVICE'] ?? "disabled";
+$preset_sel = $settings['PRESET']  ?? "bebamu";
+$custom_css = file_exists($custom_flash) ? file_get_contents($custom_flash) : "";
+
+// discover presets shipped in the webroot
+$presets = [];
+foreach (glob("$webroot/presets/*.css") as $p) $presets[] = basename($p, '.css');
+sort($presets);
+?>
+
+<div markdown="1">
+<?php if ($msg): ?>
+<span class="green"><?= htmlspecialchars($msg) ?></span>
+<?php endif; ?>
+</div>
+
+<form markdown="1" method="POST" action="/Settings/UnraidThemer">
+
+Enable Unraid Themer:
+: <select name="SERVICE" size="1">
+    <?= mk_option($service, "enabled", "Yes") ?>
+    <?= mk_option($service, "disabled", "No") ?>
+  </select>
+  <span>When disabled, the webGUI is 100% stock — nothing is injected.</span>
+
+Theme preset:
+: <select name="PRESET" size="1">
+    <?php foreach ($presets as $p): ?>
+    <?= mk_option($preset_sel, $p, ucwords(str_replace(['-','_'],' ',$p))) ?>
+    <?php endforeach; ?>
+    <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
+  </select>
+  <span>Applies on top of the active Dynamix theme. "bebamu" ships a Light + Dark pair (switch via Settings → Display → Dynamix color theme, White/Black).</span>
+
+Custom CSS overrides:
+: <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
+  <span>Optional. Loaded <em>after</em> the preset, so these rules win. Use Unraid CSS variables, e.g. <code>:root { --background-color:#101010; }</code>.</span>
+
+&nbsp;
+: <span class="buttons-spaced">
+    <input type="submit" name="SAVE_CONFIG" value="_(Apply)_">
+    <input type="button" value="_(Done)_" onclick="done()">
+  </span>
+
+&nbsp;
+: <span class="description" style="max-width:640px; margin:0; padding:15px; background:rgba(0,0,0,0.1); border-radius:6px;">
+    <strong>How it works.</strong> Unraid Themer injects the selected preset's stylesheet into every page (via a <code>Buttons</code> loader page), plus a small deferred script for shadow-DOM tweaks and Docker "update available" badges.<br/><br/>
+    <strong>Presets</strong> are CSS files in <code>/boot/config/plugins/unraid.themer/presets/</code> — drop your own <code>&lt;name&gt;.css</code> there to add one.<br/><br/>
+    Explore Unraid's variables in <a href="/webGui/styles/themes/white.css" target="_blank">white.css</a> / <a href="/webGui/styles/themes/black.css" target="_blank">black.css</a>. Semantic status colors (disk health, array state) are intentionally left untouched by all presets.
+  </span>
+</form>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/UnraidThemerLoader.page">
+<INLINE>
+<![CDATA[Menu="Buttons:100"
+Link="nav-user"
+---
+<?php
+/* Unraid Themer — global loader.
+ * Runs in <head> on every page (Menu="Buttons"). Injects the active preset
+ * stylesheet, optional user overrides, and the runtime JS — only when enabled.
+ * No output at all when disabled → zero footprint.
+ */
+require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+
+$name    = "unraid.themer";
+$webroot = "/usr/local/emhttp/plugins/$name";
+$weburl  = "/plugins/$name";
+
+$cfg = parse_plugin_cfg($name);
+if (($cfg['SERVICE'] ?? "disabled") !== "enabled") return;
+
+// selected preset (sanitised to a safe filename stem)
+$preset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['PRESET'] ?? 'bebamu');
+
+// 1) preset stylesheet
+if ($preset !== '' && $preset !== 'none') {
+    $preset_file = "$webroot/presets/$preset.css";
+    if (file_exists($preset_file)) {
+        $v = filemtime($preset_file);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/presets/$preset.css?v=$v\">\n";
+    }
+}
+
+// 2) user custom overrides (loaded AFTER the preset so they win)
+$override = "$webroot/custom.css";
+if (file_exists($override) && trim(file_get_contents($override)) !== '') {
+    $v = filemtime($override);
+    echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/custom.css?v=$v\">\n";
+}
+
+// 3) runtime JS (shadow-DOM tweaks, update badges) — deferred, same-origin (CSP-safe)
+$js = "$webroot/js/themer.js";
+if (file_exists($js)) {
+    $v = filemtime($js);
+    echo "<script defer src=\"$weburl/js/themer.js?v=$v\"></script>\n";
+}
+?>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/default.cfg">
+<INLINE>
+<![CDATA[SERVICE="disabled"
+PRESET="bebamu"
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/js/themer.js">
+<INLINE>
+<![CDATA[/* ============================================================================
+ * Unraid Themer — runtime helper
+ * Loaded (deferred, same-origin) on every page when the theme is enabled.
+ * Does the things CSS cannot:
+ *   1. Docker "update available" badge — turns the (non-clickable) status name
+ *      into a clear "?" marker with a hover tooltip.
+ *   2. Shadow-DOM style bridge — lets a preset push selector-based CSS INTO the
+ *      Unraid 7 Vue web-components (open shadow roots), which page CSS can't reach.
+ * Everything is defensive: if a hook target is absent, it silently no-ops.
+ * ========================================================================== */
+(function () {
+  "use strict";
+
+  /* ---- 1. Docker "update available" badge -------------------------------- *
+   * Unraid flags containers with a pending image update by giving the name
+   * <span class="blue-text"> inside #docker_view. That is a STATUS, not a link.
+   * We append a small "?" badge with a native tooltip so it reads as "info",
+   * not "click me". The Docker tile re-renders async, so we re-run on mutation.
+   */
+  var BADGE_FLAG = "data-ut-badge";
+
+  function decorateUpdates(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var names = scope.querySelectorAll("#docker_view .blue-text:not([" + BADGE_FLAG + "])");
+    for (var i = 0; i < names.length; i++) {
+      var el = names[i];
+      el.setAttribute(BADGE_FLAG, "1");
+      var badge = document.createElement("span");
+      badge.className = "ut-update-badge";
+      badge.textContent = "?";
+      badge.title = "Update available";
+      badge.setAttribute("aria-label", "Update available");
+      el.appendChild(document.createTextNode(" "));
+      el.appendChild(badge);
+    }
+  }
+
+  // one small style rule for the badge (page-level, safe)
+  function injectBadgeStyle() {
+    if (document.getElementById("ut-badge-style")) return;
+    var s = document.createElement("style");
+    s.id = "ut-badge-style";
+    s.textContent =
+      ".ut-update-badge{display:inline-flex;align-items:center;justify-content:center;" +
+      "width:14px;height:14px;margin-left:2px;border-radius:50%;font-size:10px;" +
+      "font-weight:700;line-height:1;color:#fff;background:var(--brand-orange,#c67100);" +
+      "cursor:help;vertical-align:1px;font-family:var(--font-sans,sans-serif);}";
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  /* ---- 2. Shadow-DOM style bridge ---------------------------------------- *
+   * Unraid 7 web-components use OPEN shadow roots, so we can push a stylesheet
+   * into them. A preset may define window.UNRAID_THEMER_SHADOW_CSS (a string)
+   * to style component internals that CSS variables don't cover. No-op if unset.
+   */
+  function shadowCss() {
+    return (typeof window !== "undefined" && window.UNRAID_THEMER_SHADOW_CSS) || "";
+  }
+
+  var _sheet = null;
+  function getSheet() {
+    var css = shadowCss();
+    if (!css) return null;
+    if (!_sheet && "adoptedStyleSheets" in Document.prototype && "replaceSync" in CSSStyleSheet.prototype) {
+      try { _sheet = new CSSStyleSheet(); _sheet.replaceSync(css); } catch (e) { _sheet = null; }
+    }
+    return _sheet;
+  }
+
+  function styleShadowHosts(root) {
+    var sheet = getSheet();
+    if (!sheet) return;
+    var scope = root && root.querySelectorAll ? root : document;
+    // Unraid custom elements are prefixed unraid-* / uui-*
+    var hosts = scope.querySelectorAll("[data-unraid], unraid-user-profile, unraid-header-os-version, uui-toaster");
+    for (var i = 0; i < hosts.length; i++) {
+      var sr = hosts[i].shadowRoot;
+      if (sr && sr.adoptedStyleSheets && sr.adoptedStyleSheets.indexOf(sheet) === -1) {
+        try { sr.adoptedStyleSheets = sr.adoptedStyleSheets.concat(sheet); } catch (e) {}
+      }
+    }
+  }
+
+  /* ---- run + observe ----------------------------------------------------- */
+  function run(root) {
+    injectBadgeStyle();
+    decorateUpdates(root);
+    styleShadowHosts(root);
+  }
+
+  function start() {
+    run(document);
+    // Docker tile + web-components mount/re-render after load → observe.
+    if (window.MutationObserver) {
+      var obs = new MutationObserver(function (muts) {
+        for (var i = 0; i < muts.length; i++) {
+          if (muts[i].addedNodes && muts[i].addedNodes.length) { run(document); return; }
+        }
+      });
+      obs.observe(document.documentElement, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/bebamu.css">
+<INLINE>
+<![CDATA[/* ============================================================
+   bebamu Unraid Theme v1.7 — Feld "Global CSS"
+   WICHTIG: "Additional CSS for Black Theme"-Feld LEEREN.
+   Dark läuft hier über html.Theme--black (höhere Spezifität,
+   keine Reihenfolge-Leaks -> kein weisser Balken mehr).
+   Enable Custom CSS = Yes -> Apply -> Done -> Cmd-Shift-R.
+   ============================================================ */
+:root {
+  --bb-signal: #E63312;
+  --bb-signal-dark: #b71f08;
+  --bb-paper: #F7F6F2;
+  --bb-ink: #0a0a0a;
+  --bb-coal: #1A1A1A;
+  --bb-chalk: #F0F0F0;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* Akzent: Unraid-Orange UND -Blau -> bebamu-Rot (mono-signal) */
+  --orange-100: #ffd8cf;
+  --orange-200: var(--bb-signal);
+  --orange-300: var(--bb-signal-dark);
+  --orange-400: var(--bb-signal-dark);
+  --orange-500: var(--bb-signal);
+  --orange-800: var(--bb-signal-dark);
+  --orange-900: var(--bb-signal-dark);
+  --blue-700: var(--bb-signal);
+  --blue-800: var(--bb-signal);
+  --brand-orange: var(--bb-signal);
+  --brand-red: var(--bb-signal-dark);
+
+  /* ---------------- LIGHT (White) ---------------- */
+  --text-color: var(--bb-ink);
+  --alt-text-color: rgba(0, 0, 0, 0.5);
+  --link-text-color: var(--bb-signal);
+
+  --background-color: var(--bb-paper);
+  --mild-background-color: #ffffff;
+
+  --border-color: rgba(0, 0, 0, 0.14);
+  --input-border-color: rgba(0, 0, 0, 0.85);
+  --table-border-color: rgba(0, 0, 0, 0.12);
+  --table-background-color: var(--bb-paper);
+  --table-header-background-color: #efece6;
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: rgba(0, 0, 0, 0.14);
+  --shade-bg-color: #efece6;
+  --focus-input-bg-color: #ffffff;
+
+  /* Header + Nav: dunkel, konsistent. Web-Component-Text via header-text-primary */
+  --header-background-color: #141414;
+  --header-text-color: var(--bb-chalk);
+  --header-text-primary: var(--bb-chalk);
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: #ece9e3;
+
+  --footer-text: var(--bb-ink);
+  --footer-background-color: #efece6;
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--bb-ink);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--bb-signal);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--bb-signal);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--bb-ink);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.35);
+  --scrollbar-hover-color: var(--bb-signal);
+  --small-shadow: none;
+
+  --dynamix-tablesorter-tbody-row-bg-color: var(--bb-paper);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: #efece6;
+  --dynamix-tablesorter-thead-th-bg-color: #efece6;
+}
+
+/* ---------------- DARK (Dynamix "Black") ----------------
+   html.Theme--black gewinnt per Spezifität über :root. */
+html.Theme--black {
+  --text-color: var(--bb-chalk);
+  --alt-text-color: rgba(240, 240, 240, 0.55);
+  --link-text-color: var(--bb-signal);
+
+  --background-color: var(--bb-coal);
+  --mild-background-color: #202020;
+
+  --border-color: rgba(255, 255, 255, 0.12);
+  --input-border-color: rgba(255, 255, 255, 0.25);
+  --table-border-color: rgba(255, 255, 255, 0.10);
+  --table-background-color: #1f1f1f;
+  --table-header-background-color: #242424;
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: rgba(255, 255, 255, 0.12);
+  --shade-bg-color: #242424;
+  --focus-input-bg-color: #242424;
+
+  /* FIX weisser Balken: Header/Nav war stock gray-100 (hell) -> jetzt dunkel */
+  --header-background-color: #111111;
+  --header-text-color: var(--bb-chalk);
+  --header-text-primary: var(--bb-chalk);
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: #242424;
+
+  --footer-text: var(--bb-chalk);
+  --footer-background-color: #111111;
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--bb-chalk);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--bb-signal);
+  --button-border: 1px solid var(--bb-signal);
+  --hover-button-border: var(--bb-chalk);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--bb-signal);
+  --small-shadow: none;
+
+  --dynamix-tablesorter-tbody-row-bg-color: #1f1f1f;
+  --dynamix-tablesorter-tbody-row-alt-bg-color: #242424;
+  --dynamix-tablesorter-thead-th-bg-color: #242424;
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach rot — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--bb-signal) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--bb-signal) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links (Settings-Labels, Share-Namen, Internal Boot ...) -> Rot */
+a.blue-text, .blue-text { color: var(--bb-signal) !important; }
+/* ABER: Docker "Update verfügbar" ist KEIN Link, nur Status -> Amber */
+#docker_view .blue-text { color: #c67100 !important; }
+
+/* Aktiver Nav-Tab: roter Text + roter Unterstrich (.nav-item.active:after) */
+#menu .nav-item.active a { color: var(--bb-signal) !important; }
+#menu .nav-item.active:after { background: var(--bb-signal) !important; }
+
+/* Auslastungsbalken: grün -> Ink/Chalk, rot = Signal, orange = Warnung */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--bb-signal) !important; }
+.orangebar { background: #c67100 !important; }
+
+/* Sektions-Titelbalken (Main-Seite): roter Links-Akzent */
+div.title { border-left: 3px solid var(--bb-signal); }
+
+/* ==================== v1.6: editoriale Dashboard-Boxen ==================== */
+/* Jede Box = table.dashboard tbody: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* roter Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--bb-signal);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== Unraid 7 UUI / shadcn web-component tokens ====================
+   These inherit through the open shadow DOM of the Vue components (header etc.),
+   so the new UI recolors along with the classic Dynamix surface. */
+:root {
+  --ui-bg: var(--bb-paper);
+  --ui-bg-muted: #efece6;
+  --ui-bg-elevated: #ffffff;
+  --ui-bg-accented: #efece6;
+  --ui-text: var(--bb-ink);
+  --ui-text-muted: rgba(0,0,0,0.5);
+  --ui-text-dimmed: rgba(0,0,0,0.5);
+  --ui-text-highlighted: var(--bb-ink);
+  --ui-border: rgba(0,0,0,0.14);
+  --ui-primary: var(--bb-signal);
+  --primary: var(--bb-signal);
+  --background: var(--bb-paper);
+  --foreground: var(--bb-ink);
+  --card: #ffffff;
+  --popover: #ffffff;
+  --border: rgba(0,0,0,0.14);
+  --ring: var(--bb-signal);
+  --accent: var(--bb-signal);
+}
+html.Theme--black {
+  --ui-bg: var(--bb-coal);
+  --ui-bg-muted: #202020;
+  --ui-bg-elevated: #242424;
+  --ui-bg-accented: #242424;
+  --ui-text: var(--bb-chalk);
+  --ui-text-muted: rgba(240,240,240,0.55);
+  --ui-text-dimmed: rgba(240,240,240,0.55);
+  --ui-text-highlighted: var(--bb-chalk);
+  --ui-border: rgba(255,255,255,0.12);
+  --ui-primary: var(--bb-signal);
+  --primary: var(--bb-signal);
+  --background: var(--bb-coal);
+  --foreground: var(--bb-chalk);
+  --card: #1f1f1f;
+  --popover: #1f1f1f;
+  --border: rgba(255,255,255,0.12);
+  --ring: var(--bb-signal);
+  --accent: var(--bb-signal);
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/dracula.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Dracula — purple/pink accents on deep grey-violet dark */
+:root {
+  /* ---------------- Palette ---------------- */
+  --dracula-bg: #282A36;
+  --dracula-bg2: #343746;
+  --dracula-surface: #44475A;
+  --dracula-text: #F8F8F2;
+  --dracula-dim: #BFC0D0;
+  --dracula-border: #44475A;
+  --dracula-accent: #BD93F9;
+  --dracula-accent2: #FF79C6;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--dracula-text);
+  --alt-text-color: var(--dracula-dim);
+  --link-text-color: var(--dracula-accent);
+
+  --background-color: var(--dracula-bg);
+  --mild-background-color: var(--dracula-bg2);
+
+  --border-color: var(--dracula-border);
+  --input-border-color: var(--dracula-border);
+  --table-border-color: var(--dracula-border);
+  --table-background-color: var(--dracula-bg2);
+  --table-header-background-color: var(--dracula-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--dracula-border);
+  --shade-bg-color: var(--dracula-surface);
+  --focus-input-bg-color: var(--dracula-surface);
+
+  --header-background-color: var(--dracula-surface);
+  --header-text-color: var(--dracula-text);
+  --header-text-primary: var(--dracula-text);
+  --header-text-secondary: var(--dracula-dim);
+
+  --title-header-background-color: var(--dracula-bg2);
+
+  --footer-text: var(--dracula-text);
+  --footer-background-color: var(--dracula-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--dracula-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--dracula-accent);
+  --button-border: 1px solid var(--dracula-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--dracula-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--dracula-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Dracula purple/pink) ---------------- */
+  --orange-500: var(--dracula-accent);
+  --orange-800: var(--dracula-accent2);
+  --brand-orange: var(--dracula-accent);
+  --brand-red: var(--dracula-accent2);
+  --blue-700: var(--dracula-accent);
+  --blue-800: var(--dracula-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--dracula-bg);
+  --ui-bg-muted: var(--dracula-bg2);
+  --ui-bg-elevated: var(--dracula-surface);
+  --ui-bg-accented: var(--dracula-surface);
+  --ui-text: var(--dracula-text);
+  --ui-text-muted: var(--dracula-dim);
+  --ui-text-dimmed: var(--dracula-dim);
+  --ui-text-highlighted: var(--dracula-text);
+  --ui-border: var(--dracula-border);
+  --ui-primary: var(--dracula-accent);
+  --primary: var(--dracula-accent);
+  --background: var(--dracula-bg);
+  --foreground: var(--dracula-text);
+  --card: var(--dracula-bg2);
+  --popover: var(--dracula-bg2);
+  --border: var(--dracula-border);
+  --ring: var(--dracula-accent);
+  --accent: var(--dracula-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--dracula-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--dracula-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Purple-Akzent */
+a.blue-text, .blue-text { color: var(--dracula-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Pink) */
+#docker_view .blue-text { color: var(--dracula-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--dracula-accent) !important; }
+#menu .nav-item.active:after { background: var(--dracula-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--dracula-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--dracula-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--dracula-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/gruvbox-dark.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Gruvbox Dark — warm orange/yellow accents on retro-groove brown-grey */
+:root {
+  /* ---------------- Palette ---------------- */
+  --gruvbox-bg: #282828;
+  --gruvbox-bg2: #32302F;
+  --gruvbox-surface: #3C3836;
+  --gruvbox-text: #EBDBB2;
+  --gruvbox-dim: #A89984;
+  --gruvbox-border: #504945;
+  --gruvbox-accent: #FE8019;
+  --gruvbox-accent2: #FABD2F;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--gruvbox-text);
+  --alt-text-color: var(--gruvbox-dim);
+  --link-text-color: var(--gruvbox-accent);
+
+  --background-color: var(--gruvbox-bg);
+  --mild-background-color: var(--gruvbox-bg2);
+
+  --border-color: var(--gruvbox-border);
+  --input-border-color: var(--gruvbox-border);
+  --table-border-color: var(--gruvbox-border);
+  --table-background-color: var(--gruvbox-bg2);
+  --table-header-background-color: var(--gruvbox-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--gruvbox-border);
+  --shade-bg-color: var(--gruvbox-surface);
+  --focus-input-bg-color: var(--gruvbox-surface);
+
+  --header-background-color: var(--gruvbox-surface);
+  --header-text-color: var(--gruvbox-text);
+  --header-text-primary: var(--gruvbox-text);
+  --header-text-secondary: var(--gruvbox-dim);
+
+  --title-header-background-color: var(--gruvbox-bg2);
+
+  --footer-text: var(--gruvbox-text);
+  --footer-background-color: var(--gruvbox-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--gruvbox-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--gruvbox-accent);
+  --button-border: 1px solid var(--gruvbox-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--gruvbox-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--gruvbox-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Gruvbox orange/yellow) ---------------- */
+  --orange-500: var(--gruvbox-accent);
+  --orange-800: var(--gruvbox-accent2);
+  --brand-orange: var(--gruvbox-accent);
+  --brand-red: var(--gruvbox-accent2);
+  --blue-700: var(--gruvbox-accent);
+  --blue-800: var(--gruvbox-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--gruvbox-bg);
+  --ui-bg-muted: var(--gruvbox-bg2);
+  --ui-bg-elevated: var(--gruvbox-surface);
+  --ui-bg-accented: var(--gruvbox-surface);
+  --ui-text: var(--gruvbox-text);
+  --ui-text-muted: var(--gruvbox-dim);
+  --ui-text-dimmed: var(--gruvbox-dim);
+  --ui-text-highlighted: var(--gruvbox-text);
+  --ui-border: var(--gruvbox-border);
+  --ui-primary: var(--gruvbox-accent);
+  --primary: var(--gruvbox-accent);
+  --background: var(--gruvbox-bg);
+  --foreground: var(--gruvbox-text);
+  --card: var(--gruvbox-bg2);
+  --popover: var(--gruvbox-bg2);
+  --border: var(--gruvbox-border);
+  --ring: var(--gruvbox-accent);
+  --accent: var(--gruvbox-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--gruvbox-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--gruvbox-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Orange-Akzent */
+a.blue-text, .blue-text { color: var(--gruvbox-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Gelb) */
+#docker_view .blue-text { color: var(--gruvbox-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--gruvbox-accent) !important; }
+#menu .nav-item.active:after { background: var(--gruvbox-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--gruvbox-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--gruvbox-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--gruvbox-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/monokai.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Monokai — magenta/lime accents on classic olive-charcoal dark */
+:root {
+  /* ---------------- Palette ---------------- */
+  --monokai-bg: #272822;
+  --monokai-bg2: #2F312A;
+  --monokai-surface: #3E3D32;
+  --monokai-text: #F8F8F2;
+  --monokai-dim: #CFCFC2;
+  --monokai-border: #49483E;
+  --monokai-accent: #F92672;
+  --monokai-accent2: #A6E22E;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--monokai-text);
+  --alt-text-color: var(--monokai-dim);
+  --link-text-color: var(--monokai-accent);
+
+  --background-color: var(--monokai-bg);
+  --mild-background-color: var(--monokai-bg2);
+
+  --border-color: var(--monokai-border);
+  --input-border-color: var(--monokai-border);
+  --table-border-color: var(--monokai-border);
+  --table-background-color: var(--monokai-bg2);
+  --table-header-background-color: var(--monokai-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--monokai-border);
+  --shade-bg-color: var(--monokai-surface);
+  --focus-input-bg-color: var(--monokai-surface);
+
+  --header-background-color: var(--monokai-surface);
+  --header-text-color: var(--monokai-text);
+  --header-text-primary: var(--monokai-text);
+  --header-text-secondary: var(--monokai-dim);
+
+  --title-header-background-color: var(--monokai-bg2);
+
+  --footer-text: var(--monokai-text);
+  --footer-background-color: var(--monokai-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--monokai-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--monokai-accent);
+  --button-border: 1px solid var(--monokai-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--monokai-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--monokai-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Monokai magenta/lime) ---------------- */
+  --orange-500: var(--monokai-accent);
+  --orange-800: var(--monokai-accent2);
+  --brand-orange: var(--monokai-accent);
+  --brand-red: var(--monokai-accent2);
+  --blue-700: var(--monokai-accent);
+  --blue-800: var(--monokai-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--monokai-bg);
+  --ui-bg-muted: var(--monokai-bg2);
+  --ui-bg-elevated: var(--monokai-surface);
+  --ui-bg-accented: var(--monokai-surface);
+  --ui-text: var(--monokai-text);
+  --ui-text-muted: var(--monokai-dim);
+  --ui-text-dimmed: var(--monokai-dim);
+  --ui-text-highlighted: var(--monokai-text);
+  --ui-border: var(--monokai-border);
+  --ui-primary: var(--monokai-accent);
+  --primary: var(--monokai-accent);
+  --background: var(--monokai-bg);
+  --foreground: var(--monokai-text);
+  --card: var(--monokai-bg2);
+  --popover: var(--monokai-bg2);
+  --border: var(--monokai-border);
+  --ring: var(--monokai-accent);
+  --accent: var(--monokai-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--monokai-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--monokai-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Magenta-Akzent */
+a.blue-text, .blue-text { color: var(--monokai-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Lime) */
+#docker_view .blue-text { color: var(--monokai-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--monokai-accent) !important; }
+#menu .nav-item.active:after { background: var(--monokai-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--monokai-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--monokai-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--monokai-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/nord.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Nord — arctic blue-grey palette, frost accents on polar night */
+:root {
+  /* ---------------- Palette ---------------- */
+  --nord-bg: #2E3440;
+  --nord-bg2: #3B4252;
+  --nord-surface: #434C5E;
+  --nord-text: #ECEFF4;
+  --nord-dim: #D8DEE9;
+  --nord-border: #4C566A;
+  --nord-accent: #88C0D0;
+  --nord-accent2: #5E81AC;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--nord-text);
+  --alt-text-color: var(--nord-dim);
+  --link-text-color: var(--nord-accent);
+
+  --background-color: var(--nord-bg);
+  --mild-background-color: var(--nord-bg2);
+
+  --border-color: var(--nord-border);
+  --input-border-color: var(--nord-border);
+  --table-border-color: var(--nord-border);
+  --table-background-color: var(--nord-bg2);
+  --table-header-background-color: var(--nord-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--nord-border);
+  --shade-bg-color: var(--nord-surface);
+  --focus-input-bg-color: var(--nord-surface);
+
+  --header-background-color: var(--nord-surface);
+  --header-text-color: var(--nord-text);
+  --header-text-primary: var(--nord-text);
+  --header-text-secondary: var(--nord-dim);
+
+  --title-header-background-color: var(--nord-bg2);
+
+  --footer-text: var(--nord-text);
+  --footer-background-color: var(--nord-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--nord-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--nord-accent);
+  --button-border: 1px solid var(--nord-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--nord-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--nord-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Nord frost) ---------------- */
+  --orange-500: var(--nord-accent);
+  --orange-800: var(--nord-accent2);
+  --brand-orange: var(--nord-accent);
+  --brand-red: var(--nord-accent2);
+  --blue-700: var(--nord-accent);
+  --blue-800: var(--nord-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--nord-bg);
+  --ui-bg-muted: var(--nord-bg2);
+  --ui-bg-elevated: var(--nord-surface);
+  --ui-bg-accented: var(--nord-surface);
+  --ui-text: var(--nord-text);
+  --ui-text-muted: var(--nord-dim);
+  --ui-text-dimmed: var(--nord-dim);
+  --ui-text-highlighted: var(--nord-text);
+  --ui-border: var(--nord-border);
+  --ui-primary: var(--nord-accent);
+  --primary: var(--nord-accent);
+  --background: var(--nord-bg);
+  --foreground: var(--nord-text);
+  --card: var(--nord-bg2);
+  --popover: var(--nord-bg2);
+  --border: var(--nord-border);
+  --ring: var(--nord-accent);
+  --accent: var(--nord-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--nord-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--nord-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Frost-Akzent */
+a.blue-text, .blue-text { color: var(--nord-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent */
+#docker_view .blue-text { color: var(--nord-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--nord-accent) !important; }
+#menu .nav-item.active:after { background: var(--nord-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--nord-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--nord-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--nord-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/solarized-dark.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Solarized Dark — teal/cyan-blue accents on deep base03/base02 */
+:root {
+  /* ---------------- Palette ---------------- */
+  --solar-bg: #002B36;
+  --solar-bg2: #073642;
+  --solar-surface: #0B3A46;
+  --solar-text: #EEE8D5;
+  --solar-dim: #93A1A1;
+  --solar-border: #0A4653;
+  --solar-accent: #268BD2;
+  --solar-accent2: #2AA198;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--solar-text);
+  --alt-text-color: var(--solar-dim);
+  --link-text-color: var(--solar-accent);
+
+  --background-color: var(--solar-bg);
+  --mild-background-color: var(--solar-bg2);
+
+  --border-color: var(--solar-border);
+  --input-border-color: var(--solar-border);
+  --table-border-color: var(--solar-border);
+  --table-background-color: var(--solar-bg2);
+  --table-header-background-color: var(--solar-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--solar-border);
+  --shade-bg-color: var(--solar-surface);
+  --focus-input-bg-color: var(--solar-surface);
+
+  --header-background-color: var(--solar-surface);
+  --header-text-color: var(--solar-text);
+  --header-text-primary: var(--solar-text);
+  --header-text-secondary: var(--solar-dim);
+
+  --title-header-background-color: var(--solar-bg2);
+
+  --footer-text: var(--solar-text);
+  --footer-background-color: var(--solar-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--solar-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--solar-accent);
+  --button-border: 1px solid var(--solar-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--solar-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--solar-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Solarized blue/cyan) ---------------- */
+  --orange-500: var(--solar-accent);
+  --orange-800: var(--solar-accent2);
+  --brand-orange: var(--solar-accent);
+  --brand-red: var(--solar-accent2);
+  --blue-700: var(--solar-accent);
+  --blue-800: var(--solar-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--solar-bg);
+  --ui-bg-muted: var(--solar-bg2);
+  --ui-bg-elevated: var(--solar-surface);
+  --ui-bg-accented: var(--solar-surface);
+  --ui-text: var(--solar-text);
+  --ui-text-muted: var(--solar-dim);
+  --ui-text-dimmed: var(--solar-dim);
+  --ui-text-highlighted: var(--solar-text);
+  --ui-border: var(--solar-border);
+  --ui-primary: var(--solar-accent);
+  --primary: var(--solar-accent);
+  --background: var(--solar-bg);
+  --foreground: var(--solar-text);
+  --card: var(--solar-bg2);
+  --popover: var(--solar-bg2);
+  --border: var(--solar-border);
+  --ring: var(--solar-accent);
+  --accent: var(--solar-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--solar-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--solar-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Blau-Akzent */
+a.blue-text, .blue-text { color: var(--solar-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Cyan) */
+#docker_view .blue-text { color: var(--solar-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--solar-accent) !important; }
+#menu .nav-item.active:after { background: var(--solar-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--solar-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--solar-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--solar-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash">
+<INLINE>
+# --- Unraid Themer: restore user data from flash to webroot ---
+# Config (SERVICE/PRESET) is read straight from flash by parse_plugin_cfg,
+# merged over the shipped default.cfg — nothing to copy for it.
+
+# User custom overrides live on flash; recreate the webroot copy nginx serves.
+if [ ! -f /boot/config/plugins/unraid.themer/custom.css ]; then
+    echo '/* Your custom CSS overrides — loaded on top of the selected preset. */' > /boot/config/plugins/unraid.themer/custom.css
+fi
+cp -f /boot/config/plugins/unraid.themer/custom.css /usr/local/emhttp/plugins/unraid.themer/custom.css 2>/dev/null
+
+# Let users drop extra presets on the flash; mirror them into the webroot too.
+if [ -d /boot/config/plugins/unraid.themer/presets ]; then
+    cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
+fi
+
+echo "----------------------------------------------------"
+echo " Unraid Themer installed."
+echo " Go to Settings > Utilities > Unraid Themer"
+echo "----------------------------------------------------"
+exit 0
+</INLINE>
+</FILE>
+
+<FILE Run="/bin/bash" Method="remove">
+<INLINE>
+# --- Unraid Themer: full cleanup ---
+rm -rf /usr/local/emhttp/plugins/unraid.themer
+rm -rf /boot/config/plugins/unraid.themer
+exit 0
+</INLINE>
+</FILE>
+
+</PLUGIN>

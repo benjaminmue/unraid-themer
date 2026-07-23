@@ -1,0 +1,138 @@
+/* Unraid Themer preset: Monokai — magenta/lime accents on classic olive-charcoal dark */
+:root {
+  /* ---------------- Palette ---------------- */
+  --monokai-bg: #272822;
+  --monokai-bg2: #2F312A;
+  --monokai-surface: #3E3D32;
+  --monokai-text: #F8F8F2;
+  --monokai-dim: #CFCFC2;
+  --monokai-border: #49483E;
+  --monokai-accent: #F92672;
+  --monokai-accent2: #A6E22E;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--monokai-text);
+  --alt-text-color: var(--monokai-dim);
+  --link-text-color: var(--monokai-accent);
+
+  --background-color: var(--monokai-bg);
+  --mild-background-color: var(--monokai-bg2);
+
+  --border-color: var(--monokai-border);
+  --input-border-color: var(--monokai-border);
+  --table-border-color: var(--monokai-border);
+  --table-background-color: var(--monokai-bg2);
+  --table-header-background-color: var(--monokai-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--monokai-border);
+  --shade-bg-color: var(--monokai-surface);
+  --focus-input-bg-color: var(--monokai-surface);
+
+  --header-background-color: var(--monokai-surface);
+  --header-text-color: var(--monokai-text);
+  --header-text-primary: var(--monokai-text);
+  --header-text-secondary: var(--monokai-dim);
+
+  --title-header-background-color: var(--monokai-bg2);
+
+  --footer-text: var(--monokai-text);
+  --footer-background-color: var(--monokai-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--monokai-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--monokai-accent);
+  --button-border: 1px solid var(--monokai-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--monokai-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--monokai-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Monokai magenta/lime) ---------------- */
+  --orange-500: var(--monokai-accent);
+  --orange-800: var(--monokai-accent2);
+  --brand-orange: var(--monokai-accent);
+  --brand-red: var(--monokai-accent2);
+  --blue-700: var(--monokai-accent);
+  --blue-800: var(--monokai-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--monokai-bg);
+  --ui-bg-muted: var(--monokai-bg2);
+  --ui-bg-elevated: var(--monokai-surface);
+  --ui-bg-accented: var(--monokai-surface);
+  --ui-text: var(--monokai-text);
+  --ui-text-muted: var(--monokai-dim);
+  --ui-text-dimmed: var(--monokai-dim);
+  --ui-text-highlighted: var(--monokai-text);
+  --ui-border: var(--monokai-border);
+  --ui-primary: var(--monokai-accent);
+  --primary: var(--monokai-accent);
+  --background: var(--monokai-bg);
+  --foreground: var(--monokai-text);
+  --card: var(--monokai-bg2);
+  --popover: var(--monokai-bg2);
+  --border: var(--monokai-border);
+  --ring: var(--monokai-accent);
+  --accent: var(--monokai-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--monokai-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--monokai-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Magenta-Akzent */
+a.blue-text, .blue-text { color: var(--monokai-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Lime) */
+#docker_view .blue-text { color: var(--monokai-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--monokai-accent) !important; }
+#menu .nav-item.active:after { background: var(--monokai-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--monokai-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--monokai-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--monokai-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
