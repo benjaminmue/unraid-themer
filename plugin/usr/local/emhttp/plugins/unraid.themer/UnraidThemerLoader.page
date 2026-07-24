@@ -5,7 +5,8 @@ Link="nav-user"
 /* Unraid Themer — global loader.
  * Runs in <head> on every page (Menu="Buttons"). Injects the active preset
  * stylesheet, optional user overrides, and the runtime JS — only when enabled.
- * No output at all when disabled → zero footprint.
+ * Structured as a single if() wrap (no top-level return) to match the proven
+ * custom.css pattern. When disabled it emits nothing → zero footprint.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
 
@@ -14,31 +15,32 @@ $webroot = "/usr/local/emhttp/plugins/$name";
 $weburl  = "/plugins/$name";
 
 $cfg = parse_plugin_cfg($name);
-if (($cfg['SERVICE'] ?? "disabled") !== "enabled") return;
+if (($cfg['SERVICE'] ?? "disabled") === "enabled") {
 
-// selected preset (sanitised to a safe filename stem)
-$preset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['PRESET'] ?? 'bebamu');
+    // selected preset (sanitised to a safe filename stem)
+    $preset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['PRESET'] ?? 'bebamu');
 
-// 1) preset stylesheet
-if ($preset !== '' && $preset !== 'none') {
-    $preset_file = "$webroot/presets/$preset.css";
-    if (file_exists($preset_file)) {
-        $v = filemtime($preset_file);
-        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/presets/$preset.css?v=$v\">\n";
+    // 1) preset stylesheet
+    if ($preset !== '' && $preset !== 'none') {
+        $preset_file = "$webroot/presets/$preset.css";
+        if (file_exists($preset_file)) {
+            $v = filemtime($preset_file);
+            echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/presets/$preset.css?v=$v\">\n";
+        }
     }
-}
 
-// 2) user custom overrides (loaded AFTER the preset so they win)
-$override = "$webroot/custom.css";
-if (file_exists($override) && trim(file_get_contents($override)) !== '') {
-    $v = filemtime($override);
-    echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/custom.css?v=$v\">\n";
-}
+    // 2) user custom overrides (loaded AFTER the preset so they win)
+    $override = "$webroot/custom.css";
+    if (file_exists($override) && trim(file_get_contents($override)) !== '') {
+        $v = filemtime($override);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/custom.css?v=$v\">\n";
+    }
 
-// 3) runtime JS (shadow-DOM tweaks, update badges) — deferred, same-origin (CSP-safe)
-$js = "$webroot/js/themer.js";
-if (file_exists($js)) {
-    $v = filemtime($js);
-    echo "<script defer src=\"$weburl/js/themer.js?v=$v\"></script>\n";
+    // 3) runtime JS (shadow-DOM tweaks, update badges) — deferred, same-origin (CSP-safe)
+    $js = "$webroot/js/themer.js";
+    if (file_exists($js)) {
+        $v = filemtime($js);
+        echo "<script defer src=\"$weburl/js/themer.js?v=$v\"></script>\n";
+    }
 }
 ?>
