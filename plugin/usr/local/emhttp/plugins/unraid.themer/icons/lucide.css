@@ -120,3 +120,179 @@
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+
+/* --- Action icons: Font Awesome 4 (fa-*) used across Docker/VM/tile toolbars.
+   Only specific fa-<name> glyphs are remapped; the base .fa class is untouched. --- */
+.fa-play::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/play.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/play.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-stop::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-pause::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/pause.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/pause.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-refresh::before,
+.fa-rotate-right::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/refresh-cw.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/refresh-cw.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-repeat::before,
+.fa-rotate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/rotate-cw.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/rotate-cw.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-power-off::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/power.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/power.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-cog::before,
+.fa-gear::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/settings.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/settings.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-trash::before,
+.fa-trash-o::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/trash-2.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/trash-2.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-terminal::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/terminal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/terminal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-download::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/download.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/download.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-cloud-download::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/cloud-download.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/cloud-download.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-bars::before,
+.fa-navicon::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/menu.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/menu.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-plus::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/plus.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/plus.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-chevron-up::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/chevron-up.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/chevron-up.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-chevron-down::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/chevron-down.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/chevron-down.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-search::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/search.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/search.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-times::before,
+.fa-close::before,
+.fa-remove::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/x.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/x.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-check::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/check.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/check.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-info-circle::before,
+.fa-info::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/info.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/info.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-exclamation-triangle::before,
+.fa-warning::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/triangle-alert.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/triangle-alert.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-file-text-o::before,
+.fa-file-text::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/file-text.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/file-text.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-external-link::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/external-link.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/external-link.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-pencil::before,
+.fa-edit::before,
+.fa-pencil-square-o::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/square-pen.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/square-pen.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}

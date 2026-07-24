@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24n",
+    "version": "2026.07.24o",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24o
+- Icon set (Lucide): also swaps the Font Awesome action glyphs used on the
+  Docker / VM / tile toolbars (play, stop, pause, restart, power, cog, trash,
+  terminal, download, chevrons, ...) so the whole UI uses one line-icon set.
+
 ## 2026.07.24n
 - Icon set (v1): optional "Lucide" set swaps Unraid's UI glyphs (docker, cpu,
   disks, fan, ...) for open-source line icons that tint with the theme, via
