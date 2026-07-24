@@ -24,16 +24,24 @@ jobs:
           BODY: ${{ github.event.issue.body }}
         run: |
           python3 - << 'PY'
-          import os, re, subprocess
+          import os, re, json, subprocess
 
           body = os.environ.get("BODY", "") or ""
-          # Grab all fenced code blocks; the CSS field (render: css) is one of them.
-          blocks = re.findall(r"```[^\n]*\n(.*?)```", body, re.S)
+
+          # 1) Prefer the issue-form "Theme CSS" section, then strip code fences
+          #    (handles a missing/broken closing ``` from a manual edit).
           css = ""
-          for b in blocks:
-              if "{" in b and "}" in b and ("--" in b or ":root" in b or "color" in b.lower()):
-                  if len(b) > len(css):
-                      css = b
+          sec = re.search(r"#{1,6}\s*Theme CSS\s*\n(.*?)(?:\n#{1,6}\s|\Z)", body, re.S | re.I)
+          if sec:
+              css = sec.group(1).strip()
+              css = re.sub(r"^```[^\n]*\n?", "", css)   # opening fence line
+              css = re.sub(r"\n?```\s*$", "", css)      # closing fence line, if any
+          # 2) Fallback: the largest CSS-looking fenced block anywhere.
+          if not css.strip():
+              for b in re.findall(r"```[^\n]*\n(.*?)```", body, re.S):
+                  if "{" in b and "}" in b and ("--" in b or ":root" in b or "color" in b.lower()):
+                      if len(b) > len(css):
+                          css = b
           css = css.strip()
 
           BLOCKED = [
@@ -47,11 +55,11 @@ jobs:
               (re.compile(r"url\s*\(\s*['\"]?\s*(https?:|//)", re.I),     "an external url()"),
           ]
 
-          errs = []
           if not css:
               body_md = ("⚠️ I couldn't find any CSS. Please paste the **full contents** of your "
                          "`<name>.css` in the **Theme CSS** field and the check will re-run.")
           else:
+              errs = []
               if len(css.encode("utf-8")) > 512 * 1024:
                   errs.append("file too large (>512 KB)")
               if css.count("{") != css.count("}"):
@@ -71,8 +79,29 @@ jobs:
                              f"`url()`; {n} bytes, balanced braces.\n\nA maintainer will review it "
                              f"and, if it fits, add it to the store. Thanks for contributing!")
 
+          marker = "<!-- themer-bot -->"
+          full = marker + "\n" + body_md
+          repo, num = os.environ["REPO"], os.environ["NUMBER"]
+
+          # Update the bot's existing comment instead of posting a new one each edit.
+          out = subprocess.run(["gh", "api", f"repos/{repo}/issues/{num}/comments", "--paginate"],
+                               capture_output=True, text=True)
+          cid = None
+          try:
+              for c in json.loads(out.stdout or "[]"):
+                  if marker in (c.get("body") or ""):
+                      cid = c["id"]
+                      break
+          except Exception:
+              pass
+
           with open("comment.md", "w", encoding="utf-8") as f:
-              f.write("<!-- themer-bot -->\n" + body_md)
-          subprocess.run(["gh", "issue", "comment", os.environ["NUMBER"],
-                          "--repo", os.environ["REPO"], "--body-file", "comment.md"], check=True)
+              f.write(full)
+          if cid:
+              subprocess.run(["gh", "api", "-X", "PATCH",
+                              f"repos/{repo}/issues/comments/{cid}",
+                              "-F", "body=@comment.md"], check=True)
+          else:
+              subprocess.run(["gh", "issue", "comment", num, "--repo", repo,
+                              "--body-file", "comment.md"], check=True)
           PY
