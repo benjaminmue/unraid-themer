@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24b",
+    "version": "2026.07.24c",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,9 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24c
+- Plugins list: restore the plugin title (use a bold first line, not an H1).
+
 ## 2026.07.24b
 - CRITICAL: loader no longer leaks PHP globals ($name etc.) — this broke
   navigation to Share / Disk / Device settings pages (they use a global $name).

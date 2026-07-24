@@ -1,3 +1,5 @@
+**Unraid Themer**
+
 A generic theming plugin for the Unraid 7 webGUI. Pick a preset (or drop your own
 CSS), toggle it on/off, and the whole UI restyles — classic Dynamix pages and the
 new Vue web-components, via CSS custom properties.

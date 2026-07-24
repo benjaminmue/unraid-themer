@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24b">
+  <!ENTITY version   "2026.07.24c">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,9 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24c
+- Plugins list: restore the plugin title (use a bold first line, not an H1).
+
 ## 2026.07.24b
 - CRITICAL: loader no longer leaks PHP globals ($name etc.) — this broke
   navigation to Share / Disk / Device settings pages (they use a global $name).
@@ -42,7 +45,9 @@ exit 0
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/README.md">
 <INLINE>
-<![CDATA[A generic theming plugin for the Unraid 7 webGUI. Pick a preset (or drop your own
+<![CDATA[**Unraid Themer**
+
+A generic theming plugin for the Unraid 7 webGUI. Pick a preset (or drop your own
 CSS), toggle it on/off, and the whole UI restyles — classic Dynamix pages and the
 new Vue web-components, via CSS custom properties.
 
