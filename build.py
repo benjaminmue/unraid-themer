@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24y",
+    "version": "2026.07.24z",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24z
+- Sidebar polish (Azure / Gray): the top header band now matches the content
+  background (was a lighter gray), and the active/hover nav item uses a subtle
+  preset-aware accent (flat tint + left accent bar) instead of the stock loud
+  red-orange gradient. Preset-agnostic layout.css, no-op on top-nav layouts.
+
 ## 2026.07.24y
 - Sidebar layouts (Azure / Gray) supported: the base pairing now keeps your
   layout family — on Azure/Gray a dark preset pairs to Gray and a light one to

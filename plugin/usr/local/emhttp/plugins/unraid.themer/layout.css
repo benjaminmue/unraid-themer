@@ -1,0 +1,32 @@
+/* Unraid Themer — sidebar-layout polish (Azure / Gray).
+   Preset-agnostic: it only reads CSS variables the active preset already sets,
+   so it adapts to whatever preset is selected. Scoped to the sidebar bases, so
+   it is a no-op on the White / Black top-nav layouts. */
+
+/* 1) Header band: Azure/Gray default it to a lighter --gray-100; align it with
+      the content background so the top bar matches the rest of the page. */
+html.Theme--azure,
+html.Theme--gray {
+  --header-background-color: var(--background-color);
+}
+
+/* 2) Active + hover nav item: replace Unraid's loud red->orange gradient with a
+      subtle, preset-aware accent — a flat tint plus a left accent bar in the
+      preset's brand color. Higher specificity (#menu) wins over the stock rule. */
+html.Theme--azure #menu .nav-item.active,
+html.Theme--azure #menu .nav-item.active a,
+html.Theme--gray  #menu .nav-item.active,
+html.Theme--gray  #menu .nav-item.active a {
+  background: var(--mild-background-color) !important;
+  color: var(--text-color) !important;
+  box-shadow: inset 3px 0 0 0 var(--brand-red, var(--brand-orange));
+}
+
+html.Theme--azure #menu .nav-item:hover,
+html.Theme--azure #menu .nav-item:hover a,
+html.Theme--gray  #menu .nav-item:hover,
+html.Theme--gray  #menu .nav-item:hover a {
+  background: var(--mild-background-color) !important;
+  color: var(--text-color) !important;
+  border-bottom-color: var(--brand-red, var(--brand-orange)) !important;
+}

@@ -33,6 +33,13 @@ Link="nav-user"
         }
     }
 
+    // 1b) sidebar-layout polish (Azure/Gray header band + nav accent); preset-agnostic
+    $layout = "$webroot/layout.css";
+    if (file_exists($layout)) {
+        $v = filemtime($layout);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/layout.css?v=$v\">\n";
+    }
+
     // 2) icon set (replaces Unraid's UI glyphs; loaded after the preset)
     $iconset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['ICONSET'] ?? 'default');
     if ($iconset !== '' && $iconset !== 'default') {

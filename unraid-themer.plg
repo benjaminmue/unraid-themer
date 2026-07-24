@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24y">
+  <!ENTITY version   "2026.07.24z">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24z
+- Sidebar polish (Azure / Gray): the top header band now matches the content
+  background (was a lighter gray), and the active/hover nav item uses a subtle
+  preset-aware accent (flat tint + left accent bar) instead of the stock loud
+  red-orange gradient. Preset-agnostic layout.css, no-op on top-nav layouts.
+
 ## 2026.07.24y
 - Sidebar layouts (Azure / Gray) supported: the base pairing now keeps your
   layout family — on Azure/Gray a dark preset pairs to Gray and a light one to
@@ -926,6 +932,13 @@ Link="nav-user"
         }
     }
 
+    // 1b) sidebar-layout polish (Azure/Gray header band + nav accent); preset-agnostic
+    $layout = "$webroot/layout.css";
+    if (file_exists($layout)) {
+        $v = filemtime($layout);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/layout.css?v=$v\">\n";
+    }
+
     // 2) icon set (replaces Unraid's UI glyphs; loaded after the preset)
     $iconset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['ICONSET'] ?? 'default');
     if ($iconset !== '' && $iconset !== 'default') {
@@ -968,6 +981,44 @@ Link="nav-user"
 <![CDATA[SERVICE="disabled"
 PRESET="bebamu"
 ICONSET="default"
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/layout.css">
+<INLINE>
+<![CDATA[/* Unraid Themer — sidebar-layout polish (Azure / Gray).
+   Preset-agnostic: it only reads CSS variables the active preset already sets,
+   so it adapts to whatever preset is selected. Scoped to the sidebar bases, so
+   it is a no-op on the White / Black top-nav layouts. */
+
+/* 1) Header band: Azure/Gray default it to a lighter --gray-100; align it with
+      the content background so the top bar matches the rest of the page. */
+html.Theme--azure,
+html.Theme--gray {
+  --header-background-color: var(--background-color);
+}
+
+/* 2) Active + hover nav item: replace Unraid's loud red->orange gradient with a
+      subtle, preset-aware accent — a flat tint plus a left accent bar in the
+      preset's brand color. Higher specificity (#menu) wins over the stock rule. */
+html.Theme--azure #menu .nav-item.active,
+html.Theme--azure #menu .nav-item.active a,
+html.Theme--gray  #menu .nav-item.active,
+html.Theme--gray  #menu .nav-item.active a {
+  background: var(--mild-background-color) !important;
+  color: var(--text-color) !important;
+  box-shadow: inset 3px 0 0 0 var(--brand-red, var(--brand-orange));
+}
+
+html.Theme--azure #menu .nav-item:hover,
+html.Theme--azure #menu .nav-item:hover a,
+html.Theme--gray  #menu .nav-item:hover,
+html.Theme--gray  #menu .nav-item:hover a {
+  background: var(--mild-background-color) !important;
+  color: var(--text-color) !important;
+  border-bottom-color: var(--brand-red, var(--brand-orange)) !important;
+}
 ]]>
 </INLINE>
 </FILE>
