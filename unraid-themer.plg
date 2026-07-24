@@ -120,11 +120,11 @@
   SVG URL or pasted SVG for anything custom.
 
 ## 2026.07.24r
-- Custom Icons is now its own entry under Settings > Utilities ("Themer Icons")
+- Custom Icons is now its own entry under Settings &gt; Utilities ("Themer Icons")
   — the sub-tab under the main page did not render. The two pages cross-link.
 
 ## 2026.07.24q
-- Custom Icons: new sub-page (Settings > Utilities > Unraid Themer > Custom
+- Custom Icons: new sub-page (Settings &gt; Utilities &gt; Unraid Themer &gt; Custom
   Icons) listing every themeable icon slot with its reference icon and a live
   preview. Assign a custom icon per slot — a bundled Lucide name, a raw https
   SVG URL, or pasted SVG markup. Inputs are validated (no scripts, event

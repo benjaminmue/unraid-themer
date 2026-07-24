@@ -318,7 +318,11 @@ def build():
         f'min="{META["min"]}" icon="{META["icon"]}">'
     )
     parts.append("")
-    parts.append("<CHANGES>\n" + CHANGES.strip() + "\n</CHANGES>")
+    # CHANGES is plain text inside an XML element (not CDATA), so escape XML
+    # metacharacters — otherwise a literal &, < or > breaks the .plg.
+    changes_xml = (CHANGES.strip().replace("&", "&amp;")
+                   .replace("<", "&lt;").replace(">", "&gt;"))
+    parts.append("<CHANGES>\n" + changes_xml + "\n</CHANGES>")
     parts.append("")
 
     # 1) prepare dirs
