@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24m">
+  <!ENTITY version   "2026.07.24n">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24n
+- Icon set (v1): optional "Lucide" set swaps Unraid's UI glyphs (docker, cpu,
+  disks, fan, ...) for open-source line icons that tint with the theme, via
+  CSS mask. Pick it under "Icon set"; "Default" keeps Unraid's icons.
+
 ## 2026.07.24m
 - Only bebamu is now built-in; the other default themes are seeded to flash on
   first install, so they can be uninstalled from the store like any added theme
@@ -178,8 +183,10 @@ if ($_POST && isset($_POST['SAVE_CONFIG'])) {
     $service = ($_POST['SERVICE'] ?? "disabled") === "enabled" ? "enabled" : "disabled";
     $preset  = preg_replace('/[^A-Za-z0-9._-]/', '', $_POST['PRESET'] ?? 'bebamu');
     if ($preset === '') $preset = 'none';
+    $iconset = preg_replace('/[^A-Za-z0-9._-]/', '', $_POST['ICONSET'] ?? 'default');
+    if ($iconset === '') $iconset = 'default';
     @mkdir($flash, 0755, true);
-    file_put_contents($cfg_path, "SERVICE=\"$service\"\nPRESET=\"$preset\"\n");
+    file_put_contents($cfg_path, "SERVICE=\"$service\"\nPRESET=\"$preset\"\nICONSET=\"$iconset\"\n");
 
     if (isset($_POST['custom_css'])) {
         // normalise newlines, store on flash, mirror to webroot
@@ -239,7 +246,8 @@ if ($_POST && isset($_POST['remove_preset'])) {
         $cur = parse_plugin_cfg($name);
         if (($cur['PRESET'] ?? '') === $r) {
             $svc = $cur['SERVICE'] ?? 'disabled';
-            file_put_contents($cfg_path, "SERVICE=\"$svc\"\nPRESET=\"bebamu\"\n");
+            $ico = $cur['ICONSET'] ?? 'default';
+            file_put_contents($cfg_path, "SERVICE=\"$svc\"\nPRESET=\"bebamu\"\nICONSET=\"$ico\"\n");
         }
         $msg = "Removed \"$r\".";
     }
@@ -251,10 +259,15 @@ if (!file_exists($custom_flash)) {
     file_put_contents($custom_flash, "/* Your custom CSS overrides — loaded on top of the selected preset. */\n");
     @copy($custom_flash, $custom_web);
 }
-$settings   = parse_plugin_cfg($name);
-$service    = $settings['SERVICE'] ?? "disabled";
-$preset_sel = $settings['PRESET']  ?? "bebamu";
-$custom_css = file_exists($custom_flash) ? file_get_contents($custom_flash) : "";
+$settings    = parse_plugin_cfg($name);
+$service     = $settings['SERVICE'] ?? "disabled";
+$preset_sel  = $settings['PRESET']  ?? "bebamu";
+$iconset_sel = $settings['ICONSET'] ?? "default";
+$custom_css  = file_exists($custom_flash) ? file_get_contents($custom_flash) : "";
+
+// available icon sets (default + any bundled icons/*.css)
+$iconsets = ['default'];
+foreach (glob("$webroot/icons/*.css") as $ic) $iconsets[] = basename($ic, '.css');
 
 // discover presets shipped in the webroot
 $presets = [];
@@ -366,6 +379,14 @@ Theme preset:
   </select>
   <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). (Azure / Gray sidebar layouts are only partially themed for now.)</span>
 
+Icon set:
+: <select name="ICONSET" size="1">
+    <?php foreach ($iconsets as $is): ?>
+    <?= mk_option($iconset_sel, $is, ucfirst($is)) ?>
+    <?php endforeach; ?>
+  </select>
+  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. <strong>Lucide</strong> is a clean open-source (MIT) line set; <strong>Default</strong> keeps Unraid's own icons.</span>
+
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
   <span>Optional. Loaded <em>after</em> the preset, so these rules win. Use Unraid CSS variables, e.g. <code>:root { --background-color:#101010; }</code>.</span>
@@ -435,7 +456,17 @@ Link="nav-user"
         }
     }
 
-    // 2) user custom overrides (loaded AFTER the preset so they win)
+    // 2) icon set (replaces Unraid's UI glyphs; loaded after the preset)
+    $iconset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['ICONSET'] ?? 'default');
+    if ($iconset !== '' && $iconset !== 'default') {
+        $icss = "$webroot/icons/$iconset.css";
+        if (file_exists($icss)) {
+            $v = filemtime($icss);
+            echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/icons/$iconset.css?v=$v\">\n";
+        }
+    }
+
+    // 3) user custom overrides (loaded AFTER the preset so they win)
     $override = "$webroot/custom.css";
     if (file_exists($override) && trim(file_get_contents($override)) !== '') {
         $v = filemtime($override);
@@ -458,6 +489,7 @@ Link="nav-user"
 <INLINE>
 <![CDATA[SERVICE="disabled"
 PRESET="bebamu"
+ICONSET="default"
 ]]>
 </INLINE>
 </FILE>
@@ -1881,6 +1913,511 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
 }
 
 /*! themer-base: white */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/lucide.css">
+<INLINE>
+<![CDATA[/* Unraid Themer icon set: Lucide (MIT) — replaces Unraid's UI glyphs via CSS mask.
+   Auto-tints with the theme text color (background: currentColor). */
+
+.icon-performance::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/gauge.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/gauge.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-motherboard::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circuit-board.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circuit-board.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-cpu::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/cpu.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/cpu.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ram::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/memory-stick.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/memory-stick.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ethernet::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/ethernet-port.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/ethernet-port.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ups::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/battery-charging.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/battery-charging.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-fan::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/fan.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/fan.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-docker::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/container.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/container.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-virtualization::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-folder::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/folder.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/folder.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-users::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/users.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/users.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-user::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/user.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/user.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disks::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disk::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disc::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/disc.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/disc.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-health::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/activity.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/activity.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-hardware::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/server.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/server.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/activity.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/battery-charging.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m11 7-3 5h4l-3 5" />
+  <path d="M14.856 6H16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.935" />
+  <path d="M22 14v-4" />
+  <path d="M5.14 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.936" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/bell.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+  <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/circuit-board.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="18" height="18" x="3" y="3" rx="2" />
+  <path d="M11 9h4a2 2 0 0 0 2-2V3" />
+  <circle cx="9" cy="9" r="2" />
+  <path d="M7 21v-4a2 2 0 0 1 2-2h4" />
+  <circle cx="15" cy="15" r="2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/container.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z" />
+  <path d="M10 21.9V14L2.1 9.1" />
+  <path d="m10 14 11.9-6.9" />
+  <path d="M14 19.8v-8.1" />
+  <path d="M18 17.5V9.4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/cpu.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 20v2" />
+  <path d="M12 2v2" />
+  <path d="M17 20v2" />
+  <path d="M17 2v2" />
+  <path d="M2 12h2" />
+  <path d="M2 17h2" />
+  <path d="M2 7h2" />
+  <path d="M20 12h2" />
+  <path d="M20 17h2" />
+  <path d="M20 7h2" />
+  <path d="M7 20v2" />
+  <path d="M7 2v2" />
+  <rect x="4" y="4" width="16" height="16" rx="2" />
+  <rect x="8" y="8" width="8" height="8" rx="1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/disc.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <circle cx="12" cy="12" r="2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/ethernet-port.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10 8v1" />
+  <path d="M14 8v1" />
+  <path d="M18 8v1" />
+  <path d="M19 17a2 2 0 00-1.765 1.059l-.47.882A2 2 0 0115 20H9a2 2 0 01-1.765-1.059l-.47-.882A2 2 0 005 17H4a2 2 0 01-2-2V6a2 2 0 012-2h16a2 2 0 012 2v9a2 2 0 01-2 2z" />
+  <path d="M6 8v1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/fan.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z" />
+  <path d="M12 12v.01" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/folder.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/gauge.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m12 14 4-4" />
+  <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/hard-drive.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10 16h.01" />
+  <path d="M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+  <path d="M21.946 12.013H2.054" />
+  <path d="M6 16h.01" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/memory-stick.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 12v-2" />
+  <path d="M12 18v-2" />
+  <path d="M16 12v-2" />
+  <path d="M16 18v-2" />
+  <path d="M2 11h1.5" />
+  <path d="M20 18v-2" />
+  <path d="M20.5 11H22" />
+  <path d="M4 18v-2" />
+  <path d="M8 12v-2" />
+  <path d="M8 18v-2" />
+  <rect x="2" y="6" width="20" height="10" rx="2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/monitor.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="20" height="14" x="2" y="3" rx="2" />
+  <line x1="8" x2="16" y1="21" y2="21" />
+  <line x1="12" x2="12" y1="17" y2="21" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/server.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="20" height="8" x="2" y="2" rx="2" ry="2" />
+  <rect width="20" height="8" x="2" y="14" rx="2" ry="2" />
+  <line x1="6" x2="6.01" y1="6" y2="6" />
+  <line x1="6" x2="6.01" y1="18" y2="18" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/user.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+  <circle cx="12" cy="7" r="4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/users.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+  <path d="M16 3.128a4 4 0 0 1 0 7.744" />
+  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+  <circle cx="9" cy="7" r="4" />
+</svg>
 ]]>
 </INLINE>
 </FILE>

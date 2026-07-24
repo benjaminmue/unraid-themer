@@ -33,7 +33,17 @@ Link="nav-user"
         }
     }
 
-    // 2) user custom overrides (loaded AFTER the preset so they win)
+    // 2) icon set (replaces Unraid's UI glyphs; loaded after the preset)
+    $iconset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['ICONSET'] ?? 'default');
+    if ($iconset !== '' && $iconset !== 'default') {
+        $icss = "$webroot/icons/$iconset.css";
+        if (file_exists($icss)) {
+            $v = filemtime($icss);
+            echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/icons/$iconset.css?v=$v\">\n";
+        }
+    }
+
+    // 3) user custom overrides (loaded AFTER the preset so they win)
     $override = "$webroot/custom.css";
     if (file_exists($override) && trim(file_get_contents($override)) !== '') {
         $v = filemtime($override);

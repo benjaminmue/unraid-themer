@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24m",
+    "version": "2026.07.24n",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24n
+- Icon set (v1): optional "Lucide" set swaps Unraid's UI glyphs (docker, cpu,
+  disks, fan, ...) for open-source line icons that tint with the theme, via
+  CSS mask. Pick it under "Icon set"; "Default" keeps Unraid's icons.
+
 ## 2026.07.24m
 - Only bebamu is now built-in; the other default themes are seeded to flash on
   first install, so they can be uninstalled from the store like any added theme

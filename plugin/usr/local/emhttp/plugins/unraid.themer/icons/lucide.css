@@ -1,0 +1,122 @@
+/* Unraid Themer icon set: Lucide (MIT) — replaces Unraid's UI glyphs via CSS mask.
+   Auto-tints with the theme text color (background: currentColor). */
+
+.icon-performance::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/gauge.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/gauge.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-motherboard::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circuit-board.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circuit-board.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-cpu::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/cpu.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/cpu.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ram::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/memory-stick.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/memory-stick.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ethernet::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/ethernet-port.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/ethernet-port.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ups::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/battery-charging.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/battery-charging.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-fan::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/fan.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/fan.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-docker::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/container.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/container.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-virtualization::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-folder::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/folder.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/folder.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-users::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/users.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/users.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-user::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/user.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/user.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disks::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disk::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disc::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/disc.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/disc.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-health::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/activity.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/activity.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-hardware::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/server.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/server.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
