@@ -80,7 +80,8 @@
 
 /* ---------------- DARK (Dynamix "Black") ----------------
    html.Theme--black gewinnt per Spezifität über :root. */
-html.Theme--black {
+html.Theme--black,
+html.Theme--gray {
   --text-color: var(--bb-chalk);
   --alt-text-color: rgba(240, 240, 240, 0.55);
   --link-text-color: var(--bb-signal);
@@ -208,7 +209,8 @@ table.dashboard tbody {
   --ring: var(--bb-signal);
   --accent: var(--bb-signal);
 }
-html.Theme--black {
+html.Theme--black,
+html.Theme--gray {
   --ui-bg: var(--bb-coal);
   --ui-bg-muted: #202020;
   --ui-bg-elevated: #242424;

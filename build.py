@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24x",
+    "version": "2026.07.24y",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24y
+- Sidebar layouts (Azure / Gray) supported: the base pairing now keeps your
+  layout family — on Azure/Gray a dark preset pairs to Gray and a light one to
+  Azure, instead of switching you to the top-nav Black/White. bebamu's dark
+  rules now also apply on the Gray base. (Azure/Gray share the same CSS
+  variables as White/Black, so preset colors already carry over.)
+
 ## 2026.07.24x
 - Custom Icons page: the per-row grid + upload buttons now show their glyphs
   (were blank on Unraid's button styling) — styled as subtle icon buttons.

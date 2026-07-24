@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24x">
+  <!ENTITY version   "2026.07.24y">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,13 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24y
+- Sidebar layouts (Azure / Gray) supported: the base pairing now keeps your
+  layout family — on Azure/Gray a dark preset pairs to Gray and a light one to
+  Azure, instead of switching you to the top-nav Black/White. bebamu's dark
+  rules now also apply on the Gray base. (Azure/Gray share the same CSS
+  variables as White/Black, so preset colors already carry over.)
+
 ## 2026.07.24x
 - Custom Icons page: the per-row grid + upload buttons now show their glyphs
   (were blank on Unraid's button styling) — styled as subtle icon buttons.
@@ -263,9 +270,16 @@ if ($_POST && isset($_POST['SAVE_CONFIG'])) {
     $sel_file = "$webroot/presets/$preset.css";
     if ($service === "enabled" && is_file($sel_file)
         && preg_match('/themer-base:\s*(black|white|azure|gray)/i', file_get_contents($sel_file), $m)) {
+        // The marker states the wanted MODE (dark = black/gray, light = white/azure).
+        // Keep the user's layout family: sidebar bases (azure/gray) pair within
+        // sidebar, top-nav bases (white/black) pair within top-nav — so a sidebar
+        // user isn't yanked into the top-nav layout just by picking a preset.
         $want = strtolower($m[1]);
+        $mode = in_array($want, ['black', 'gray']) ? 'dark' : 'light';
         $cur  = @parse_ini_file('/boot/config/plugins/dynamix/dynamix.cfg', true)['display']['theme'] ?? 'white';
-        if ($want !== $cur) $switch_base = $want;
+        $sidebar = in_array($cur, ['azure', 'gray']);
+        $target = $mode === 'dark' ? ($sidebar ? 'gray' : 'black') : ($sidebar ? 'azure' : 'white');
+        if ($target !== $cur) $switch_base = $target;
     }
 
     $msg = $switch_base
@@ -438,7 +452,7 @@ Theme preset:
     <?php endforeach; ?>
     <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
   </select>
-  <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). (Azure / Gray sidebar layouts are only partially themed for now.)</span>
+  <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). Sidebar layouts are supported too — if you're on <strong>Azure</strong>/<strong>Gray</strong>, the pairing stays in the sidebar layout (dark = Gray, light = Azure) instead of switching you to top-nav.</span>
 
 Icon set:
 : <select name="ICONSET" size="1">
@@ -7399,7 +7413,8 @@ unicode: "eb55"
 
 /* ---------------- DARK (Dynamix "Black") ----------------
    html.Theme--black gewinnt per Spezifität über :root. */
-html.Theme--black {
+html.Theme--black,
+html.Theme--gray {
   --text-color: var(--bb-chalk);
   --alt-text-color: rgba(240, 240, 240, 0.55);
   --link-text-color: var(--bb-signal);
@@ -7527,7 +7542,8 @@ table.dashboard tbody {
   --ring: var(--bb-signal);
   --accent: var(--bb-signal);
 }
-html.Theme--black {
+html.Theme--black,
+html.Theme--gray {
   --ui-bg: var(--bb-coal);
   --ui-bg-muted: #202020;
   --ui-bg-elevated: #242424;
