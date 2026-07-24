@@ -81,15 +81,36 @@
     }
   }
 
+  /* ---- 3. Dashboard CPU/Net charts -------------------------------------- *
+   * SmoothieChart draws to a <canvas> with JS-hardcoded colors (light grey grid,
+   * dark labels) — unreadable/harsh on dark themes and unreachable by CSS. Patch
+   * the global chart objects to a subtle, theme-neutral grid + themed labels.
+   */
+  function patchCharts() {
+    var ink = (getComputedStyle(document.documentElement)
+      .getPropertyValue("--text-color") || "").trim() || "#888";
+    ["cpuchart", "netchart"].forEach(function (n) {
+      var c = window[n];
+      if (c && c.options && c.options.grid) {
+        c.options.grid.strokeStyle = "rgba(128,128,128,0.18)";
+        c.options.grid.fillStyle = "transparent";
+        if (c.options.labels) c.options.labels.fillStyle = ink;
+      }
+    });
+  }
+
   /* ---- run + observe ----------------------------------------------------- */
   function run(root) {
     injectBadgeStyle();
     decorateUpdates(root);
     styleShadowHosts(root);
+    patchCharts();
   }
 
   function start() {
     run(document);
+    // Charts are created by the dashboard script after us → retry a few times.
+    [400, 1200, 3000].forEach(function (d) { setTimeout(patchCharts, d); });
     // Docker tile + web-components mount/re-render after load → observe.
     if (window.MutationObserver) {
       var obs = new MutationObserver(function (muts) {

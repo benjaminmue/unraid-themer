@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24",
+    "version": "2026.07.24a",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24a
+- Dark presets: fix light table rows, Community Apps cards and "white bars"
+  (remap Dynamix tablesorter + CA variables to the preset's own colors).
+- Dashboard CPU/Net charts: theme-neutral grid + themed labels (was harsh on dark).
+- Settings: guidance to use the Black base theme with dark presets.
+
 ## 2026.07.24
 - Initial scaffold.
 - Buttons-loader injection (enabled/disabled), preset dropdown, custom CSS overrides.

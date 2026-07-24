@@ -74,7 +74,7 @@ Theme preset:
     <?php endforeach; ?>
     <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
   </select>
-  <span>Applies on top of the active Dynamix theme. "bebamu" ships a Light + Dark pair (switch via Settings → Display → Dynamix color theme, White/Black).</span>
+  <span>Applies on top of the active Dynamix base theme. <strong>For dark presets (Nord, Dracula, Solarized, Monokai, Gruvbox) set the base theme to <a href="/Settings/DisplaySettings" target="_blank">Black</a></strong> — Unraid then serves dark tables, Community Apps and scrollbars, which the preset recolors. "bebamu" is a Light + Dark pair: White base = Light, Black base = Dark. (The Azure / Gray sidebar layouts are only partially themed for now.)</span>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>

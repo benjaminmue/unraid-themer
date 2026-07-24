@@ -228,3 +228,32 @@ html.Theme--black {
   --ring: var(--bb-signal);
   --accent: var(--bb-signal);
 }
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}

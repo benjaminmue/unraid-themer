@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24">
+  <!ENTITY version   "2026.07.24a">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24a
+- Dark presets: fix light table rows, Community Apps cards and "white bars"
+  (remap Dynamix tablesorter + CA variables to the preset's own colors).
+- Dashboard CPU/Net charts: theme-neutral grid + themed labels (was harsh on dark).
+- Settings: guidance to use the Black base theme with dark presets.
+
 ## 2026.07.24
 - Initial scaffold.
 - Buttons-loader injection (enabled/disabled), preset dropdown, custom CSS overrides.
@@ -127,7 +133,7 @@ Theme preset:
     <?php endforeach; ?>
     <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
   </select>
-  <span>Applies on top of the active Dynamix theme. "bebamu" ships a Light + Dark pair (switch via Settings → Display → Dynamix color theme, White/Black).</span>
+  <span>Applies on top of the active Dynamix base theme. <strong>For dark presets (Nord, Dracula, Solarized, Monokai, Gruvbox) set the base theme to <a href="/Settings/DisplaySettings" target="_blank">Black</a></strong> — Unraid then serves dark tables, Community Apps and scrollbars, which the preset recolors. "bebamu" is a Light + Dark pair: White base = Light, Black base = Dark. (The Azure / Gray sidebar layouts are only partially themed for now.)</span>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
@@ -295,15 +301,36 @@ PRESET="bebamu"
     }
   }
 
+  /* ---- 3. Dashboard CPU/Net charts -------------------------------------- *
+   * SmoothieChart draws to a <canvas> with JS-hardcoded colors (light grey grid,
+   * dark labels) — unreadable/harsh on dark themes and unreachable by CSS. Patch
+   * the global chart objects to a subtle, theme-neutral grid + themed labels.
+   */
+  function patchCharts() {
+    var ink = (getComputedStyle(document.documentElement)
+      .getPropertyValue("--text-color") || "").trim() || "#888";
+    ["cpuchart", "netchart"].forEach(function (n) {
+      var c = window[n];
+      if (c && c.options && c.options.grid) {
+        c.options.grid.strokeStyle = "rgba(128,128,128,0.18)";
+        c.options.grid.fillStyle = "transparent";
+        if (c.options.labels) c.options.labels.fillStyle = ink;
+      }
+    });
+  }
+
   /* ---- run + observe ----------------------------------------------------- */
   function run(root) {
     injectBadgeStyle();
     decorateUpdates(root);
     styleShadowHosts(root);
+    patchCharts();
   }
 
   function start() {
     run(document);
+    // Charts are created by the dashboard script after us → retry a few times.
+    [400, 1200, 3000].forEach(function (d) { setTimeout(patchCharts, d); });
     // Docker tile + web-components mount/re-render after load → observe.
     if (window.MutationObserver) {
       var obs = new MutationObserver(function (muts) {
@@ -557,6 +584,35 @@ html.Theme--black {
   --ring: var(--bb-signal);
   --accent: var(--bb-signal);
 }
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -700,6 +756,35 @@ table.dashboard tbody {
   background: var(--dracula-accent);
   margin-right: 9px;
   vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
 }
 ]]>
 </INLINE>
@@ -845,6 +930,35 @@ table.dashboard tbody {
   margin-right: 9px;
   vertical-align: -1px;
 }
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -988,6 +1102,35 @@ table.dashboard tbody {
   background: var(--monokai-accent);
   margin-right: 9px;
   vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
 }
 ]]>
 </INLINE>
@@ -1133,6 +1276,35 @@ table.dashboard tbody {
   margin-right: 9px;
   vertical-align: -1px;
 }
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -1276,6 +1448,35 @@ table.dashboard tbody {
   background: var(--solar-accent);
   margin-right: 9px;
   vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
 }
 ]]>
 </INLINE>
