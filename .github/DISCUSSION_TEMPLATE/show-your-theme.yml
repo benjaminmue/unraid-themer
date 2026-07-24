@@ -1,0 +1,36 @@
+title: "[Theme] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show off a theme you built or customized with Unraid Themer! Screenshots
+        very welcome. If it's polished, it may end up in the store — to submit it
+        there, open a **🎨 Submit a theme** issue instead.
+  - type: input
+    id: name
+    attributes:
+      label: Theme name
+      placeholder: "Midnight Teal"
+    validations:
+      required: true
+  - type: dropdown
+    id: base
+    attributes:
+      label: Base
+      options:
+        - dark (black / gray)
+        - light (white / azure)
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot(s)
+      description: Drag one or more images in here.
+    validations:
+      required: true
+  - type: textarea
+    id: css
+    attributes:
+      label: CSS or link (optional)
+      description: Paste your theme CSS or link to it, if you'd like to share it.
+      render: css
