@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25">
+  <!ENTITY version   "2026.07.25a">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,11 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
-## 2026.07.25
-- Same content as 24q (Custom Icons sub-page). Version bumped to a numeric
-  scheme: the old letter suffixes hit PHP version_compare(), where "p" ranks as
-  "patch-level" and outranks later letters like "q" — so 24q wrongly showed as
-  "up-to-date". Future builds increment numerically.
+## 2026.07.25a
+- Custom Icons is now its own entry under Settings > Utilities ("Themer Icons")
+  — the sub-tab under the main page did not render. The two pages cross-link.
+- Note: within one date, keep the letter early (a, b) — PHP version_compare()
+  treats "p"/"pl" as patch-level, so it outranks later letters. The date field
+  carries the ordering between days.
 
 ## 2026.07.24q
 - Custom Icons: new sub-page (Settings > Utilities > Unraid Themer > Custom
@@ -409,7 +410,7 @@ Icon set:
     <?= mk_option($iconset_sel, $is, ucfirst($is)) ?>
     <?php endforeach; ?>
   </select>
-  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. <strong>Lucide</strong> is a clean open-source (MIT) line set; <strong>Default</strong> keeps Unraid's own icons.</span>
+  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. <strong>Lucide</strong> is a clean open-source (MIT) line set; <strong>Default</strong> keeps Unraid's own icons. Fine-tune single icons on the <a href="/Settings/UnraidThemerIcons"><strong>Themer Icons</strong></a> page.</span>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
@@ -445,8 +446,8 @@ Added themes:
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/UnraidThemerIcons.page">
 <INLINE>
-<![CDATA[Menu="UnraidThemer"
-Title="Custom Icons"
+<![CDATA[Menu="Utilities"
+Title="Themer Icons"
 Icon="picture-o"
 ---
 <?php
@@ -654,6 +655,8 @@ function themer_prev($url, $title = '') {
 <?php if ($msg): ?>
 <span class="green"><?= htmlspecialchars($msg) ?></span>
 <?php endif; ?>
+
+<a href="/Settings/UnraidThemer">&larr; Back to Unraid Themer</a>
 
 Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
 A value can be a **bundled Lucide name** (type to autocomplete), a raw **https SVG URL**

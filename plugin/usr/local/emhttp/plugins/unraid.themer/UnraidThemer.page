@@ -265,7 +265,7 @@ Icon set:
     <?= mk_option($iconset_sel, $is, ucfirst($is)) ?>
     <?php endforeach; ?>
   </select>
-  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. <strong>Lucide</strong> is a clean open-source (MIT) line set; <strong>Default</strong> keeps Unraid's own icons.</span>
+  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. <strong>Lucide</strong> is a clean open-source (MIT) line set; <strong>Default</strong> keeps Unraid's own icons. Fine-tune single icons on the <a href="/Settings/UnraidThemerIcons"><strong>Themer Icons</strong></a> page.</span>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>

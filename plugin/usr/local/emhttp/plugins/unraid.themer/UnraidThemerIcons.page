@@ -1,5 +1,5 @@
-Menu="UnraidThemer"
-Title="Custom Icons"
+Menu="Utilities"
+Title="Themer Icons"
 Icon="picture-o"
 ---
 <?php
@@ -207,6 +207,8 @@ function themer_prev($url, $title = '') {
 <?php if ($msg): ?>
 <span class="green"><?= htmlspecialchars($msg) ?></span>
 <?php endif; ?>
+
+<a href="/Settings/UnraidThemer">&larr; Back to Unraid Themer</a>
 
 Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
 A value can be a **bundled Lucide name** (type to autocomplete), a raw **https SVG URL**

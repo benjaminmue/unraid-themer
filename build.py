@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25",
+    "version": "2026.07.25a",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,11 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
-## 2026.07.25
-- Same content as 24q (Custom Icons sub-page). Version bumped to a numeric
-  scheme: the old letter suffixes hit PHP version_compare(), where "p" ranks as
-  "patch-level" and outranks later letters like "q" — so 24q wrongly showed as
-  "up-to-date". Future builds increment numerically.
+## 2026.07.25a
+- Custom Icons is now its own entry under Settings > Utilities ("Themer Icons")
+  — the sub-tab under the main page did not render. The two pages cross-link.
+- Note: within one date, keep the letter early (a, b) — PHP version_compare()
+  treats "p"/"pl" as patch-level, so it outranks later letters. The date field
+  carries the ordering between days.
 
 ## 2026.07.24q
 - Custom Icons: new sub-page (Settings > Utilities > Unraid Themer > Custom
