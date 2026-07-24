@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24a",
+    "version": "2026.07.24b",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24b
+- CRITICAL: loader no longer leaks PHP globals ($name etc.) — this broke
+  navigation to Share / Disk / Device settings pages (they use a global $name).
+  The loader now runs inside an isolated closure.
+- Plugins page: removed the README heading that rendered the name oversized.
+
 ## 2026.07.24a
 - Dark presets: fix light table rows, Community Apps cards and "white bars"
   (remap Dynamix tablesorter + CA variables to the preset's own colors).
