@@ -129,32 +129,11 @@
       "description": "Green-on-black terminal. Wake up."
     },
     {
-      "name": "Rick and Morty",
-      "file": "rick-and-morty.css",
-      "author": "benjaminmue",
-      "base": "black",
-      "description": "Interdimensional portal green with lab cyan. Wubba lubba dub dub."
-    },
-    {
       "name": "Unraid Appreciation",
       "file": "unraid-appreciation.css",
       "author": "benjaminmue",
       "base": "black",
       "description": "A love letter to Lime Tech — Unraid orange to red on coal."
-    },
-    {
-      "name": "SpongeBob",
-      "file": "spongebob.css",
-      "author": "benjaminmue",
-      "base": "white",
-      "description": "Sunny sponge yellow, coral pink and ocean cyan. Bikini Bottom vibes."
-    },
-    {
-      "name": "Simpsons",
-      "file": "simpsons.css",
-      "author": "benjaminmue",
-      "base": "white",
-      "description": "Cartoon yellow with Duff red and Marge blue."
     }
   ]
 }

@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.2",
+    "version": "2026.07.25.3",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,10 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.3
+- Removed the SpongeBob icon set and the SpongeBob / Simpsons / Rick and Morty
+  store themes.
+
 ## 2026.07.25.2
 - New "SpongeBob" icon set — an under-the-sea joke set: Docker becomes a whale,
   the dashboard a pineapple, the fan a starfish, CPU a coral, users a jellyfish,

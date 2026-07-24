@@ -110,8 +110,6 @@ The bundled icon sets are open source, each under its own license:
 - **Lucide** (ISC), **Tabler** (MIT), **Phosphor** (MIT), **Heroicons** (MIT),
   **Iconoir** (MIT), **Bootstrap Icons** (MIT)
 - **Remix Icon**, **Carbon**, **Material Symbols** (Apache-2.0)
-- **SpongeBob** (under-the-sea joke set) uses icons from
-  [game-icons.net](https://game-icons.net) — **CC BY 3.0**
 
 The plugin's own code is MIT. Icon glyphs remain under their respective licenses.
 

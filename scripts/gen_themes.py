@@ -32,20 +32,10 @@ THEME_DATA = [
     ("Matrix", "matrix", "black", "#001a00", "255,255,255",
      ("#0b0f0b", "#0f160f", "#122012", "#63f763", "#3ea63e", "#1c3a1c", "#00ff41", "#b6ff00"),
      "Green-on-black terminal. Wake up."),
-    # ---- homage / fun ----
-    ("Rick and Morty", "rick-and-morty", "black", "#08140f", "255,255,255",
-     ("#0e1b16", "#12241d", "#163027", "#d7f5e3", "#8fc7a8", "#1f4536", "#97ce4c", "#24b0c9"),
-     "Interdimensional portal green with lab cyan. Wubba lubba dub dub."),
+    # ---- homage ----
     ("Unraid Appreciation", "unraid-appreciation", "black", "#1a1a1a", "255,255,255",
      ("#1a1a1a", "#212121", "#2a2a2a", "#f0f0f0", "#b0b0b0", "#333333", "#ff8c2f", "#e32929"),
      "A love letter to Lime Tech — Unraid orange to red on coal."),
-    # ---- light homage ----
-    ("SpongeBob", "spongebob", "white", "#3a3320", "0,0,0",
-     ("#eaf6ff", "#d9efff", "#fff6c2", "#3a3320", "#7a6f3f", "#bfe3f5", "#f2b705", "#ff5a8a"),
-     "Sunny sponge yellow, coral pink and ocean cyan. Bikini Bottom vibes."),
-    ("Simpsons", "simpsons", "white", "#ffffff", "0,0,0",
-     ("#fff8d6", "#fff1b0", "#fffbe6", "#2b2b2b", "#6b6b3a", "#e6d98a", "#d6001c", "#1a6fd6"),
-     "Cartoon yellow with Duff red and Marge blue."),
 ]
 
 TEMPLATE = """/* Unraid Themer preset: {name} — {description} */

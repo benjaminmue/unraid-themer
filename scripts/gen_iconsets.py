@@ -30,39 +30,11 @@ ICONIFY = {  # set name -> iconify prefix
     "bootstrap": "bi",
     "carbon":    "carbon",
     "material":  "material-symbols",
-    "spongebob": "game-icons",   # CC BY 3.0 — under-the-sea joke set
 }
 
 # Sets with a bespoke, non-conventional name map (no stem-default; unmapped
-# slots fall back to Lucide). SpongeBob = under-the-sea motifs from game-icons.
-SPECIAL_NAMES = {
-    "spongebob": {
-        "gauge":          ["pineapple"],          # dashboard / tower = his house
-        "circuit-board":  ["bubbles", "soap"],
-        "cpu":            ["coral"],
-        "memory-stick":   ["seahorse"],
-        "ethernet-port":  ["anchor"],
-        "fan":            ["sea-star"],           # Patrick
-        "container":      ["whale-tail"],         # Docker whale, under the sea
-        "monitor":        ["diving-helmet"],
-        "folder":         ["locked-chest", "treasure-map"],
-        "users":          ["jellyfish"],
-        "user":           ["seahorse"],
-        "hard-drive":     ["open-treasure-chest", "locked-chest"],
-        "disc":           ["oyster-pearl"],
-        "activity":       ["health-normal"],
-        "server":         ["sperm-whale"],
-        "globe":          ["beach-ball"],
-        "trash-2":        ["trash-can"],
-        "menu":           ["big-wave"],
-        "life-buoy":      ["life-jacket", "life-buoy"],
-        "circle-help":    ["help"],
-        "download":       ["fishing-net"],
-        "wrench":         ["fishing-hook"],
-        "terminal":       ["submarine"],
-        "settings":       ["nautilus-shell"],
-    },
-}
+# slots fall back to Lucide).
+SPECIAL_NAMES = {}
 
 # lucide stem -> name in the GitHub sets (tabler, phosphor, heroicons)
 GH_NAMES = {
