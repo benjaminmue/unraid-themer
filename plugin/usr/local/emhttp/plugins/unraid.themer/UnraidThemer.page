@@ -156,6 +156,47 @@ sort($user_presets);
 $store_index = null;
 $raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
 if ($raw) $store_index = @json_decode($raw, true);
+
+// Build the "Added themes" and "Theme store" blocks as HTML strings, echoed
+// inline in the form so Unraid's markdown parser keeps them in the value column.
+$btn = 'display:inline-block; width:auto; padding:2px 12px;';
+
+$addedHtml = "";
+if ($user_presets) {
+    foreach ($user_presets as $up) {
+        $lbl = htmlspecialchars(ucwords(str_replace(['-', '_'], ' ', $up)));
+        $val = htmlspecialchars($up);
+        $addedHtml .= "<button type='submit' name='remove_preset' value='$val' onclick='return confirm(\"Remove theme &quot;$val&quot;?\")' style='$btn margin:0 6px 6px 0;'>$lbl &times;</button>";
+    }
+    $addedHtml .= "<br><span>Themes you imported or got from the store. Click to remove. Built-in themes can't be removed.</span>";
+} else {
+    $addedHtml = "<span>None yet. Themes you import or get from the store appear here and can be removed; built-in themes can't.</span>";
+}
+
+if (!empty($store_index['themes'])) {
+    $rows = "";
+    foreach ($store_index['themes'] as $t) {
+        $stem = pathinfo($t['file'], PATHINFO_FILENAME);
+        $ins  = isset($have_preset[$stem]);
+        $base = strtolower($t['base'] ?? '');
+        $L = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
+        $D = in_array($base, ['black', 'gray', 'any']) ? '1' : '0';
+        $dn = htmlspecialchars(strtolower($t['name'] . ' ' . $t['description']));
+        $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:flex; align-items:baseline; gap:10px; padding:6px 8px; border-top:1px solid rgba(128,128,128,0.18);'>"
+            . "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "'" . ($ins ? " disabled" : "") . " style='$btn min-width:78px;'>" . ($ins ? "Installed" : "Get") . "</button>"
+            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em></span>"
+            . "</div>";
+    }
+    $n = count($store_index['themes']);
+    $storeHtml = "<div style='max-width:660px;'>"
+        . "<div style='display:flex; gap:8px; margin-bottom:8px; align-items:center;'><input type='text' id='ut-store-search' placeholder='Search themes…' autocomplete='off' onkeyup='utStoreFilter()' style='flex:1; min-width:0;'><select id='ut-store-filter' onchange='utStoreFilter()' style='width:auto;'><option value='all'>All</option><option value='light'>Light</option><option value='dark'>Dark</option></select></div>"
+        . "<div id='ut-store-list' style='max-height:320px; overflow-y:auto; border:1px solid rgba(128,128,128,0.25);'>$rows</div>"
+        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/main/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving.</span>"
+        . "</div>"
+        . "<script>function utStoreFilter(){var q=(document.getElementById('ut-store-search').value||'').toLowerCase().trim();var f=document.getElementById('ut-store-filter').value;var rows=document.querySelectorAll('#ut-store-list .ut-store-row');for(var i=0;i<rows.length;i++){var r=rows[i];var okq=!q||r.getAttribute('data-name').indexOf(q)>=0;var okf=f=='all'||(f=='light'&&r.getAttribute('data-light')=='1')||(f=='dark'&&r.getAttribute('data-dark')=='1');r.style.display=(okq&&okf)?'':'none';}}</script>";
+} else {
+    $storeHtml = "<span>Store unavailable (no internet, or GitHub unreachable). The URL import above still works.</span>";
+}
 ?>
 
 <div markdown="1">
@@ -197,13 +238,7 @@ Theme preset:
   <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). (Azure / Gray sidebar layouts are only partially themed for now.)</span>
 
 Added themes:
-: <?php if ($user_presets): foreach ($user_presets as $up): ?>
-  <button type="submit" name="remove_preset" value="<?= htmlspecialchars($up) ?>" onclick="return confirm('Remove theme \'<?= htmlspecialchars($up) ?>\'?')" style="margin:0 6px 5px 0;"><?= htmlspecialchars(ucwords(str_replace(['-','_'], ' ', $up))) ?> &times;</button>
-  <?php endforeach; ?>
-  <span>Themes you imported or got from the store. Click to remove. Built-in themes can't be removed.</span>
-  <?php else: ?>
-  <span>None yet. Themes you import or get from the store appear here and can be removed; built-in themes can't.</span>
-  <?php endif; ?>
+: <?= $addedHtml ?>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
@@ -215,49 +250,7 @@ Import a theme (URL):
   <span>Paste a raw <code>.css</code> URL (e.g. from GitHub) to add a community theme. It is downloaded, <strong>validated</strong> (scripts, <code>javascript:</code>, <code>@import</code> and external <code>url()</code> are rejected) and added to the preset dropdown.</span>
 
 Theme store:
-: <?php if (!empty($store_index['themes'])): ?>
-  <div style="max-width:660px;">
-    <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
-      <input type="text" id="ut-store-search" placeholder="Search themes…" autocomplete="off" onkeyup="utStoreFilter()" style="flex:1; min-width:0;">
-      <select id="ut-store-filter" onchange="utStoreFilter()" style="width:auto;">
-        <option value="all">All</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-    </div>
-    <div id="ut-store-list" style="max-height:320px; overflow-y:auto; border:1px solid rgba(128,128,128,0.25);">
-    <?php foreach ($store_index['themes'] as $t):
-        $stem = pathinfo($t['file'], PATHINFO_FILENAME);
-        $installed = isset($have_preset[$stem]);
-        $base = strtolower($t['base'] ?? '');
-        $isLight = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
-        $isDark  = in_array($base, ['black', 'gray', 'any']) ? '1' : '0'; ?>
-      <div class="ut-store-row" data-name="<?= htmlspecialchars(strtolower($t['name'] . ' ' . $t['description'])) ?>" data-light="<?= $isLight ?>" data-dark="<?= $isDark ?>" style="display:flex; align-items:baseline; gap:10px; padding:6px 8px; border-top:1px solid rgba(128,128,128,0.18);">
-        <button type="submit" name="store_get" value="<?= htmlspecialchars($t['file']) ?>" <?= $installed ? 'disabled' : '' ?> style="min-width:78px;"><?= $installed ? 'Installed' : 'Get' ?></button>
-        <span><strong><?= htmlspecialchars($t['name']) ?></strong> — <?= htmlspecialchars($t['description']) ?> <em style="opacity:.6;">(<?= htmlspecialchars($t['base']) ?> · <?= htmlspecialchars($t['author']) ?>)</em></span>
-      </div>
-    <?php endforeach; ?>
-    </div>
-    <span><?= count($store_index['themes']) ?> community themes from the <a href="https://github.com/benjaminmue/unraid-themer/tree/main/themes" target="_blank">registry</a> — downloaded on demand and validated before saving.</span>
-  </div>
-  <script>
-  function utStoreFilter() {
-    var q = (document.getElementById('ut-store-search').value || '').toLowerCase().trim();
-    var f = document.getElementById('ut-store-filter').value;
-    var rows = document.querySelectorAll('#ut-store-list .ut-store-row');
-    for (var i = 0; i < rows.length; i++) {
-      var r = rows[i];
-      var okq = !q || r.getAttribute('data-name').indexOf(q) >= 0;
-      var okf = f === 'all'
-        || (f === 'light' && r.getAttribute('data-light') === '1')
-        || (f === 'dark'  && r.getAttribute('data-dark')  === '1');
-      r.style.display = (okq && okf) ? '' : 'none';
-    }
-  }
-  </script>
-  <?php else: ?>
-  <span>Store unavailable (no internet, or GitHub unreachable). The URL import above still works.</span>
-  <?php endif; ?>
+: <?= $storeHtml ?>
 
 &nbsp;
 : <span class="buttons-spaced">
