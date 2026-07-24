@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.6",
+    "version": "2026.07.25.7",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.7
+- Fix the theme builder not initialising from the current theme (and live preview
+  not working): its inline script was being mangled by the page's markdown pass.
+  Moved it to an external file (js/themer-build.js).
+
 ## 2026.07.25.6
 - Theme builder: the color pickers now start from your CURRENT running theme, so
   you tweak from where you are instead of a generic default. Added an optional
