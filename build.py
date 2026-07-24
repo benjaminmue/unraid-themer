@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24r",
+    "version": "2026.07.24s",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24s
+- Custom Icons: pick icons from a visual, searchable grid (like an emoji picker,
+  but the actual Lucide icons) instead of a text-only dropdown. Each row has a
+  "pick" button that opens the grid; the text field still accepts a name, https
+  SVG URL or pasted SVG for anything custom.
+
 ## 2026.07.24r
 - Custom Icons is now its own entry under Settings > Utilities ("Themer Icons")
   — the sub-tab under the main page did not render. The two pages cross-link.

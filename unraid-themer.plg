@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24r">
+  <!ENTITY version   "2026.07.24s">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24s
+- Custom Icons: pick icons from a visual, searchable grid (like an emoji picker,
+  but the actual Lucide icons) instead of a text-only dropdown. Each row has a
+  "pick" button that opens the grid; the text field still accepts a name, https
+  SVG URL or pasted SVG for anything custom.
+
 ## 2026.07.24r
 - Custom Icons is now its own entry under Settings > Utilities ("Themer Icons")
   — the sub-tab under the main page did not render. The two pages cross-link.
@@ -644,8 +650,29 @@ function themer_prev($url, $title = '') {
   #ut-icons th, #ut-icons td { padding: 6px 10px; border-top: 1px solid rgba(128,128,128,0.18); text-align: left; vertical-align: middle; }
   #ut-icons th { border-top: none; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
   #ut-icons tr.ut-cat td { padding-top: 16px; font-weight: 700; opacity: .85; border-top: none; }
-  #ut-icons input[type=text] { width: 100%; min-width: 220px; }
+  #ut-icons input[type=text] { width: 100%; min-width: 200px; }
   #ut-icons .ut-desc { white-space: nowrap; }
+  #ut-icons .ut-cell { display: flex; gap: 6px; align-items: center; }
+  #ut-icons .ut-pick { flex: none; width: 30px; height: 28px; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  #ut-icons .ut-pick span { width: 16px; height: 16px; background-color: currentColor;
+    -webkit-mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; }
+
+  /* visual icon picker (modal grid) */
+  #ut-picker-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9998; }
+  #ut-picker { display: none; position: fixed; z-index: 9999; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: min(560px, 92vw); max-height: 78vh; background: var(--background-color, #1c1f26); color: var(--text-color, #e6e6e6);
+    border: 1px solid rgba(128,128,128,0.4); border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.5); display: none; flex-direction: column; }
+  #ut-picker.open { display: flex; }
+  #ut-picker-head { display: flex; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid rgba(128,128,128,0.25); }
+  #ut-picker-head input { flex: 1; }
+  #ut-picker-head .ut-x { flex: none; cursor: pointer; padding: 4px 10px; }
+  #ut-picker-grid { overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+  .ut-pick-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; cursor: pointer;
+    background: transparent; border: 1px solid transparent; border-radius: 8px; color: inherit; }
+  .ut-pick-item:hover { border-color: rgba(128,128,128,0.4); background: rgba(128,128,128,0.12); }
+  .ut-pick-item span.ico { width: 24px; height: 24px; background-color: currentColor;
+    -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .ut-pick-item small { font-size: 10px; opacity: .7; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 </style>
 
 <div markdown="1">
@@ -684,10 +711,13 @@ and tinted with the theme color, so single-color line icons work best.
       <td class="ut-desc"><?= htmlspecialchars($label) ?></td>
       <td><?= themer_prev($ref_url, $def) ?></td>
       <td class="ut-own" data-key="<?= htmlspecialchars($key) ?>"><?= themer_prev($own_url, $src) ?></td>
-      <td><input type="text" name="ov_<?= htmlspecialchars($key) ?>" list="ut-bundled"
-                 value="<?= htmlspecialchars($src) ?>" spellcheck="false"
-                 placeholder="<?= htmlspecialchars($def) ?>"
-                 oninput="utIconPrev(this)" data-key="<?= htmlspecialchars($key) ?>"></td>
+      <td><div class="ut-cell">
+        <button type="button" class="ut-pick" title="Pick an icon" onclick="utOpenPicker('<?= htmlspecialchars($key) ?>')"><span></span></button>
+        <input type="text" name="ov_<?= htmlspecialchars($key) ?>" list="ut-bundled"
+               value="<?= htmlspecialchars($src) ?>" spellcheck="false"
+               placeholder="<?= htmlspecialchars($def) ?>"
+               oninput="utIconPrev(this)" data-key="<?= htmlspecialchars($key) ?>">
+      </div></td>
     </tr>
     <?php endforeach; ?>
   <?php endforeach; ?>
@@ -701,18 +731,39 @@ and tinted with the theme color, so single-color line icons work best.
 </p>
 </form>
 
+<!-- visual icon picker: a searchable grid of the bundled Lucide icons -->
+<div id="ut-picker-backdrop" onclick="utClosePicker()"></div>
+<div id="ut-picker" role="dialog" aria-label="Pick an icon">
+  <div id="ut-picker-head">
+    <input type="text" id="ut-picker-search" placeholder="Search icons…" autocomplete="off" spellcheck="false" oninput="utPickerFilter()">
+    <button type="button" class="ut-x" onclick="utClosePicker()">&times;</button>
+  </div>
+  <div id="ut-picker-grid">
+    <?php foreach ($bundled as $b): $bu = htmlspecialchars($b); ?>
+    <button type="button" class="ut-pick-item" data-name="<?= $bu ?>" title="<?= $bu ?>" onclick="utPick('<?= $bu ?>')">
+      <span class="ico" style="-webkit-mask-image:url('<?= $weburl ?>/icons/svg/<?= $bu ?>.svg');mask-image:url('<?= $weburl ?>/icons/svg/<?= $bu ?>.svg');"></span>
+      <small><?= $bu ?></small>
+    </button>
+    <?php endforeach; ?>
+  </div>
+</div>
+
 <script>
 // Live preview for bundled Lucide names (same-origin SVGs). URLs / <svg> markup are
 // previewed after Apply (server validates first).
 var UT_BUNDLED = <?= json_encode($bundled) ?>;
+var UT_WEBURL  = '<?= $weburl ?>';
+var UT_TARGET  = null;  // input being edited via the picker
+
 function utIconPrev(inp){
   var key = inp.getAttribute('data-key');
   var cell = document.querySelector('.ut-own[data-key="'+key+'"]');
   if(!cell) return;
   var span = cell.querySelector('span');
+  if(!span) return;
   var v = (inp.value||'').trim().toLowerCase();
   if(v && UT_BUNDLED.indexOf(v) >= 0){
-    var u = '<?= $weburl ?>/icons/svg/'+v+'.svg';
+    var u = UT_WEBURL+'/icons/svg/'+v+'.svg';
     span.style.webkitMask = 'url("'+u+'") center/contain no-repeat';
     span.style.mask = 'url("'+u+'") center/contain no-repeat';
     span.style.backgroundColor = 'currentColor';
@@ -720,6 +771,32 @@ function utIconPrev(inp){
     span.innerHTML = '';
   }
 }
+
+function utOpenPicker(key){
+  UT_TARGET = document.querySelector('input[data-key="'+key+'"]');
+  document.getElementById('ut-picker-backdrop').style.display = 'block';
+  document.getElementById('ut-picker').classList.add('open');
+  var s = document.getElementById('ut-picker-search');
+  s.value = ''; utPickerFilter(); s.focus();
+}
+function utClosePicker(){
+  document.getElementById('ut-picker-backdrop').style.display = 'none';
+  document.getElementById('ut-picker').classList.remove('open');
+  UT_TARGET = null;
+}
+function utPick(name){
+  if(UT_TARGET){ UT_TARGET.value = name; utIconPrev(UT_TARGET); }
+  utClosePicker();
+}
+function utPickerFilter(){
+  var q = (document.getElementById('ut-picker-search').value||'').toLowerCase().trim();
+  var items = document.querySelectorAll('#ut-picker-grid .ut-pick-item');
+  for(var i=0;i<items.length;i++){
+    var n = items[i].getAttribute('data-name');
+    items[i].style.display = (!q || n.indexOf(q) >= 0) ? '' : 'none';
+  }
+}
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') utClosePicker(); });
 </script>
 ]]>
 </INLINE>
