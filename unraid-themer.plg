@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25.8">
+  <!ENTITY version   "2026.07.25.9">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,10 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.25.9
+- Settings page tidy-up: narrower hex fields in the theme builder and a
+  left-aligned, less-centered layout (page-scoped, other pages unchanged).
+
 ## 2026.07.25.8
 - Docker "update available" badge: replace the (unreliable) native title with a
   proper styled hover tooltip, so hovering the ? actually explains it.
@@ -668,6 +672,8 @@ $(function () {
 </script>
 <?php endif; ?>
 
+<style>@media (min-width:769px){#displaybox .content dl{grid-template-columns:250px 1fr !important;gap:1rem 1.5rem !important;}#displaybox .content dt{text-align:left !important;}}#displaybox .content input.ut-hex{width:78px !important;max-width:78px !important;}</style>
+
 <form markdown="1" method="POST" action="/Settings/UnraidThemer">
 
 Enable Unraid Themer:
@@ -707,7 +713,7 @@ $cp = [
 ];
 ?>
 Theme builder (color picker):
-: <span style="display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; max-width:840px;"><?php foreach ($cp as [$k, $lbl, $def]): ?><label style="display:inline-flex; align-items:center; gap:6px;"><span style="min-width:78px; opacity:.85;"><?= $lbl ?></span><input type="color" id="cp_<?= $k ?>" value="<?= $def ?>" oninput="utSync('<?= $k ?>',this.value)" style="width:34px; height:26px; padding:0; border:1px solid #555;"><input type="text" name="c_<?= $k ?>" id="cx_<?= $k ?>" value="<?= $def ?>" size="9" spellcheck="false" oninput="utText('<?= $k ?>',this.value)"></label><?php endforeach; ?></span>
+: <span style="display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; max-width:840px;"><?php foreach ($cp as [$k, $lbl, $def]): ?><label style="display:inline-flex; align-items:center; gap:6px;"><span style="min-width:78px; opacity:.85;"><?= $lbl ?></span><input type="color" id="cp_<?= $k ?>" value="<?= $def ?>" oninput="utSync('<?= $k ?>',this.value)" style="width:34px; height:26px; padding:0; border:1px solid #555;"><input type="text" class="ut-hex" name="c_<?= $k ?>" id="cx_<?= $k ?>" value="<?= $def ?>" size="8" spellcheck="false" oninput="utText('<?= $k ?>',this.value)"></label><?php endforeach; ?></span>
   <span style="display:flex; gap:14px; align-items:center; margin-top:8px; flex-wrap:wrap;"><label>Mode <select name="c_base"><option value="black">Dark</option><option value="white">Light</option></select></label><label>Font <input type="text" name="c_font" list="ut-fonts" placeholder="theme default" size="24" spellcheck="false" oninput="utFont(this.value)"></label><label>Name <input type="text" name="c_name" value="my-theme" size="12" spellcheck="false"></label><input type="submit" name="BUILD_THEME" value="_(Build &amp; Apply)_"></span><datalist id="ut-fonts"><option value="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"><option value="ui-monospace, 'JetBrains Mono', Menlo, monospace"><option value="Georgia, 'Times New Roman', serif"><option value="Inter, system-ui, sans-serif"><option value="'Comic Sans MS', 'Chalkboard SE', cursive"></datalist>
   <span>Pick 8 colors — swatch or type <code>#rrggbb</code> / <code>rgb(r,g,b)</code>. Optional <strong>Font</strong> (leave empty to keep the theme default). Colors preview <em>live</em>; the pickers start from your <em>current</em> theme. <strong>Build &amp; Apply</strong> saves a preset (<code>Name</code>) and switches to it.</span>
   <script defer src="/plugins/unraid.themer/js/themer-build.js?v=<?= @filemtime("$webroot/js/themer-build.js") ?>"></script>
