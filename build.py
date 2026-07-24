@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.11",
+    "version": "2026.07.26",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26
+- Fix updates getting stuck: Unraid compares plugin versions as plain strings,
+  so 2026.07.25.10 / .11 sorted BEFORE .8 / .9 ('1' < '8') and were never
+  offered. Bumped to a date that always sorts newer; future versions stay
+  lexicographically increasing. Includes the bundled fonts (.11) and everything
+  since .8.
+
 ## 2026.07.25.11
 - Bundled webfonts: Inter, Roboto, Source Sans 3, JetBrains Mono and Nunito
   (open license, served locally). Pick one in the theme builder Font field and

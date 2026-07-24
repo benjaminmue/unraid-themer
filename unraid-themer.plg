@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25.11">
+  <!ENTITY version   "2026.07.26">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,13 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.26
+- Fix updates getting stuck: Unraid compares plugin versions as plain strings,
+  so 2026.07.25.10 / .11 sorted BEFORE .8 / .9 ('1' &lt; '8') and were never
+  offered. Bumped to a date that always sorts newer; future versions stay
+  lexicographically increasing. Includes the bundled fonts (.11) and everything
+  since .8.
+
 ## 2026.07.25.11
 - Bundled webfonts: Inter, Roboto, Source Sans 3, JetBrains Mono and Nunito
   (open license, served locally). Pick one in the theme builder Font field and
@@ -1299,7 +1306,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.07.25.11
+<![CDATA[2026.07.26
 ]]>
 </INLINE>
 </FILE>
