@@ -129,17 +129,23 @@
     } catch (e) { return null; }
   }
 
-  function loadSvg(name, set, cb) {
+  var _svgPending = {};               // name -> [callbacks] while a fetch is in flight
+  function loadSvg(name, cb) {
     if (name in _svgCache) { cb(_svgCache[name]); return; }
+    if (_svgPending[name]) { _svgPending[name].push(cb); return; }  // dedup concurrent callers
     if (typeof fetch !== "function") { cb(null); return; }
-    var base = "/plugins/unraid.themer/icons/svg/";
-    var urls = set ? [base + set + "/" + name + ".svg", base + name + ".svg"] : [base + name + ".svg"];
-    (function tryNext(i) {
-      if (i >= urls.length) { _svgCache[name] = null; cb(null); return; }
-      fetch(urls[i]).then(function (r) { return r.ok ? r.text() : Promise.reject(0); })
-        .then(function (t) { if (t.indexOf("<svg") < 0) throw 0; _svgCache[name] = t; cb(t); })
-        .catch(function () { tryNext(i + 1); });
-    })(0);
+    _svgPending[name] = [cb];
+    function done(val) {
+      _svgCache[name] = val;
+      var cbs = _svgPending[name] || []; delete _svgPending[name];
+      for (var i = 0; i < cbs.length; i++) cbs[i](val);
+    }
+    // Header icons (bell/menu) live only in the flat Lucide folder, so fetch
+    // there directly — never a per-set subfolder (that 404s and spams the log).
+    fetch("/plugins/unraid.themer/icons/svg/" + name + ".svg")
+      .then(function (r) { return r.ok ? r.text() : Promise.reject(0); })
+      .then(function (t) { done(t.indexOf("<svg") >= 0 ? t : null); })
+      .catch(function () { done(null); });
   }
 
   function collectShadowRoots(root, acc, depth) {
@@ -202,7 +208,7 @@
         for (var k = 0; k < HEADER_MAP.length; k++) {
           if (HEADER_MAP[k][0].test(n)) {
             (function (target, icon) {
-              loadSvg(icon, set, function (m) { if (m && swapIcon(target, m)) markHeaderHit(icon); });
+              loadSvg(icon, function (m) { if (m && swapIcon(target, m)) markHeaderHit(icon); });
             })(el, HEADER_MAP[k][1]);
             break;
           }

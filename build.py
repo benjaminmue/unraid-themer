@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24ab",
+    "version": "2026.07.25",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,15 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25
+- Fix updates not being offered: PHP version_compare() treats letter suffixes
+  like "z"/"aa"/"ab" as equal, so the update check never saw them as newer.
+  Switched to a numeric date scheme (2026.07.25, then .1, .2, ...) that always
+  compares correctly. Contains everything from 24aa/24ab.
+- Fix nginx error-log spam: the header bell/menu swap tried a non-existent
+  per-set path (icons/svg/lucide/bell.svg) before falling back; it now loads the
+  flat icon directly, with in-flight de-duplication.
+
 ## 2026.07.24ab
 - Five more bundled icon sets: Iconoir, Remix, Bootstrap, Carbon and Material
   Symbols (fetched via the Iconify API in the generator, missing glyphs fall
