@@ -134,13 +134,6 @@
       "author": "benjaminmue",
       "base": "black",
       "description": "A love letter to Lime Tech — Unraid orange to red on coal."
-    },
-    {
-      "name": "Tester",
-      "file": "tester.css",
-      "author": "benjaminmue",
-      "base": "black",
-      "description": "tester template"
     }
   ]
 }
