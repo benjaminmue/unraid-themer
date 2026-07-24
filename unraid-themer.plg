@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25">
+  <!ENTITY version   "2026.07.25.1">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.25.1
+- Fix the Custom Icons page showing its JavaScript as raw text: Unraid runs the
+  page through markdown, which split the multi-line inline script on its blank
+  lines. Moved the page JS to an external file (js/themer-icons.js); config is
+  passed via data-* attributes. The icon grid picker works again.
+
 ## 2026.07.25
 - Fix updates not being offered: PHP version_compare() treats letter suffixes
   like "z"/"aa"/"ab" as equal, so the update check never saw them as newer.
@@ -867,7 +873,7 @@ and tinted with the theme color, so single-color line icons work best.
 
 <!-- visual icon picker: a searchable grid of the bundled Lucide icons -->
 <div id="ut-picker-backdrop" onclick="utClosePicker()"></div>
-<div id="ut-picker" role="dialog" aria-label="Pick an icon">
+<div id="ut-picker" role="dialog" aria-label="Pick an icon" data-weburl="<?= htmlspecialchars($weburl) ?>" data-values="<?= htmlspecialchars(json_encode($all_values)) ?>">
   <div id="ut-picker-head">
     <input type="text" id="ut-picker-search" placeholder="Search icons…" autocomplete="off" spellcheck="false" oninput="utPickerFilter()">
     <button type="button" class="ut-x" onclick="utClosePicker()">&times;</button>
@@ -885,83 +891,7 @@ and tinted with the theme color, so single-color line icons work best.
   </div>
 </div>
 
-<script>
-// Live preview for bundled Lucide names (same-origin SVGs). URLs / <svg> markup are
-// previewed after Apply (server validates first).
-var UT_BUNDLED = <?= json_encode($all_values) ?>;
-var UT_WEBURL  = '<?= $weburl ?>';
-var UT_TARGET  = null;  // input being edited via the picker
-
-function utIconPrev(inp){
-  var key = inp.getAttribute('data-key');
-  var cell = document.querySelector('.ut-own[data-key="'+key+'"]');
-  if(!cell) return;
-  var span = cell.querySelector('span');
-  if(!span) return;
-  var v = (inp.value||'').trim().toLowerCase();
-  if(v && UT_BUNDLED.indexOf(v) >= 0){
-    var u = UT_WEBURL+'/icons/svg/'+v+'.svg';
-    span.style.webkitMask = 'url("'+u+'") center/contain no-repeat';
-    span.style.mask = 'url("'+u+'") center/contain no-repeat';
-    span.style.backgroundColor = 'currentColor';
-    span.style.opacity = '1';
-    span.innerHTML = '';
-  }
-}
-
-function utUploadPrev(inp, key){
-  var f = inp.files && inp.files[0];
-  if(!f) return;
-  var rd = new FileReader();
-  rd.onload = function(){
-    var cell = document.querySelector('.ut-own[data-key="'+key+'"]');
-    if(cell){ var s = cell.querySelector('span'); if(s){
-      s.style.webkitMask = 'url("'+rd.result+'") center/contain no-repeat';
-      s.style.mask = 'url("'+rd.result+'") center/contain no-repeat';
-      s.style.backgroundColor = 'currentColor'; s.style.opacity = '1'; s.innerHTML = '';
-    }}
-    var t = document.querySelector('input[data-key="'+key+'"]');
-    if(t) t.value = 'upload';   // staged; the file wins on Apply
-  };
-  rd.readAsDataURL(f);
-}
-function utOpenPicker(key){
-  UT_TARGET = document.querySelector('input[data-key="'+key+'"]');
-  document.getElementById('ut-picker-backdrop').style.display = 'block';
-  document.getElementById('ut-picker').classList.add('open');
-  var s = document.getElementById('ut-picker-search');
-  s.value = ''; utPickerFilter(); s.focus();
-}
-function utClosePicker(){
-  document.getElementById('ut-picker-backdrop').style.display = 'none';
-  document.getElementById('ut-picker').classList.remove('open');
-  UT_TARGET = null;
-}
-function utPick(name){
-  if(UT_TARGET){ UT_TARGET.value = name; utIconPrev(UT_TARGET); }
-  utClosePicker();
-}
-function utPickerFilter(){
-  var q = (document.getElementById('ut-picker-search').value||'').toLowerCase().trim();
-  var grid = document.getElementById('ut-picker-grid');
-  var nodes = grid.children, visibleInGroup = 0, lastGroup = null;
-  for(var i=0;i<nodes.length;i++){
-    var el = nodes[i];
-    if(el.classList.contains('ut-pick-group')){
-      // finalise the previous group's header visibility, then start a new one
-      if(lastGroup) lastGroup.style.display = visibleInGroup ? '' : 'none';
-      lastGroup = el; visibleInGroup = 0;
-    } else {
-      var s = el.getAttribute('data-search') || '';
-      var show = !q || s.indexOf(q) >= 0;
-      el.style.display = show ? '' : 'none';
-      if(show) visibleInGroup++;
-    }
-  }
-  if(lastGroup) lastGroup.style.display = visibleInGroup ? '' : 'none';
-}
-document.addEventListener('keydown', function(e){ if(e.key === 'Escape') utClosePicker(); });
-</script>
+<script defer src="/plugins/unraid.themer/js/themer-icons.js?v=<?= @filemtime("$webroot/js/themer-icons.js") ?>"></script>
 ]]>
 </INLINE>
 </FILE>
@@ -10621,6 +10551,105 @@ unicode: "eb55"
   <path d="M18 6l-12 12" />
   <path d="M6 6l12 12" />
 </svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/js/themer-icons.js">
+<INLINE>
+<![CDATA[/* Unraid Themer — Custom Icons page (Settings > Utilities > Themer Icons).
+ * External file on purpose: Unraid runs the .page body through its markdown
+ * processor, which mangles multi-line inline <script> blocks. Config comes in
+ * via data-* attributes on #ut-picker. Handlers are attached to window so the
+ * inline onclick/oninput/onchange attributes can reach them. */
+(function () {
+  "use strict";
+
+  var picker = document.getElementById("ut-picker");
+  var UT_WEBURL = picker ? (picker.getAttribute("data-weburl") || "") : "";
+  var UT_BUNDLED = [];
+  try { UT_BUNDLED = JSON.parse((picker && picker.getAttribute("data-values")) || "[]"); } catch (e) {}
+  var UT_TARGET = null;   // input being edited via the picker
+
+  // Live preview for a bundled name (same-origin SVG). URLs and pasted SVG
+  // markup are only previewed after Apply (the server validates them first).
+  window.utIconPrev = function (inp) {
+    var key = inp.getAttribute("data-key");
+    var cell = document.querySelector('.ut-own[data-key="' + key + '"]');
+    if (!cell) return;
+    var span = cell.querySelector("span");
+    if (!span) return;
+    var v = (inp.value || "").trim().toLowerCase();
+    if (v && UT_BUNDLED.indexOf(v) >= 0) {
+      var u = UT_WEBURL + "/icons/svg/" + v + ".svg";
+      span.style.webkitMask = 'url("' + u + '") center/contain no-repeat';
+      span.style.mask = 'url("' + u + '") center/contain no-repeat';
+      span.style.backgroundColor = "currentColor";
+      span.style.opacity = "1";
+      span.innerHTML = "";
+    }
+  };
+
+  window.utUploadPrev = function (inp, key) {
+    var f = inp.files && inp.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var cell = document.querySelector('.ut-own[data-key="' + key + '"]');
+      if (cell) {
+        var s = cell.querySelector("span");
+        if (s) {
+          s.style.webkitMask = 'url("' + rd.result + '") center/contain no-repeat';
+          s.style.mask = 'url("' + rd.result + '") center/contain no-repeat';
+          s.style.backgroundColor = "currentColor"; s.style.opacity = "1"; s.innerHTML = "";
+        }
+      }
+      var t = document.querySelector('input[data-key="' + key + '"]');
+      if (t) t.value = "upload";   // staged; the uploaded file wins on Apply
+    };
+    rd.readAsDataURL(f);
+  };
+
+  window.utOpenPicker = function (key) {
+    UT_TARGET = document.querySelector('input[data-key="' + key + '"]');
+    document.getElementById("ut-picker-backdrop").style.display = "block";
+    document.getElementById("ut-picker").classList.add("open");
+    var s = document.getElementById("ut-picker-search");
+    s.value = ""; window.utPickerFilter(); s.focus();
+  };
+
+  window.utClosePicker = function () {
+    document.getElementById("ut-picker-backdrop").style.display = "none";
+    document.getElementById("ut-picker").classList.remove("open");
+    UT_TARGET = null;
+  };
+
+  window.utPick = function (name) {
+    if (UT_TARGET) { UT_TARGET.value = name; window.utIconPrev(UT_TARGET); }
+    window.utClosePicker();
+  };
+
+  window.utPickerFilter = function () {
+    var q = (document.getElementById("ut-picker-search").value || "").toLowerCase().trim();
+    var grid = document.getElementById("ut-picker-grid");
+    var nodes = grid.children, visibleInGroup = 0, lastGroup = null;
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      if (el.classList.contains("ut-pick-group")) {
+        if (lastGroup) lastGroup.style.display = visibleInGroup ? "" : "none";
+        lastGroup = el; visibleInGroup = 0;
+      } else {
+        var s = el.getAttribute("data-search") || "";
+        var show = !q || s.indexOf(q) >= 0;
+        el.style.display = show ? "" : "none";
+        if (show) visibleInGroup++;
+      }
+    }
+    if (lastGroup) lastGroup.style.display = visibleInGroup ? "" : "none";
+  };
+
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.utClosePicker(); });
+})();
 ]]>
 </INLINE>
 </FILE>

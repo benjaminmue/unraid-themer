@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25",
+    "version": "2026.07.25.1",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.1
+- Fix the Custom Icons page showing its JavaScript as raw text: Unraid runs the
+  page through markdown, which split the multi-line inline script on its blank
+  lines. Moved the page JS to an external file (js/themer-icons.js); config is
+  passed via data-* attributes. The icon grid picker works again.
+
 ## 2026.07.25
 - Fix updates not being offered: PHP version_compare() treats letter suffixes
   like "z"/"aa"/"ab" as equal, so the update check never saw them as newer.
