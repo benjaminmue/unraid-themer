@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.7",
+    "version": "2026.07.25.8",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,10 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.8
+- Docker "update available" badge: replace the (unreliable) native title with a
+  proper styled hover tooltip, so hovering the ? actually explains it.
+
 ## 2026.07.25.7
 - Fix the theme builder not initialising from the current theme (and live preview
   not working): its inline script was being mangled by the page's markdown pass.

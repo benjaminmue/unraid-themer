@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25.7">
+  <!ENTITY version   "2026.07.25.8">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,10 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.25.8
+- Docker "update available" badge: replace the (unreliable) native title with a
+  proper styled hover tooltip, so hovering the ? actually explains it.
+
 ## 2026.07.25.7
 - Fix the theme builder not initialising from the current theme (and live preview
   not working): its inline script was being mangled by the page's markdown pass.
@@ -19361,7 +19365,8 @@ unicode: "eb55"
       var badge = document.createElement("span");
       badge.className = "ut-update-badge";
       badge.textContent = "?";
-      badge.title = "Update available";
+      badge.title = "Update available";                 // native fallback
+      badge.setAttribute("data-tip", "Update available"); // our CSS tooltip
       badge.setAttribute("aria-label", "Update available");
       el.appendChild(document.createTextNode(" "));
       el.appendChild(badge);
@@ -19374,10 +19379,19 @@ unicode: "eb55"
     var s = document.createElement("style");
     s.id = "ut-badge-style";
     s.textContent =
-      ".ut-update-badge{display:inline-flex;align-items:center;justify-content:center;" +
-      "width:14px;height:14px;margin-left:2px;border-radius:50%;font-size:10px;" +
+      ".ut-update-badge{position:relative;display:inline-flex;align-items:center;justify-content:center;" +
+      "width:14px;height:14px;margin-left:3px;border-radius:50%;font-size:10px;" +
       "font-weight:700;line-height:1;color:#fff;background:var(--brand-orange,#c67100);" +
-      "cursor:help;vertical-align:1px;font-family:var(--font-sans,sans-serif);}";
+      "cursor:help;vertical-align:1px;font-family:var(--font-sans,sans-serif);}" +
+      // custom tooltip (native title is unreliable in the Docker view)
+      ".ut-update-badge:hover::after{content:attr(data-tip);position:absolute;left:50%;" +
+      "bottom:calc(100% + 7px);transform:translateX(-50%);background:#1c1c1c;color:#fff;" +
+      "border:1px solid rgba(255,255,255,0.18);padding:4px 8px;border-radius:4px;font-size:11px;" +
+      "font-weight:400;white-space:nowrap;z-index:99999;pointer-events:none;" +
+      "box-shadow:0 3px 10px rgba(0,0,0,0.5);}" +
+      ".ut-update-badge:hover::before{content:'';position:absolute;left:50%;bottom:calc(100% + 2px);" +
+      "transform:translateX(-50%);border:5px solid transparent;border-top-color:#1c1c1c;" +
+      "z-index:99999;pointer-events:none;}";
     (document.head || document.documentElement).appendChild(s);
   }
 
