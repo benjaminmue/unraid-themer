@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24aa",
+    "version": "2026.07.24ab",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24ab
+- Five more bundled icon sets: Iconoir, Remix, Bootstrap, Carbon and Material
+  Symbols (fetched via the Iconify API in the generator, missing glyphs fall
+  back to Lucide). Nine sets total now — all appear in the "Icon set" dropdown
+  and, grouped, in the per-slot grid picker. The picker discovers sets
+  automatically from the bundled folders.
+
 ## 2026.07.24aa
 - Custom Icons: the grid picker now shows ALL bundled sets (Lucide, Tabler,
   Phosphor, Heroicons), grouped and searchable — pick e.g. "tabler/cpu" for any

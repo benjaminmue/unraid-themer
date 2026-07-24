@@ -272,7 +272,7 @@ Icon set:
     <?= mk_option($iconset_sel, $is, ucfirst($is)) ?>
     <?php endforeach; ?>
   </select>
-  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. Bundled open-source (MIT) line sets: <strong>Lucide</strong>, <strong>Tabler</strong>, <strong>Phosphor</strong>, <strong>Heroicons</strong>; <strong>Default</strong> keeps Unraid's own icons. Fine-tune or upload single icons on the <a href="/Settings/UnraidThemerIcons"><strong>Themer Icons</strong></a> page.</span>
+  <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. Bundled open-source line sets: <strong>Lucide</strong>, <strong>Tabler</strong>, <strong>Phosphor</strong>, <strong>Heroicons</strong>, <strong>Iconoir</strong>, <strong>Remix</strong>, <strong>Bootstrap</strong>, <strong>Carbon</strong>, <strong>Material Symbols</strong>; <strong>Default</strong> keeps Unraid's own icons. Fine-tune or upload single icons on the <a href="/Settings/UnraidThemerIcons"><strong>Themer Icons</strong></a> page.</span>
 
 Custom icons (per slot):
 : <input type="button" value="Open Themer Icons →" onclick="location.href='/Settings/UnraidThemerIcons'" style="font-weight:bold;">

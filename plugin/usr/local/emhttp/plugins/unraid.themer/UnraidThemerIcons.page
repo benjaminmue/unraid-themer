@@ -78,10 +78,15 @@ $have_bundled = array_flip($bundled);
 // The visual picker offers every bundled set. Lucide values are the plain stem;
 // the alternative sets use a "set/name" value (e.g. "tabler/cpu"). $all_values
 // feeds the autocomplete + live preview; $picker_groups feeds the grid.
+$set_labels = ['tabler' => 'Tabler', 'phosphor' => 'Phosphor', 'heroicons' => 'Heroicons',
+               'iconoir' => 'Iconoir', 'remix' => 'Remix', 'bootstrap' => 'Bootstrap',
+               'carbon' => 'Carbon', 'material' => 'Material Symbols'];
 $picker_groups = ['Lucide' => array_map(fn($n) => [$n, $n, "$weburl/icons/svg/$n.svg"], $bundled)];
-foreach (['tabler' => 'Tabler', 'phosphor' => 'Phosphor', 'heroicons' => 'Heroicons'] as $dir => $label) {
+foreach (glob("$webroot/icons/svg/*", GLOB_ONLYDIR) as $dirpath) {
+    $dir = basename($dirpath);
+    $label = $set_labels[$dir] ?? ucfirst($dir);
     $items = [];
-    foreach (glob("$webroot/icons/svg/$dir/*.svg") as $s) {
+    foreach (glob("$dirpath/*.svg") as $s) {
         $n = basename($s, '.svg');
         $items[$n] = ["$dir/$n", $n, "$weburl/icons/svg/$dir/$n.svg"];
     }
@@ -140,8 +145,10 @@ function themer_resolve_icon($key, $src, $ctx) {
         @copy("$ov_dir_f/$key.svg", "$ov_dir_w/$key.svg");
         return ["$weburl/overrides/$key.svg", ""];
     }
-    // (c) a bundled icon from an alternative set: "set/name" (e.g. "tabler/cpu")
-    if (preg_match('#^(tabler|phosphor|heroicons)/[a-z0-9-]+$#', strtolower($src))
+    // (c) a bundled icon from an alternative set: "set/name" (e.g. "tabler/cpu").
+    // The strict pattern (one segment / one segment, no dots) + is_file guards
+    // against path traversal.
+    if (preg_match('#^[a-z0-9-]+/[a-z0-9-]+$#', strtolower($src))
         && is_file("$webroot/icons/svg/" . strtolower($src) . ".svg")) {
         return ["$weburl/icons/svg/" . strtolower($src) . ".svg", ""];
     }
@@ -277,9 +284,9 @@ function themer_prev($url, $title = '') {
 <a href="/Settings/UnraidThemer">&larr; Back to Unraid Themer</a>
 
 Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
-Use the **grid button** to pick from all bundled sets (Lucide, Tabler, Phosphor, Heroicons),
-the **upload button** to upload your own **SVG file**, or type into the field: a **bundled name**
-(e.g. `cpu` or `tabler/cpu`), a raw **https SVG URL**
+Use the **grid button** to pick from all bundled sets (Lucide, Tabler, Phosphor, Heroicons,
+Iconoir, Remix, Bootstrap, Carbon, Material Symbols), the **upload button** to upload your own
+**SVG file**, or type into the field: a **bundled name** (e.g. `cpu` or `tabler/cpu`), a raw **https SVG URL**
 (e.g. from [lucide.dev](https://lucide.dev) or [tabler.io/icons](https://tabler.io/icons)), or
 pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handlers/external refs)
 and tinted with the theme color, so single-color line icons work best.
