@@ -85,6 +85,76 @@
       "author": "benjaminmue",
       "base": "white",
       "description": "Clean white with blue and green accents."
+    },
+    {
+      "name": "Everforest",
+      "file": "everforest.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Warm forest green with soft retro contrast."
+    },
+    {
+      "name": "Kanagawa",
+      "file": "kanagawa.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Muted ink-wash blues inspired by Hokusai."
+    },
+    {
+      "name": "One Dark",
+      "file": "one-dark.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Atom's classic, balanced dark."
+    },
+    {
+      "name": "Ayu Mirage",
+      "file": "ayu-mirage.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Soft mirage blues with a warm amber accent."
+    },
+    {
+      "name": "Synthwave 84",
+      "file": "synthwave-84.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Neon '84 sunset: hot pink and electric cyan."
+    },
+    {
+      "name": "Matrix",
+      "file": "matrix.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Green-on-black terminal. Wake up."
+    },
+    {
+      "name": "Rick and Morty",
+      "file": "rick-and-morty.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Interdimensional portal green with lab cyan. Wubba lubba dub dub."
+    },
+    {
+      "name": "Unraid Appreciation",
+      "file": "unraid-appreciation.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "A love letter to Lime Tech — Unraid orange to red on coal."
+    },
+    {
+      "name": "SpongeBob",
+      "file": "spongebob.css",
+      "author": "benjaminmue",
+      "base": "white",
+      "description": "Sunny sponge yellow, coral pink and ocean cyan. Bikini Bottom vibes."
+    },
+    {
+      "name": "Simpsons",
+      "file": "simpsons.css",
+      "author": "benjaminmue",
+      "base": "white",
+      "description": "Cartoon yellow with Duff red and Marge blue."
     }
   ]
 }
