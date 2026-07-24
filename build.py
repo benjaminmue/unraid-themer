@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24v",
+    "version": "2026.07.24w",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24w
+- Header bell/menu swap is more robust: the Vue header mounts async from ES
+  modules, so retry over a longer window and on DOM mutations until both the
+  notifications bell and the account menu are swapped, then stop.
+
 ## 2026.07.24v
 - Header toolbar now themed properly: the bottom row (search, logout, terminal,
   file manager, feedback, info, log, help, language) uses Unraid's own icon font

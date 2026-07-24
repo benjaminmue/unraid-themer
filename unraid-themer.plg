@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24v">
+  <!ENTITY version   "2026.07.24w">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24w
+- Header bell/menu swap is more robust: the Vue header mounts async from ES
+  modules, so retry over a longer window and on DOM mutations until both the
+  notifications bell and the account menu are swapped, then stop.
+
 ## 2026.07.24v
 - Header toolbar now themed properly: the bottom row (search, logout, terminal,
   file manager, feedback, info, log, help, language) uses Unraid's own icon font
@@ -7156,6 +7161,8 @@ unicode: "eb55"
    */
   var UT_ICONED = "data-ut-iconed";
   var _svgCache = {};                 // name -> svg markup (or null)
+  var _headerHits = {};               // icon -> swapped
+  var _headerDone = false;            // both bell + menu handled → stop scanning
 
   // The bottom toolbar (search/logout/terminal/...) is Unraid's own icon font
   // (<b class="icon-u-*">) and is handled by the CSS icon set. Only the top-right
@@ -7224,7 +7231,13 @@ unicode: "eb55"
     } catch (e) { return false; }
   }
 
+  function markHeaderHit(icon) {
+    _headerHits[icon] = true;
+    if (_headerHits.bell && _headerHits.menu) _headerDone = true;
+  }
+
   function themeHeaderIcons() {
+    if (_headerDone) return;
     var set = activeSet();
     if (!set) return;
     var roots = collectShadowRoots(document, [document], 0);
@@ -7239,7 +7252,7 @@ unicode: "eb55"
         for (var k = 0; k < HEADER_MAP.length; k++) {
           if (HEADER_MAP[k][0].test(n)) {
             (function (target, icon) {
-              loadSvg(icon, set, function (m) { if (m) swapIcon(target, m); });
+              loadSvg(icon, set, function (m) { if (m && swapIcon(target, m)) markHeaderHit(icon); });
             })(el, HEADER_MAP[k][1]);
             break;
           }
@@ -7260,14 +7273,19 @@ unicode: "eb55"
     run(document);
     // Charts are created by the dashboard script after us → retry a few times.
     [400, 1200, 3000].forEach(function (d) { setTimeout(patchCharts, d); });
-    // The Vue header mounts async → try the bell/menu swap a few times, then stop.
+    // The Vue header (unraid-user-profile) mounts async from ES modules and may
+    // appear well after load → try the bell/menu swap over a longer window.
     themeHeaderIcons();
-    [600, 1500, 3000, 5000].forEach(function (d) { setTimeout(themeHeaderIcons, d); });
+    [600, 1500, 3000, 5000, 8000, 12000].forEach(function (d) { setTimeout(themeHeaderIcons, d); });
     // Docker tile + web-components mount/re-render after load → observe.
     if (window.MutationObserver) {
       var obs = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
-          if (muts[i].addedNodes && muts[i].addedNodes.length) { run(document); return; }
+          if (muts[i].addedNodes && muts[i].addedNodes.length) {
+            run(document);
+            if (!_headerDone) themeHeaderIcons();  // catch the late-mounting header
+            return;
+          }
         }
       });
       obs.observe(document.documentElement, { childList: true, subtree: true });

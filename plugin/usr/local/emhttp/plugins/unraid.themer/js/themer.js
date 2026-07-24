@@ -108,6 +108,8 @@
    */
   var UT_ICONED = "data-ut-iconed";
   var _svgCache = {};                 // name -> svg markup (or null)
+  var _headerHits = {};               // icon -> swapped
+  var _headerDone = false;            // both bell + menu handled → stop scanning
 
   // The bottom toolbar (search/logout/terminal/...) is Unraid's own icon font
   // (<b class="icon-u-*">) and is handled by the CSS icon set. Only the top-right
@@ -176,7 +178,13 @@
     } catch (e) { return false; }
   }
 
+  function markHeaderHit(icon) {
+    _headerHits[icon] = true;
+    if (_headerHits.bell && _headerHits.menu) _headerDone = true;
+  }
+
   function themeHeaderIcons() {
+    if (_headerDone) return;
     var set = activeSet();
     if (!set) return;
     var roots = collectShadowRoots(document, [document], 0);
@@ -191,7 +199,7 @@
         for (var k = 0; k < HEADER_MAP.length; k++) {
           if (HEADER_MAP[k][0].test(n)) {
             (function (target, icon) {
-              loadSvg(icon, set, function (m) { if (m) swapIcon(target, m); });
+              loadSvg(icon, set, function (m) { if (m && swapIcon(target, m)) markHeaderHit(icon); });
             })(el, HEADER_MAP[k][1]);
             break;
           }
@@ -212,14 +220,19 @@
     run(document);
     // Charts are created by the dashboard script after us → retry a few times.
     [400, 1200, 3000].forEach(function (d) { setTimeout(patchCharts, d); });
-    // The Vue header mounts async → try the bell/menu swap a few times, then stop.
+    // The Vue header (unraid-user-profile) mounts async from ES modules and may
+    // appear well after load → try the bell/menu swap over a longer window.
     themeHeaderIcons();
-    [600, 1500, 3000, 5000].forEach(function (d) { setTimeout(themeHeaderIcons, d); });
+    [600, 1500, 3000, 5000, 8000, 12000].forEach(function (d) { setTimeout(themeHeaderIcons, d); });
     // Docker tile + web-components mount/re-render after load → observe.
     if (window.MutationObserver) {
       var obs = new MutationObserver(function (muts) {
         for (var i = 0; i < muts.length; i++) {
-          if (muts[i].addedNodes && muts[i].addedNodes.length) { run(document); return; }
+          if (muts[i].addedNodes && muts[i].addedNodes.length) {
+            run(document);
+            if (!_headerDone) themeHeaderIcons();  // catch the late-mounting header
+            return;
+          }
         }
       });
       obs.observe(document.documentElement, { childList: true, subtree: true });
