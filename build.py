@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24d",
+    "version": "2026.07.24e",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24e
+- Theme store (mode A): import a community theme from a raw .css URL. The CSS
+  is validated (scripts, javascript:, @import and external url() rejected)
+  before it is saved and added to the preset dropdown.
+
 ## 2026.07.24d
 - Auto-pair the base theme: selecting a dark preset now switches the Dynamix
   base to Black on Apply (via Unraid's own config writer) so the Vue
