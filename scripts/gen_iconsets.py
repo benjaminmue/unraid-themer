@@ -12,7 +12,7 @@ currentColor SVG — no per-repo folder layout to chase.
 Outputs icons/<set>.css plus the fetched SVGs under icons/svg/<set>/.
 Run from the repo root:  python3 scripts/gen_iconsets.py
 """
-import os, re, urllib.request, urllib.parse
+import os, re, sys, urllib.request, urllib.parse
 
 ICONS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                      "plugin", "usr", "local", "emhttp", "plugins", "unraid.themer", "icons")
@@ -30,6 +30,38 @@ ICONIFY = {  # set name -> iconify prefix
     "bootstrap": "bi",
     "carbon":    "carbon",
     "material":  "material-symbols",
+    "spongebob": "game-icons",   # CC BY 3.0 — under-the-sea joke set
+}
+
+# Sets with a bespoke, non-conventional name map (no stem-default; unmapped
+# slots fall back to Lucide). SpongeBob = under-the-sea motifs from game-icons.
+SPECIAL_NAMES = {
+    "spongebob": {
+        "gauge":          ["pineapple"],          # dashboard / tower = his house
+        "circuit-board":  ["bubbles", "soap"],
+        "cpu":            ["coral"],
+        "memory-stick":   ["seahorse"],
+        "ethernet-port":  ["anchor"],
+        "fan":            ["sea-star"],           # Patrick
+        "container":      ["whale-tail"],         # Docker whale, under the sea
+        "monitor":        ["diving-helmet"],
+        "folder":         ["locked-chest", "treasure-map"],
+        "users":          ["jellyfish"],
+        "user":           ["seahorse"],
+        "hard-drive":     ["open-treasure-chest", "locked-chest"],
+        "disc":           ["oyster-pearl"],
+        "activity":       ["health-normal"],
+        "server":         ["sperm-whale"],
+        "globe":          ["beach-ball"],
+        "trash-2":        ["trash-can"],
+        "menu":           ["big-wave"],
+        "life-buoy":      ["life-jacket", "life-buoy"],
+        "circle-help":    ["help"],
+        "download":       ["fishing-net"],
+        "wrench":         ["fishing-hook"],
+        "terminal":       ["submarine"],
+        "settings":       ["nautilus-shell"],
+    },
 }
 
 # lucide stem -> name in the GitHub sets (tabler, phosphor, heroicons)
@@ -169,6 +201,8 @@ def fetch(url, dest):
 
 def candidates(setname, stem):
     """Ordered candidate icon names to try for a set + stem."""
+    if setname in SPECIAL_NAMES:
+        return SPECIAL_NAMES[setname].get(stem, [])   # unmapped -> [] -> Lucide fallback
     if setname in GH_IDX:
         n = GH_NAMES.get(stem, (None, None, None))[GH_IDX[setname]]
         return [n] if n else []
@@ -213,6 +247,9 @@ def main():
     blocks = parse_lucide()
     stems = sorted({stem for _, stem in blocks})
     all_sets = list(GITHUB.keys()) + list(ICONIFY.keys())
+    only = sys.argv[1] if len(sys.argv) > 1 else None
+    if only:
+        all_sets = [s for s in all_sets if s == only]
     for setname in all_sets:
         os.makedirs(os.path.join(ICONS, "svg", setname), exist_ok=True)
         resolved, fell_back = {}, []

@@ -80,7 +80,7 @@ $have_bundled = array_flip($bundled);
 // feeds the autocomplete + live preview; $picker_groups feeds the grid.
 $set_labels = ['tabler' => 'Tabler', 'phosphor' => 'Phosphor', 'heroicons' => 'Heroicons',
                'iconoir' => 'Iconoir', 'remix' => 'Remix', 'bootstrap' => 'Bootstrap',
-               'carbon' => 'Carbon', 'material' => 'Material Symbols'];
+               'carbon' => 'Carbon', 'material' => 'Material Symbols', 'spongebob' => 'SpongeBob'];
 $picker_groups = ['Lucide' => array_map(fn($n) => [$n, $n, "$weburl/icons/svg/$n.svg"], $bundled)];
 foreach (glob("$webroot/icons/svg/*", GLOB_ONLYDIR) as $dirpath) {
     $dir = basename($dirpath);
