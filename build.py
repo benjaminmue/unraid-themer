@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24h",
+    "version": "2026.07.24i",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,10 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24i
+- Remove themes you added: imported / store themes show under "Added themes"
+  with a remove button (built-in presets stay).
+
 ## 2026.07.24h
 - Added 4 light themes (Catppuccin Latte, Solarized Light, Rose Pine Dawn,
   GitHub Light) — bundled and in the store.

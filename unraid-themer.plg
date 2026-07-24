@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24h">
+  <!ENTITY version   "2026.07.24i">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,10 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24i
+- Remove themes you added: imported / store themes show under "Added themes"
+  with a remove button (built-in presets stay).
+
 ## 2026.07.24h
 - Added 4 light themes (Catppuccin Latte, Solarized Light, Rose Pine Dawn,
   GitHub Light) — bundled and in the store.
@@ -205,6 +209,24 @@ if ($_POST && isset($_POST['store_get'])) {
     }
 }
 
+// --- REMOVE A USER-ADDED THEME ---
+if ($_POST && isset($_POST['remove_preset'])) {
+    $r = preg_replace('/[^A-Za-z0-9_-]/', '', $_POST['remove_preset']);
+    // only files that live on flash are user-added (bundled presets are recreated
+    // from the .plg on boot, so removing them would be pointless)
+    if ($r !== '' && is_file("$flash/presets/$r.css")) {
+        @unlink("$flash/presets/$r.css");
+        @unlink("$webroot/presets/$r.css");
+        // if it was the active preset, fall back to bebamu
+        $cur = parse_plugin_cfg($name);
+        if (($cur['PRESET'] ?? '') === $r) {
+            $svc = $cur['SERVICE'] ?? 'disabled';
+            file_put_contents($cfg_path, "SERVICE=\"$svc\"\nPRESET=\"bebamu\"\n");
+        }
+        $msg = "Removed \"$r\".";
+    }
+}
+
 // --- INIT / READ ---
 if (!file_exists($custom_flash)) {
     @mkdir($flash, 0755, true);
@@ -221,6 +243,11 @@ $presets = [];
 foreach (glob("$webroot/presets/*.css") as $p) $presets[] = basename($p, '.css');
 sort($presets);
 $have_preset = array_flip($presets);
+
+// user-added themes live on flash (bundled ones are recreated from the .plg) → removable
+$user_presets = [];
+foreach (glob("$flash/presets/*.css") as $p) $user_presets[] = basename($p, '.css');
+sort($user_presets);
 
 // fetch the community theme store index (best-effort, short timeout)
 $store_index = null;
@@ -265,6 +292,15 @@ Theme preset:
     <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
   </select>
   <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). (Azure / Gray sidebar layouts are only partially themed for now.)</span>
+
+Added themes:
+: <?php if ($user_presets): foreach ($user_presets as $up): ?>
+  <button type="submit" name="remove_preset" value="<?= htmlspecialchars($up) ?>" onclick="return confirm('Remove theme \'<?= htmlspecialchars($up) ?>\'?')" style="margin:0 6px 5px 0;"><?= htmlspecialchars(ucwords(str_replace(['-','_'], ' ', $up))) ?> &times;</button>
+  <?php endforeach; ?>
+  <span>Themes you imported or got from the store. Click to remove. Built-in themes can't be removed.</span>
+  <?php else: ?>
+  <span>None yet. Themes you import or get from the store appear here and can be removed; built-in themes can't.</span>
+  <?php endif; ?>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
