@@ -296,3 +296,45 @@
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+
+/* --- Action icons round 2: WebUI/Project (globe), Edit (wrench), Support (life-ring), Logs (list), help --- */
+.fa-globe::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-wrench::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/wrench.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/wrench.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-life-ring::before,
+.fa-life-bouy::before,
+.fa-support::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/life-buoy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/life-buoy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-align-justify::before,
+.fa-list::before,
+.fa-list-ul::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-question-circle::before,
+.fa-question::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}

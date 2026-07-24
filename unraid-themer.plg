@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24o">
+  <!ENTITY version   "2026.07.24p">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24p
+- Icon set (Lucide): remap the remaining Docker-menu action glyphs — WebUI /
+  Project Page (globe), Edit (wrench), Support (life-ring), Logs (list) and
+  help — so the container context menu is fully Lucide.
+
 ## 2026.07.24o
 - Icon set (Lucide): also swaps the Font Awesome action glyphs used on the
   Docker / VM / tile toolbars (play, stop, pause, restart, power, cog, trash,
@@ -2222,6 +2227,48 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+
+/* --- Action icons round 2: WebUI/Project (globe), Edit (wrench), Support (life-ring), Logs (list), help --- */
+.fa-globe::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-wrench::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/wrench.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/wrench.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-life-ring::before,
+.fa-life-bouy::before,
+.fa-support::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/life-buoy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/life-buoy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-align-justify::before,
+.fa-list::before,
+.fa-list-ul::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.fa-question-circle::before,
+.fa-question::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -2339,6 +2386,27 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   stroke-linejoin="round"
 >
   <path d="m18 15-6-6-6 6" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/circle-help.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+  <path d="M12 17h.01" />
 </svg>
 ]]>
 </INLINE>
@@ -2630,6 +2698,27 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/globe.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+  <path d="M2 12h20" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/hard-drive.svg">
 <INLINE>
 <![CDATA[<svg
@@ -2668,6 +2757,54 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   <circle cx="12" cy="12" r="10" />
   <path d="M12 16v-4" />
   <path d="M12 8h.01" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/life-buoy.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="m4.93 4.93 4.24 4.24" />
+  <path d="m14.83 9.17 4.24-4.24" />
+  <path d="m14.83 14.83 4.24 4.24" />
+  <path d="m9.17 14.83-4.24 4.24" />
+  <circle cx="12" cy="12" r="4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/list.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M3 5h.01" />
+  <path d="M3 12h.01" />
+  <path d="M3 19h.01" />
+  <path d="M8 5h13" />
+  <path d="M8 12h13" />
+  <path d="M8 19h13" />
 </svg>
 ]]>
 </INLINE>
@@ -3067,6 +3204,25 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   <path d="M16 3.128a4 4 0 0 1 0 7.744" />
   <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
   <circle cx="9" cy="7" r="4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/wrench.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />
 </svg>
 ]]>
 </INLINE>

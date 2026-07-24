@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24o",
+    "version": "2026.07.24p",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24p
+- Icon set (Lucide): remap the remaining Docker-menu action glyphs — WebUI /
+  Project Page (globe), Edit (wrench), Support (life-ring), Logs (list) and
+  help — so the container context menu is fully Lucide.
+
 ## 2026.07.24o
 - Icon set (Lucide): also swaps the Font Awesome action glyphs used on the
   Docker / VM / tile toolbars (play, stop, pause, restart, power, cog, trash,
