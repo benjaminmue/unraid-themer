@@ -65,6 +65,9 @@ MAP = {
     "life-buoy":      ("lifebuoy",             "lifebuoy",          "lifebuoy"),
     "list":           ("list",                 "list",              "list-bullet"),
     "circle-help":    ("help-circle",          "question",          "question-mark-circle"),
+    "log-out":        ("logout",               "sign-out",          "arrow-right-on-rectangle"),
+    "copy":           ("copy",                 "copy",              "document-duplicate"),
+    "message-square": ("message",              "chat-text",         "chat-bubble-left-ellipsis"),
 }
 SET_IDX = {"tabler": 0, "phosphor": 1, "heroicons": 2}
 

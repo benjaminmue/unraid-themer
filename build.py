@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24u",
+    "version": "2026.07.24v",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24v
+- Header toolbar now themed properly: the bottom row (search, logout, terminal,
+  file manager, feedback, info, log, help, language) uses Unraid's own icon font
+  (icon-u-*) and is now mapped by the CSS icon set like everything else.
+- The top-right notifications bell and account dropdown (Vue inline SVGs) are
+  matched more reliably (accessible name incl. sr-only text) and swapped via JS.
+
 ## 2026.07.24u
 - Header icons: best-effort swap of the whole Vue-header toolbar (search, logout,
   terminal, clone, feedback, remote, notifications bell, menu, help, ...) — which

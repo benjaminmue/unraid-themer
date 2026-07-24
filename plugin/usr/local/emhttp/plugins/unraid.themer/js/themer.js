@@ -109,19 +109,13 @@
   var UT_ICONED = "data-ut-iconed";
   var _svgCache = {};                 // name -> svg markup (or null)
 
-  // Header toolbar: match a button by its accessible name → icon. Ordered:
-  // first match wins, so more specific patterns come before broad ones.
+  // The bottom toolbar (search/logout/terminal/...) is Unraid's own icon font
+  // (<b class="icon-u-*">) and is handled by the CSS icon set. Only the top-right
+  // notifications bell and the account dropdown live in the Vue header as inline
+  // SVGs — match those by accessible name and swap the SVG. Ordered, first wins.
   var HEADER_MAP = [
-    [/search|magnif|suche/,                         "search"],
-    [/log\s*out|sign\s*out|logout|abmeld/,          "log-out"],
-    [/terminal|console|konsole/,                    "terminal"],
-    [/clone|copy|duplicate|new\s*(tab|window)|kopier/, "copy"],
-    [/feedback|comment|message|chat|kommentar/,     "message-square"],
-    [/remote|desktop|display|monitor|vnc|gui/,      "monitor"],
-    [/notif|bell|alert|benachrichtig/,              "bell"],
-    [/hamburger|navigation|\bmenu\b|menü/,          "menu"],
-    [/help|manual|guide|documentation|docs|hilfe|handbuch/, "circle-help"],
-    [/\blog\b|banner|task|activity|feed|protokoll/, "list"]
+    [/notif|bell|alert|benachrichtig/,                         "bell"],
+    [/dropdown|hamburger|navigation|account|\bmenu\b|menü/,    "menu"]
   ];
 
   function activeSet() {
@@ -158,8 +152,11 @@
   }
 
   function accName(el) {
-    try { return ((el.getAttribute("aria-label") || el.getAttribute("title") || el.title || "") + "").toLowerCase(); }
-    catch (e) { return ""; }
+    try {
+      var n = el.getAttribute("aria-label") || el.getAttribute("title") || el.title || "";
+      if (!n) { var sr = el.querySelector(".sr-only, [class*='sr-only']"); if (sr) n = sr.textContent || ""; }
+      return (n + "").toLowerCase();
+    } catch (e) { return ""; }
   }
 
   function swapIcon(target, markup) {

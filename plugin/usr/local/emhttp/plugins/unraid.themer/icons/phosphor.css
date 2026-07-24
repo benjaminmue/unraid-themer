@@ -338,3 +338,67 @@ help --- */
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+/* --- Header toolbar: Unraid's own icon font (<b class="icon-u-*">) --- */
+.icon-u-search::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/search.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/search.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-logout::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/log-out.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/log-out.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-terminal::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/terminal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/terminal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-duplicate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/copy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/copy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-chat::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/message-square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/message-square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-display::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-log::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-help::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-switch::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/globe.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}

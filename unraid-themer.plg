@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24u">
+  <!ENTITY version   "2026.07.24v">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,13 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24v
+- Header toolbar now themed properly: the bottom row (search, logout, terminal,
+  file manager, feedback, info, log, help, language) uses Unraid's own icon font
+  (icon-u-*) and is now mapped by the CSS icon set like everything else.
+- The top-right notifications bell and account dropdown (Vue inline SVGs) are
+  matched more reliably (accessible name incl. sr-only text) and swapped via JS.
+
 ## 2026.07.24u
 - Header icons: best-effort swap of the whole Vue-header toolbar (search, logout,
   terminal, clone, feedback, remote, notifications bell, menu, help, ...) — which
@@ -2701,6 +2708,70 @@ help --- */
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+/* --- Header toolbar: Unraid's own icon font (<b class="icon-u-*">) --- */
+.icon-u-search::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/search.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/search.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-logout::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/log-out.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/log-out.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-terminal::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/terminal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/terminal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-duplicate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/copy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/copy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-chat::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/message-square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/message-square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-display::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-log::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-help::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-switch::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/heroicons/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/heroicons/globe.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -3044,6 +3115,71 @@ help --- */
   content: "" !important;
   -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
   mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+
+/* --- Header toolbar: Unraid's own icon font (<b class="icon-u-*">) --- */
+.icon-u-search::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/search.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/search.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-logout::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/log-out.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/log-out.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-terminal::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/terminal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/terminal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-duplicate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/copy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/copy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-chat::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/message-square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/message-square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-display::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-log::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-help::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-switch::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
@@ -3393,6 +3529,70 @@ help --- */
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+/* --- Header toolbar: Unraid's own icon font (<b class="icon-u-*">) --- */
+.icon-u-search::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/search.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/search.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-logout::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/log-out.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/log-out.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-terminal::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/terminal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/terminal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-duplicate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/copy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/copy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-chat::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/message-square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/message-square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-display::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-log::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-help::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-switch::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/phosphor/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/phosphor/globe.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -3736,6 +3936,70 @@ help --- */
   content: "" !important;
   -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/circle-help.svg') center / contain no-repeat;
   mask: url('/plugins/unraid.themer/icons/svg/tabler/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+/* --- Header toolbar: Unraid's own icon font (<b class="icon-u-*">) --- */
+.icon-u-search::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/search.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/search.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-logout::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/log-out.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/log-out.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-terminal::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/terminal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/terminal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-duplicate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/copy.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/copy.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-chat::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/message-square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/message-square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-display::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-log::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-help::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/circle-help.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/circle-help.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-switch::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tabler/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tabler/globe.svg') center / contain no-repeat;
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
@@ -4880,6 +5144,15 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/heroicons/copy.svg">
+<INLINE>
+<![CDATA[<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"/>
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/heroicons/cpu.svg">
 <INLINE>
 <![CDATA[<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
@@ -4997,6 +5270,15 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/heroicons/log-out.svg">
+<INLINE>
+<![CDATA[<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/heroicons/memory-stick.svg">
 <INLINE>
 <![CDATA[<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
@@ -5010,6 +5292,15 @@ help --- */
 <INLINE>
 <![CDATA[<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
   <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/heroicons/message-square.svg">
+<INLINE>
+<![CDATA[<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/>
 </svg>
 ]]>
 </INLINE>
@@ -5242,6 +5533,12 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/phosphor/copy.svg">
+<INLINE>
+<![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg>]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/phosphor/cpu.svg">
 <INLINE>
 <![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M152,96H104a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8h48a8,8,0,0,0,8-8V104A8,8,0,0,0,152,96Zm-8,48H112V112h32Zm88,0H216V112h16a8,8,0,0,0,0-16H216V56a16,16,0,0,0-16-16H160V24a8,8,0,0,0-16,0V40H112V24a8,8,0,0,0-16,0V40H56A16,16,0,0,0,40,56V96H24a8,8,0,0,0,0,16H40v32H24a8,8,0,0,0,0,16H40v40a16,16,0,0,0,16,16H96v16a8,8,0,0,0,16,0V216h32v16a8,8,0,0,0,16,0V216h40a16,16,0,0,0,16-16V160h16a8,8,0,0,0,0-16Zm-32,56H56V56H200v95.87s0,.09,0,.13,0,.09,0,.13V200Z"/></svg>]]>
@@ -5326,6 +5623,12 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/phosphor/log-out.svg">
+<INLINE>
+<![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z"/></svg>]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/phosphor/memory-stick.svg">
 <INLINE>
 <![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M232,56H24A16,16,0,0,0,8,72V200a8,8,0,0,0,16,0V184H40v16a8,8,0,0,0,16,0V184H72v16a8,8,0,0,0,16,0V184h16v16a8,8,0,0,0,16,0V184h16v16a8,8,0,0,0,16,0V184h16v16a8,8,0,0,0,16,0V184h16v16a8,8,0,0,0,16,0V184h16v16a8,8,0,0,0,16,0V72A16,16,0,0,0,232,56ZM24,72H232v96H24Zm88,80a8,8,0,0,0,8-8V96a8,8,0,0,0-8-8H48a8,8,0,0,0-8,8v48a8,8,0,0,0,8,8ZM56,104h48v32H56Zm88,48h64a8,8,0,0,0,8-8V96a8,8,0,0,0-8-8H144a8,8,0,0,0-8,8v48A8,8,0,0,0,144,152Zm8-48h48v32H152Z"/></svg>]]>
@@ -5335,6 +5638,12 @@ help --- */
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/phosphor/menu.svg">
 <INLINE>
 <![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/phosphor/message-square.svg">
+<INLINE>
+<![CDATA[<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H40A16,16,0,0,0,24,64V224a15.85,15.85,0,0,0,9.24,14.5A16.13,16.13,0,0,0,40,240a15.89,15.89,0,0,0,10.25-3.78l.09-.07L83,208H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM40,224h0ZM216,192H80a8,8,0,0,0-5.23,1.95L40,224V64H216ZM88,112a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H96A8,8,0,0,1,88,112Zm0,32a8,8,0,0,1,8-8h64a8,8,0,1,1,0,16H96A8,8,0,0,1,88,144Z"/></svg>]]>
 </INLINE>
 </FILE>
 
@@ -5689,6 +5998,32 @@ unicode: "edca"
   <path d="M11 4h3v3h-3l0 -3" />
   <path d="M4.571 18c1.5 0 2.047 -.074 2.958 -.78" />
   <path d="M10 16l0 .01" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/tabler/copy.svg">
+<INLINE>
+<![CDATA[<!--
+tags: [clipboard, clone, duplicate, copy, typography, writing, font, character, word]
+category: Text
+version: "1.0"
+unicode: "ea7a"
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" />
+  <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" />
 </svg>
 ]]>
 </INLINE>
@@ -6098,6 +6433,33 @@ unicode: "eb6b"
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/tabler/log-out.svg">
+<INLINE>
+<![CDATA[<!--
+tags: [exit, shut, unplug, close, logout, control, operation, function, interface, management]
+category: System
+version: "1.4"
+unicode: "eba8"
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+  <path d="M9 12h12l-3 -3" />
+  <path d="M18 15l3 -3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/tabler/memory-stick.svg">
 <INLINE>
 <![CDATA[<!--
@@ -6148,6 +6510,33 @@ unicode: "ec42"
   <path d="M4 6l16 0" />
   <path d="M4 12l16 0" />
   <path d="M4 18l16 0" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/tabler/message-square.svg">
+<INLINE>
+<![CDATA[<!--
+tags: [comment, chat, reply, communication, conversation, faq, message, contact, messaging, interaction]
+category: Communication
+version: "1.0"
+unicode: "eaef"
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M8 9h8" />
+  <path d="M8 13h6" />
+  <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12" />
 </svg>
 ]]>
 </INLINE>
@@ -6768,19 +7157,13 @@ unicode: "eb55"
   var UT_ICONED = "data-ut-iconed";
   var _svgCache = {};                 // name -> svg markup (or null)
 
-  // Header toolbar: match a button by its accessible name → icon. Ordered:
-  // first match wins, so more specific patterns come before broad ones.
+  // The bottom toolbar (search/logout/terminal/...) is Unraid's own icon font
+  // (<b class="icon-u-*">) and is handled by the CSS icon set. Only the top-right
+  // notifications bell and the account dropdown live in the Vue header as inline
+  // SVGs — match those by accessible name and swap the SVG. Ordered, first wins.
   var HEADER_MAP = [
-    [/search|magnif|suche/,                         "search"],
-    [/log\s*out|sign\s*out|logout|abmeld/,          "log-out"],
-    [/terminal|console|konsole/,                    "terminal"],
-    [/clone|copy|duplicate|new\s*(tab|window)|kopier/, "copy"],
-    [/feedback|comment|message|chat|kommentar/,     "message-square"],
-    [/remote|desktop|display|monitor|vnc|gui/,      "monitor"],
-    [/notif|bell|alert|benachrichtig/,              "bell"],
-    [/hamburger|navigation|\bmenu\b|menü/,          "menu"],
-    [/help|manual|guide|documentation|docs|hilfe|handbuch/, "circle-help"],
-    [/\blog\b|banner|task|activity|feed|protokoll/, "list"]
+    [/notif|bell|alert|benachrichtig/,                         "bell"],
+    [/dropdown|hamburger|navigation|account|\bmenu\b|menü/,    "menu"]
   ];
 
   function activeSet() {
@@ -6817,8 +7200,11 @@ unicode: "eb55"
   }
 
   function accName(el) {
-    try { return ((el.getAttribute("aria-label") || el.getAttribute("title") || el.title || "") + "").toLowerCase(); }
-    catch (e) { return ""; }
+    try {
+      var n = el.getAttribute("aria-label") || el.getAttribute("title") || el.title || "";
+      if (!n) { var sr = el.querySelector(".sr-only, [class*='sr-only']"); if (sr) n = sr.textContent || ""; }
+      return (n + "").toLowerCase();
+    } catch (e) { return ""; }
   }
 
   function swapIcon(target, markup) {
