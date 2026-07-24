@@ -57,6 +57,34 @@
       "author": "benjaminmue",
       "base": "black",
       "description": "Soft dark pastel with mauve and blue accents."
+    },
+    {
+      "name": "Catppuccin Latte",
+      "file": "catppuccin-latte.css",
+      "author": "benjaminmue",
+      "base": "white",
+      "description": "Soft light pastel with mauve and blue accents."
+    },
+    {
+      "name": "Solarized Light",
+      "file": "solarized-light.css",
+      "author": "benjaminmue",
+      "base": "white",
+      "description": "Warm paper base with blue and cyan accents."
+    },
+    {
+      "name": "Rose Pine Dawn",
+      "file": "rose-pine-dawn.css",
+      "author": "benjaminmue",
+      "base": "white",
+      "description": "Soft rosy light with iris and rose accents."
+    },
+    {
+      "name": "GitHub Light",
+      "file": "github-light.css",
+      "author": "benjaminmue",
+      "base": "white",
+      "description": "Clean white with blue and green accents."
     }
   ]
 }

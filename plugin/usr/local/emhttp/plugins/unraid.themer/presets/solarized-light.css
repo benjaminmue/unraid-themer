@@ -1,0 +1,131 @@
+/* Unraid Themer preset: Solarized Light — warm paper base, blue and cyan accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --sol-bg: #fdf6e3;
+  --sol-bg2: #eee8d5;
+  --sol-surface: #e3ddc7;
+  --sol-text: #073642;
+  --sol-dim: #657b83;
+  --sol-border: #d9d2bd;
+  --sol-accent: #268bd2;
+  --sol-accent2: #2aa198;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--sol-text);
+  --alt-text-color: var(--sol-dim);
+  --link-text-color: var(--sol-accent);
+
+  --background-color: var(--sol-bg);
+  --mild-background-color: var(--sol-bg2);
+
+  --border-color: var(--sol-border);
+  --input-border-color: var(--sol-border);
+  --table-border-color: var(--sol-border);
+  --table-background-color: var(--sol-bg2);
+  --table-header-background-color: var(--sol-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--sol-border);
+  --shade-bg-color: var(--sol-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--sol-bg2);
+  --footer-text: var(--sol-text);
+  --footer-background-color: var(--sol-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--sol-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--sol-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--sol-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--sol-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--sol-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--sol-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--sol-accent);
+  --orange-800: var(--sol-accent2);
+  --brand-orange: var(--sol-accent);
+  --brand-red: var(--sol-accent2);
+  --blue-700: var(--sol-accent);
+  --blue-800: var(--sol-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--sol-bg);
+  --ui-bg-muted: var(--sol-bg2);
+  --ui-bg-elevated: var(--sol-surface);
+  --ui-bg-accented: var(--sol-surface);
+  --ui-text: var(--sol-text);
+  --ui-text-muted: var(--sol-dim);
+  --ui-text-dimmed: var(--sol-dim);
+  --ui-text-highlighted: var(--sol-text);
+  --ui-border: var(--sol-border);
+  --ui-primary: var(--sol-accent);
+  --primary: var(--sol-accent);
+  --background: var(--sol-bg);
+  --foreground: var(--sol-text);
+  --card: var(--sol-bg2);
+  --popover: var(--sol-bg2);
+  --border: var(--sol-border);
+  --ring: var(--sol-accent);
+  --accent: var(--sol-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--sol-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--sol-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--sol-accent) !important; }
+#docker_view .blue-text { color: var(--sol-accent2) !important; }
+#menu .nav-item.active a { color: var(--sol-accent) !important; }
+#menu .nav-item.active:after { background: var(--sol-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--sol-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--sol-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--sol-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */

@@ -1,0 +1,131 @@
+/* Unraid Themer preset: Catppuccin Latte — soft light pastel, mauve and blue accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --lat-bg: #eff1f5;
+  --lat-bg2: #e6e9ef;
+  --lat-surface: #dce0e8;
+  --lat-text: #4c4f69;
+  --lat-dim: #6c6f85;
+  --lat-border: #bcc0cc;
+  --lat-accent: #8839ef;
+  --lat-accent2: #1e66f5;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--lat-text);
+  --alt-text-color: var(--lat-dim);
+  --link-text-color: var(--lat-accent);
+
+  --background-color: var(--lat-bg);
+  --mild-background-color: var(--lat-bg2);
+
+  --border-color: var(--lat-border);
+  --input-border-color: var(--lat-border);
+  --table-border-color: var(--lat-border);
+  --table-background-color: var(--lat-bg2);
+  --table-header-background-color: var(--lat-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--lat-border);
+  --shade-bg-color: var(--lat-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--lat-bg2);
+  --footer-text: var(--lat-text);
+  --footer-background-color: var(--lat-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--lat-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--lat-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--lat-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--lat-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--lat-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--lat-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--lat-accent);
+  --orange-800: var(--lat-accent2);
+  --brand-orange: var(--lat-accent);
+  --brand-red: var(--lat-accent2);
+  --blue-700: var(--lat-accent);
+  --blue-800: var(--lat-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--lat-bg);
+  --ui-bg-muted: var(--lat-bg2);
+  --ui-bg-elevated: var(--lat-surface);
+  --ui-bg-accented: var(--lat-surface);
+  --ui-text: var(--lat-text);
+  --ui-text-muted: var(--lat-dim);
+  --ui-text-dimmed: var(--lat-dim);
+  --ui-text-highlighted: var(--lat-text);
+  --ui-border: var(--lat-border);
+  --ui-primary: var(--lat-accent);
+  --primary: var(--lat-accent);
+  --background: var(--lat-bg);
+  --foreground: var(--lat-text);
+  --card: var(--lat-bg2);
+  --popover: var(--lat-bg2);
+  --border: var(--lat-border);
+  --ring: var(--lat-accent);
+  --accent: var(--lat-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--lat-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--lat-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--lat-accent) !important; }
+#docker_view .blue-text { color: var(--lat-accent2) !important; }
+#menu .nav-item.active a { color: var(--lat-accent) !important; }
+#menu .nav-item.active:after { background: var(--lat-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--lat-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--lat-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--lat-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */

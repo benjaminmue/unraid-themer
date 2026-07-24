@@ -1,0 +1,131 @@
+/* Unraid Themer preset: Rose Pine Dawn — soft rosy light, iris and rose accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --rpd-bg: #faf4ed;
+  --rpd-bg2: #fffaf3;
+  --rpd-surface: #f2e9e1;
+  --rpd-text: #575279;
+  --rpd-dim: #797593;
+  --rpd-border: #dfdad9;
+  --rpd-accent: #907aa9;
+  --rpd-accent2: #d7827e;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--rpd-text);
+  --alt-text-color: var(--rpd-dim);
+  --link-text-color: var(--rpd-accent);
+
+  --background-color: var(--rpd-bg);
+  --mild-background-color: var(--rpd-bg2);
+
+  --border-color: var(--rpd-border);
+  --input-border-color: var(--rpd-border);
+  --table-border-color: var(--rpd-border);
+  --table-background-color: var(--rpd-bg2);
+  --table-header-background-color: var(--rpd-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--rpd-border);
+  --shade-bg-color: var(--rpd-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--rpd-bg2);
+  --footer-text: var(--rpd-text);
+  --footer-background-color: var(--rpd-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--rpd-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--rpd-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--rpd-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--rpd-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--rpd-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--rpd-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--rpd-accent);
+  --orange-800: var(--rpd-accent2);
+  --brand-orange: var(--rpd-accent);
+  --brand-red: var(--rpd-accent2);
+  --blue-700: var(--rpd-accent);
+  --blue-800: var(--rpd-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--rpd-bg);
+  --ui-bg-muted: var(--rpd-bg2);
+  --ui-bg-elevated: var(--rpd-surface);
+  --ui-bg-accented: var(--rpd-surface);
+  --ui-text: var(--rpd-text);
+  --ui-text-muted: var(--rpd-dim);
+  --ui-text-dimmed: var(--rpd-dim);
+  --ui-text-highlighted: var(--rpd-text);
+  --ui-border: var(--rpd-border);
+  --ui-primary: var(--rpd-accent);
+  --primary: var(--rpd-accent);
+  --background: var(--rpd-bg);
+  --foreground: var(--rpd-text);
+  --card: var(--rpd-bg2);
+  --popover: var(--rpd-bg2);
+  --border: var(--rpd-border);
+  --ring: var(--rpd-accent);
+  --accent: var(--rpd-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--rpd-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--rpd-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--rpd-accent) !important; }
+#docker_view .blue-text { color: var(--rpd-accent2) !important; }
+#menu .nav-item.active a { color: var(--rpd-accent) !important; }
+#menu .nav-item.active:after { background: var(--rpd-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--rpd-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--rpd-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--rpd-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */

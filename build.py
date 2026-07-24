@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24g",
+    "version": "2026.07.24h",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24h
+- Added 4 light themes (Catppuccin Latte, Solarized Light, Rose Pine Dawn,
+  GitHub Light) — bundled and in the store.
+- Store browser: search box + Light/Dark filter + scrollable list (scales to
+  many themes).
+- Preset help now notes the base is auto-paired on Apply.
+
 ## 2026.07.24g
 - Store browser now uses a non-CDN-cached URL so newly published themes appear
   immediately (added Catppuccin Mocha to the registry).

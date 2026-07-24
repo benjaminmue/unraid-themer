@@ -171,7 +171,7 @@ Theme preset:
     <?php endforeach; ?>
     <?= mk_option($preset_sel, "none", "None (custom CSS only)") ?>
   </select>
-  <span>Applies on top of the active Dynamix base theme. <strong>For dark presets (Nord, Dracula, Solarized, Monokai, Gruvbox) set the base theme to <a href="/Settings/DisplaySettings" target="_blank">Black</a></strong> — Unraid then serves dark tables, Community Apps and scrollbars, which the preset recolors. "bebamu" is a Light + Dark pair: White base = Light, Black base = Dark. (The Azure / Gray sidebar layouts are only partially themed for now.)</span>
+  <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). (Azure / Gray sidebar layouts are only partially themed for now.)</span>
 
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
@@ -185,16 +185,44 @@ Import a theme (URL):
 Theme store:
 : <?php if (!empty($store_index['themes'])): ?>
   <div style="max-width:660px;">
-  <?php foreach ($store_index['themes'] as $t):
-      $stem = pathinfo($t['file'], PATHINFO_FILENAME);
-      $installed = isset($have_preset[$stem]); ?>
-    <div style="display:flex; align-items:baseline; gap:10px; padding:5px 0; border-top:1px solid rgba(128,128,128,0.2);">
-      <button type="submit" name="store_get" value="<?= htmlspecialchars($t['file']) ?>" <?= $installed ? 'disabled' : '' ?> style="min-width:78px;"><?= $installed ? 'Installed' : 'Get' ?></button>
-      <span><strong><?= htmlspecialchars($t['name']) ?></strong> — <?= htmlspecialchars($t['description']) ?> <em style="opacity:.6;">(<?= htmlspecialchars($t['base']) ?> · <?= htmlspecialchars($t['author']) ?>)</em></span>
+    <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+      <input type="text" id="ut-store-search" placeholder="Search themes…" autocomplete="off" onkeyup="utStoreFilter()" style="flex:1; min-width:0;">
+      <select id="ut-store-filter" onchange="utStoreFilter()" style="width:auto;">
+        <option value="all">All</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
     </div>
-  <?php endforeach; ?>
+    <div id="ut-store-list" style="max-height:320px; overflow-y:auto; border:1px solid rgba(128,128,128,0.25);">
+    <?php foreach ($store_index['themes'] as $t):
+        $stem = pathinfo($t['file'], PATHINFO_FILENAME);
+        $installed = isset($have_preset[$stem]);
+        $base = strtolower($t['base'] ?? '');
+        $isLight = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
+        $isDark  = in_array($base, ['black', 'gray', 'any']) ? '1' : '0'; ?>
+      <div class="ut-store-row" data-name="<?= htmlspecialchars(strtolower($t['name'] . ' ' . $t['description'])) ?>" data-light="<?= $isLight ?>" data-dark="<?= $isDark ?>" style="display:flex; align-items:baseline; gap:10px; padding:6px 8px; border-top:1px solid rgba(128,128,128,0.18);">
+        <button type="submit" name="store_get" value="<?= htmlspecialchars($t['file']) ?>" <?= $installed ? 'disabled' : '' ?> style="min-width:78px;"><?= $installed ? 'Installed' : 'Get' ?></button>
+        <span><strong><?= htmlspecialchars($t['name']) ?></strong> — <?= htmlspecialchars($t['description']) ?> <em style="opacity:.6;">(<?= htmlspecialchars($t['base']) ?> · <?= htmlspecialchars($t['author']) ?>)</em></span>
+      </div>
+    <?php endforeach; ?>
+    </div>
+    <span><?= count($store_index['themes']) ?> community themes from the <a href="https://github.com/benjaminmue/unraid-themer/tree/main/themes" target="_blank">registry</a> — downloaded on demand and validated before saving.</span>
   </div>
-  <span>Community themes from the <a href="https://github.com/benjaminmue/unraid-themer/tree/main/themes" target="_blank">registry</a>. Downloaded on demand and validated before saving.</span>
+  <script>
+  function utStoreFilter() {
+    var q = (document.getElementById('ut-store-search').value || '').toLowerCase().trim();
+    var f = document.getElementById('ut-store-filter').value;
+    var rows = document.querySelectorAll('#ut-store-list .ut-store-row');
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var okq = !q || r.getAttribute('data-name').indexOf(q) >= 0;
+      var okf = f === 'all'
+        || (f === 'light' && r.getAttribute('data-light') === '1')
+        || (f === 'dark'  && r.getAttribute('data-dark')  === '1');
+      r.style.display = (okq && okf) ? '' : 'none';
+    }
+  }
+  </script>
   <?php else: ?>
   <span>Store unavailable (no internet, or GitHub unreachable). The URL import above still works.</span>
   <?php endif; ?>

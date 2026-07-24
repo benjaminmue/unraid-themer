@@ -1,0 +1,131 @@
+/* Unraid Themer preset: GitHub Light — clean white, blue and green accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --ghl-bg: #ffffff;
+  --ghl-bg2: #f6f8fa;
+  --ghl-surface: #eaeef2;
+  --ghl-text: #1f2328;
+  --ghl-dim: #656d76;
+  --ghl-border: #d0d7de;
+  --ghl-accent: #0969da;
+  --ghl-accent2: #1a7f37;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--ghl-text);
+  --alt-text-color: var(--ghl-dim);
+  --link-text-color: var(--ghl-accent);
+
+  --background-color: var(--ghl-bg);
+  --mild-background-color: var(--ghl-bg2);
+
+  --border-color: var(--ghl-border);
+  --input-border-color: var(--ghl-border);
+  --table-border-color: var(--ghl-border);
+  --table-background-color: var(--ghl-bg2);
+  --table-header-background-color: var(--ghl-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--ghl-border);
+  --shade-bg-color: var(--ghl-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--ghl-bg2);
+  --footer-text: var(--ghl-text);
+  --footer-background-color: var(--ghl-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--ghl-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--ghl-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--ghl-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--ghl-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--ghl-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--ghl-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--ghl-accent);
+  --orange-800: var(--ghl-accent2);
+  --brand-orange: var(--ghl-accent);
+  --brand-red: var(--ghl-accent2);
+  --blue-700: var(--ghl-accent);
+  --blue-800: var(--ghl-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--ghl-bg);
+  --ui-bg-muted: var(--ghl-bg2);
+  --ui-bg-elevated: var(--ghl-surface);
+  --ui-bg-accented: var(--ghl-surface);
+  --ui-text: var(--ghl-text);
+  --ui-text-muted: var(--ghl-dim);
+  --ui-text-dimmed: var(--ghl-dim);
+  --ui-text-highlighted: var(--ghl-text);
+  --ui-border: var(--ghl-border);
+  --ui-primary: var(--ghl-accent);
+  --primary: var(--ghl-accent);
+  --background: var(--ghl-bg);
+  --foreground: var(--ghl-text);
+  --card: var(--ghl-bg2);
+  --popover: var(--ghl-bg2);
+  --border: var(--ghl-border);
+  --ring: var(--ghl-accent);
+  --accent: var(--ghl-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--ghl-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ghl-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--ghl-accent) !important; }
+#docker_view .blue-text { color: var(--ghl-accent2) !important; }
+#menu .nav-item.active a { color: var(--ghl-accent) !important; }
+#menu .nav-item.active:after { background: var(--ghl-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--ghl-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--ghl-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--ghl-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */
