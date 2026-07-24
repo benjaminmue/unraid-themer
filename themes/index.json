@@ -134,6 +134,13 @@
       "author": "benjaminmue",
       "base": "black",
       "description": "A love letter to Lime Tech — Unraid orange to red on coal."
+    },
+    {
+      "name": "Amberloom",
+      "file": "amberloom.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Warm slate with amber & teal"
     }
   ]
 }
