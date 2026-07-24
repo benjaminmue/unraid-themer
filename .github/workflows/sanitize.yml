@@ -1,0 +1,21 @@
+name: Sanitize themes
+
+# The publish bot: any change to the theme registry is validated against the
+# same ruleset the plugin uses. Unsafe or malformed submissions fail here and
+# cannot be merged.
+on:
+  push:
+    paths: ["themes/**", "scripts/sanitize_css.py"]
+  pull_request:
+    paths: ["themes/**", "scripts/sanitize_css.py"]
+
+jobs:
+  sanitize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Validate theme CSS + index
+        run: python3 scripts/sanitize_css.py

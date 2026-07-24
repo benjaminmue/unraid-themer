@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24e">
+  <!ENTITY version   "2026.07.24f">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24f
+- Theme store (mode B): browse the community registry in the settings page and
+  download themes on demand (validated before saving). Already-installed themes
+  are marked. Backed by a GitHub Action that sanitises every submitted theme.
+
 ## 2026.07.24e
 - Theme store (mode A): import a community theme from a raw .css URL. The CSS
   is validated (scripts, javascript:, @import and external url() rejected)
@@ -116,8 +121,22 @@ $webroot     = "/usr/local/emhttp/plugins/$name";
 $cfg_path    = "$flash/$name.cfg";
 $custom_flash= "$flash/custom.css";
 $custom_web  = "$webroot/custom.css";
+$store_base  = "https://raw.githubusercontent.com/benjaminmue/unraid-themer/main/themes";
 $msg = "";
 $switch_base = "";   // set to a theme name if we need to pair the Dynamix base
+
+// download + sanitise a theme into the presets folder; returns "" or an error
+function themer_fetch_theme($url, $flash, $webroot) {
+    $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 524288 " . escapeshellarg($url) . " 2>/dev/null");
+    [$clean, $err] = themer_sanitize_css($raw);
+    if ($err) return $err;
+    $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower(pathinfo((string) parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME)));
+    if ($stem === '' || $stem === 'none') $stem = 'imported';
+    @mkdir("$flash/presets", 0755, true);
+    file_put_contents("$flash/presets/$stem.css", $clean);
+    @copy("$flash/presets/$stem.css", "$webroot/presets/$stem.css");
+    return "";  // success
+}
 
 // --- SAVE ---
 if ($_POST && isset($_POST['SAVE_CONFIG'])) {
@@ -157,18 +176,19 @@ if ($_POST && isset($_POST['IMPORT_URL'])) {
     if (!preg_match('#^https://[^\s\'"<>]+\.css([?\#].*)?$#i', $url)) {
         $msg = "Enter an https:// URL that ends in .css";
     } else {
-        $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 524288 " . escapeshellarg($url) . " 2>/dev/null");
-        [$clean, $err] = themer_sanitize_css($raw);
-        if ($err) {
-            $msg = "Import rejected — $err.";
-        } else {
-            $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower(pathinfo((string) parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME)));
-            if ($stem === '' || $stem === 'none') $stem = 'imported';
-            @mkdir("$flash/presets", 0755, true);
-            file_put_contents("$flash/presets/$stem.css", $clean);
-            @copy("$flash/presets/$stem.css", "$webroot/presets/$stem.css");
-            $msg = "Imported \"$stem\". Pick it in the preset dropdown above and click Apply.";
-        }
+        $err = themer_fetch_theme($url, $flash, $webroot);
+        $msg = $err ? "Import rejected — $err." : "Imported. Pick it in the preset dropdown above and click Apply.";
+    }
+}
+
+// --- GET A THEME FROM THE STORE (theme store, mode B) ---
+if ($_POST && isset($_POST['store_get'])) {
+    $file = preg_replace('/[^A-Za-z0-9_.-]/', '', $_POST['store_get']);
+    if ($file !== '' && substr($file, -4) === '.css') {
+        $err = themer_fetch_theme("$store_base/$file", $flash, $webroot);
+        $msg = $err
+            ? "Store download rejected — $err."
+            : "Added \"" . pathinfo($file, PATHINFO_FILENAME) . "\" from the store. Pick it in the dropdown and Apply.";
     }
 }
 
@@ -187,6 +207,12 @@ $custom_css = file_exists($custom_flash) ? file_get_contents($custom_flash) : ""
 $presets = [];
 foreach (glob("$webroot/presets/*.css") as $p) $presets[] = basename($p, '.css');
 sort($presets);
+$have_preset = array_flip($presets);
+
+// fetch the community theme store index (best-effort, short timeout)
+$store_index = null;
+$raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
+if ($raw) $store_index = @json_decode($raw, true);
 ?>
 
 <div markdown="1">
@@ -235,6 +261,23 @@ Import a theme (URL):
 : <input type="text" name="import_url" spellcheck="false" placeholder="https://…/theme.css" style="width:100%; max-width:560px;">
   <input type="submit" name="IMPORT_URL" value="Import">
   <span>Paste a raw <code>.css</code> URL (e.g. from GitHub) to add a community theme. It is downloaded, <strong>validated</strong> (scripts, <code>javascript:</code>, <code>@import</code> and external <code>url()</code> are rejected) and added to the preset dropdown.</span>
+
+Theme store:
+: <?php if (!empty($store_index['themes'])): ?>
+  <div style="max-width:660px;">
+  <?php foreach ($store_index['themes'] as $t):
+      $stem = pathinfo($t['file'], PATHINFO_FILENAME);
+      $installed = isset($have_preset[$stem]); ?>
+    <div style="display:flex; align-items:baseline; gap:10px; padding:5px 0; border-top:1px solid rgba(128,128,128,0.2);">
+      <button type="submit" name="store_get" value="<?= htmlspecialchars($t['file']) ?>" <?= $installed ? 'disabled' : '' ?> style="min-width:78px;"><?= $installed ? 'Installed' : 'Get' ?></button>
+      <span><strong><?= htmlspecialchars($t['name']) ?></strong> — <?= htmlspecialchars($t['description']) ?> <em style="opacity:.6;">(<?= htmlspecialchars($t['base']) ?> · <?= htmlspecialchars($t['author']) ?>)</em></span>
+    </div>
+  <?php endforeach; ?>
+  </div>
+  <span>Community themes from the <a href="https://github.com/benjaminmue/unraid-themer/tree/main/themes" target="_blank">registry</a>. Downloaded on demand and validated before saving.</span>
+  <?php else: ?>
+  <span>Store unavailable (no internet, or GitHub unreachable). The URL import above still works.</span>
+  <?php endif; ?>
 
 &nbsp;
 : <span class="buttons-spaced">
