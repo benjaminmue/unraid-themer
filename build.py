@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24s",
+    "version": "2026.07.24t",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24t
+- Icon sets: three more bundled open-source sets — Tabler, Phosphor, Heroicons
+  (in addition to Lucide). Pick one under "Icon set". Missing glyphs in a set
+  fall back to Lucide so a set is always complete.
+- Custom Icons: upload your own SVG file per slot (validated like pasted markup),
+  next to the grid picker.
+
 ## 2026.07.24s
 - Custom Icons: pick icons from a visual, searchable grid (like an emoji picker,
   but the actual Lucide icons) instead of a text-only dropdown. Each row has a

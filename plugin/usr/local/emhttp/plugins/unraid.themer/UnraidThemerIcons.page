@@ -100,6 +100,11 @@ function themer_resolve_icon($key, $src, $ctx) {
     $src = trim($src);
     if ($src === '') return ["", ""];
 
+    // (0) an uploaded custom SVG already saved for this slot
+    if ($src === 'upload') {
+        return is_file("$ov_dir_w/$key.svg") ? ["$weburl/overrides/$key.svg", ""] : ["", "uploaded file missing"];
+    }
+
     // (a) pasted <svg> markup
     if (stripos($src, '<svg') !== false) {
         [$clean, $err] = themer_sanitize_svg($src);
@@ -159,6 +164,17 @@ if ($_POST && isset($_POST['SAVE_ICONS'])) {
     $newmap = [];
     $errs = [];
     foreach ($FLAT as $key => $e) {
+        // an uploaded SVG file for this slot wins over the text field
+        $up = $_FILES["up_$key"] ?? null;
+        if ($up && !empty($up['tmp_name']) && is_uploaded_file($up['tmp_name'])) {
+            [$clean, $err] = themer_sanitize_svg(file_get_contents($up['tmp_name']));
+            if ($err) { $errs[] = "{$e[0]}: $err"; continue; }
+            @mkdir($ov_dir_f, 0755, true); @mkdir($ov_dir_w, 0755, true);
+            file_put_contents("$ov_dir_f/$key.svg", $clean);
+            @copy("$ov_dir_f/$key.svg", "$ov_dir_w/$key.svg");
+            $newmap[$key] = 'upload';
+            continue;
+        }
         $src = trim($_POST["ov_$key"] ?? '');
         if ($src === '') { @unlink("$ov_dir_f/$key.svg"); @unlink("$ov_dir_w/$key.svg"); continue; }
         [$target, $err] = themer_resolve_icon($key, $src, $ctx);
@@ -205,6 +221,7 @@ function themer_prev($url, $title = '') {
   #ut-icons .ut-pick { flex: none; width: 30px; height: 28px; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   #ut-icons .ut-pick span { width: 16px; height: 16px; background-color: currentColor;
     -webkit-mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; }
+  #ut-icons .ut-up span { -webkit-mask-image: url('<?= $weburl ?>/icons/svg/upload.svg'); mask-image: url('<?= $weburl ?>/icons/svg/upload.svg'); }
 
   /* visual icon picker (modal grid) */
   #ut-picker-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9998; }
@@ -232,13 +249,14 @@ function themer_prev($url, $title = '') {
 <a href="/Settings/UnraidThemer">&larr; Back to Unraid Themer</a>
 
 Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
-A value can be a **bundled Lucide name** (type to autocomplete), a raw **https SVG URL**
-(e.g. from [lucide.dev](https://lucide.dev) or [tabler-icons](https://tabler.io/icons)), or
+Use the **grid button** to pick from the bundled icons, the **upload button** to upload your
+own **SVG file**, or type into the field: a **bundled name**, a raw **https SVG URL**
+(e.g. from [lucide.dev](https://lucide.dev) or [tabler.io/icons](https://tabler.io/icons)), or
 pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handlers/external refs)
 and tinted with the theme color, so single-color line icons work best.
 </div>
 
-<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off">
+<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off" enctype="multipart/form-data">
 <datalist id="ut-bundled">
   <?php foreach ($bundled as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
 </datalist>
@@ -261,7 +279,9 @@ and tinted with the theme color, so single-color line icons work best.
       <td><?= themer_prev($ref_url, $def) ?></td>
       <td class="ut-own" data-key="<?= htmlspecialchars($key) ?>"><?= themer_prev($own_url, $src) ?></td>
       <td><div class="ut-cell">
-        <button type="button" class="ut-pick" title="Pick an icon" onclick="utOpenPicker('<?= htmlspecialchars($key) ?>')"><span></span></button>
+        <button type="button" class="ut-pick" title="Pick from the icon grid" onclick="utOpenPicker('<?= htmlspecialchars($key) ?>')"><span></span></button>
+        <button type="button" class="ut-pick ut-up" title="Upload an SVG file" onclick="document.getElementById('up_<?= htmlspecialchars($key) ?>').click()"><span></span></button>
+        <input type="file" id="up_<?= htmlspecialchars($key) ?>" name="up_<?= htmlspecialchars($key) ?>" accept=".svg,image/svg+xml" style="display:none" onchange="utUploadPrev(this,'<?= htmlspecialchars($key) ?>')">
         <input type="text" name="ov_<?= htmlspecialchars($key) ?>" list="ut-bundled"
                value="<?= htmlspecialchars($src) ?>" spellcheck="false"
                placeholder="<?= htmlspecialchars($def) ?>"
@@ -321,6 +341,22 @@ function utIconPrev(inp){
   }
 }
 
+function utUploadPrev(inp, key){
+  var f = inp.files && inp.files[0];
+  if(!f) return;
+  var rd = new FileReader();
+  rd.onload = function(){
+    var cell = document.querySelector('.ut-own[data-key="'+key+'"]');
+    if(cell){ var s = cell.querySelector('span'); if(s){
+      s.style.webkitMask = 'url("'+rd.result+'") center/contain no-repeat';
+      s.style.mask = 'url("'+rd.result+'") center/contain no-repeat';
+      s.style.backgroundColor = 'currentColor'; s.style.opacity = '1'; s.innerHTML = '';
+    }}
+    var t = document.querySelector('input[data-key="'+key+'"]');
+    if(t) t.value = 'upload';   // staged; the file wins on Apply
+  };
+  rd.readAsDataURL(f);
+}
 function utOpenPicker(key){
   UT_TARGET = document.querySelector('input[data-key="'+key+'"]');
   document.getElementById('ut-picker-backdrop').style.display = 'block';
