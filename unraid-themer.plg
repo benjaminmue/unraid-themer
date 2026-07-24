@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24z">
+  <!ENTITY version   "2026.07.24aa">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24aa
+- Custom Icons: the grid picker now shows ALL bundled sets (Lucide, Tabler,
+  Phosphor, Heroicons), grouped and searchable — pick e.g. "tabler/cpu" for any
+  slot. The main settings page gets a prominent "Open Themer Icons" button.
+
 ## 2026.07.24z
 - Sidebar polish (Azure / Gray): the top header band now matches the content
   background (was a lighter gray), and the active/hover nav item uses a subtle
@@ -468,6 +473,10 @@ Icon set:
   </select>
   <span>Swaps Unraid's UI glyphs (Docker, CPU, disks, fan…) for an icon set that tints with the theme. Bundled open-source (MIT) line sets: <strong>Lucide</strong>, <strong>Tabler</strong>, <strong>Phosphor</strong>, <strong>Heroicons</strong>; <strong>Default</strong> keeps Unraid's own icons. Fine-tune or upload single icons on the <a href="/Settings/UnraidThemerIcons"><strong>Themer Icons</strong></a> page.</span>
 
+Custom icons (per slot):
+: <input type="button" value="Open Themer Icons →" onclick="location.href='/Settings/UnraidThemerIcons'" style="font-weight:bold;">
+  <span>Assign or upload a custom icon for any individual glyph — pick from all bundled sets or your own SVG.</span>
+
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
   <span>Optional. Loaded <em>after</em> the preset, so these rules win. Use Unraid CSS variables, e.g. <code>:root { --background-color:#101010; }</code>.</span>
@@ -573,11 +582,27 @@ $REG = [
 $FLAT = [];
 foreach ($REG as $cat => $slots) foreach ($slots as $k => $e) $FLAT[$k] = $e;
 
-// bundled Lucide SVG stems, offered as an autocomplete list
+// bundled Lucide SVG stems (flat folder) — plain names resolve to these
 $bundled = [];
 foreach (glob("$webroot/icons/svg/*.svg") as $s) $bundled[] = basename($s, '.svg');
 sort($bundled);
 $have_bundled = array_flip($bundled);
+
+// The visual picker offers every bundled set. Lucide values are the plain stem;
+// the alternative sets use a "set/name" value (e.g. "tabler/cpu"). $all_values
+// feeds the autocomplete + live preview; $picker_groups feeds the grid.
+$picker_groups = ['Lucide' => array_map(fn($n) => [$n, $n, "$weburl/icons/svg/$n.svg"], $bundled)];
+foreach (['tabler' => 'Tabler', 'phosphor' => 'Phosphor', 'heroicons' => 'Heroicons'] as $dir => $label) {
+    $items = [];
+    foreach (glob("$webroot/icons/svg/$dir/*.svg") as $s) {
+        $n = basename($s, '.svg');
+        $items[$n] = ["$dir/$n", $n, "$weburl/icons/svg/$dir/$n.svg"];
+    }
+    ksort($items);
+    if ($items) $picker_groups[$label] = array_values($items);
+}
+$all_values = [];
+foreach ($picker_groups as $items) foreach ($items as $it) $all_values[] = $it[0];
 
 /* Validate an SVG before it is ever written to disk. Returns [clean, error]. */
 function themer_sanitize_svg($svg) {
@@ -628,7 +653,12 @@ function themer_resolve_icon($key, $src, $ctx) {
         @copy("$ov_dir_f/$key.svg", "$ov_dir_w/$key.svg");
         return ["$weburl/overrides/$key.svg", ""];
     }
-    // (c) a bundled Lucide stem
+    // (c) a bundled icon from an alternative set: "set/name" (e.g. "tabler/cpu")
+    if (preg_match('#^(tabler|phosphor|heroicons)/[a-z0-9-]+$#', strtolower($src))
+        && is_file("$webroot/icons/svg/" . strtolower($src) . ".svg")) {
+        return ["$weburl/icons/svg/" . strtolower($src) . ".svg", ""];
+    }
+    // (d) a bundled Lucide stem (plain name)
     $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower($src));
     if ($stem !== '' && isset($have_bundled[$stem])) {
         return ["$weburl/icons/svg/$stem.svg", ""];
@@ -734,7 +764,7 @@ function themer_prev($url, $title = '') {
   /* visual icon picker (modal grid) */
   #ut-picker-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9998; }
   #ut-picker { display: none; position: fixed; z-index: 9999; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    width: min(560px, 92vw); max-height: 78vh; background: var(--background-color, #1c1f26); color: var(--text-color, #e6e6e6);
+    width: min(680px, 94vw); max-height: 80vh; background: var(--background-color, #1c1f26); color: var(--text-color, #e6e6e6);
     border: 1px solid rgba(128,128,128,0.4); border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.5); display: none; flex-direction: column; }
   #ut-picker.open { display: flex; }
   #ut-picker-head { display: flex; gap: 8px; align-items: center; padding: 12px; border-bottom: 1px solid rgba(128,128,128,0.25); }
@@ -747,6 +777,9 @@ function themer_prev($url, $title = '') {
   .ut-pick-item span.ico { width: 24px; height: 24px; background-color: currentColor;
     -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   .ut-pick-item small { font-size: 10px; opacity: .7; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ut-pick-group { grid-column: 1 / -1; font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+    opacity: .6; padding: 10px 4px 2px; border-top: 1px solid rgba(128,128,128,0.18); }
+  .ut-pick-group:first-child { border-top: none; padding-top: 2px; }
 </style>
 
 <div markdown="1">
@@ -757,8 +790,9 @@ function themer_prev($url, $title = '') {
 <a href="/Settings/UnraidThemer">&larr; Back to Unraid Themer</a>
 
 Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
-Use the **grid button** to pick from the bundled icons, the **upload button** to upload your
-own **SVG file**, or type into the field: a **bundled name**, a raw **https SVG URL**
+Use the **grid button** to pick from all bundled sets (Lucide, Tabler, Phosphor, Heroicons),
+the **upload button** to upload your own **SVG file**, or type into the field: a **bundled name**
+(e.g. `cpu` or `tabler/cpu`), a raw **https SVG URL**
 (e.g. from [lucide.dev](https://lucide.dev) or [tabler.io/icons](https://tabler.io/icons)), or
 pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handlers/external refs)
 and tinted with the theme color, so single-color line icons work best.
@@ -766,7 +800,7 @@ and tinted with the theme color, so single-color line icons work best.
 
 <form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off" enctype="multipart/form-data">
 <datalist id="ut-bundled">
-  <?php foreach ($bundled as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
+  <?php foreach ($all_values as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
 </datalist>
 
 <table id="ut-icons">
@@ -816,11 +850,14 @@ and tinted with the theme color, so single-color line icons work best.
     <button type="button" class="ut-x" onclick="utClosePicker()">&times;</button>
   </div>
   <div id="ut-picker-grid">
-    <?php foreach ($bundled as $b): $bu = htmlspecialchars($b); ?>
-    <button type="button" class="ut-pick-item" data-name="<?= $bu ?>" title="<?= $bu ?>" onclick="utPick('<?= $bu ?>')">
-      <span class="ico" style="-webkit-mask-image:url('<?= $weburl ?>/icons/svg/<?= $bu ?>.svg');mask-image:url('<?= $weburl ?>/icons/svg/<?= $bu ?>.svg');"></span>
-      <small><?= $bu ?></small>
+    <?php foreach ($picker_groups as $glabel => $items): ?>
+    <div class="ut-pick-group" data-group="<?= htmlspecialchars(strtolower($glabel)) ?>"><?= htmlspecialchars($glabel) ?></div>
+    <?php foreach ($items as [$val, $name, $url]): $v = htmlspecialchars($val); $nm = htmlspecialchars($name); ?>
+    <button type="button" class="ut-pick-item" data-search="<?= htmlspecialchars(strtolower($name . ' ' . $glabel . ' ' . $val)) ?>" title="<?= $v ?>" onclick="utPick('<?= $v ?>')">
+      <span class="ico" style="-webkit-mask-image:url('<?= $url ?>');mask-image:url('<?= $url ?>');"></span>
+      <small><?= $nm ?></small>
     </button>
+    <?php endforeach; ?>
     <?php endforeach; ?>
   </div>
 </div>
@@ -828,7 +865,7 @@ and tinted with the theme color, so single-color line icons work best.
 <script>
 // Live preview for bundled Lucide names (same-origin SVGs). URLs / <svg> markup are
 // previewed after Apply (server validates first).
-var UT_BUNDLED = <?= json_encode($bundled) ?>;
+var UT_BUNDLED = <?= json_encode($all_values) ?>;
 var UT_WEBURL  = '<?= $weburl ?>';
 var UT_TARGET  = null;  // input being edited via the picker
 
@@ -883,11 +920,22 @@ function utPick(name){
 }
 function utPickerFilter(){
   var q = (document.getElementById('ut-picker-search').value||'').toLowerCase().trim();
-  var items = document.querySelectorAll('#ut-picker-grid .ut-pick-item');
-  for(var i=0;i<items.length;i++){
-    var n = items[i].getAttribute('data-name');
-    items[i].style.display = (!q || n.indexOf(q) >= 0) ? '' : 'none';
+  var grid = document.getElementById('ut-picker-grid');
+  var nodes = grid.children, visibleInGroup = 0, lastGroup = null;
+  for(var i=0;i<nodes.length;i++){
+    var el = nodes[i];
+    if(el.classList.contains('ut-pick-group')){
+      // finalise the previous group's header visibility, then start a new one
+      if(lastGroup) lastGroup.style.display = visibleInGroup ? '' : 'none';
+      lastGroup = el; visibleInGroup = 0;
+    } else {
+      var s = el.getAttribute('data-search') || '';
+      var show = !q || s.indexOf(q) >= 0;
+      el.style.display = show ? '' : 'none';
+      if(show) visibleInGroup++;
+    }
   }
+  if(lastGroup) lastGroup.style.display = visibleInGroup ? '' : 'none';
 }
 document.addEventListener('keydown', function(e){ if(e.key === 'Escape') utClosePicker(); });
 </script>

@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24z",
+    "version": "2026.07.24aa",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24aa
+- Custom Icons: the grid picker now shows ALL bundled sets (Lucide, Tabler,
+  Phosphor, Heroicons), grouped and searchable — pick e.g. "tabler/cpu" for any
+  slot. The main settings page gets a prominent "Open Themer Icons" button.
+
 ## 2026.07.24z
 - Sidebar polish (Azure / Gray): the top header band now matches the content
   background (was a lighter gray), and the active/hover nav item uses a subtle
