@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24l",
+    "version": "2026.07.24m",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24m
+- Only bebamu is now built-in; the other default themes are seeded to flash on
+  first install, so they can be uninstalled from the store like any added theme
+  (and stay removed).
+
 ## 2026.07.24l
 - Store: user-added themes now show an "Uninstall" button (built-in stay
   "Installed"). The separate "Added themes" row now only lists URL imports
@@ -118,7 +123,7 @@ def collect_files():
 INSTALL = f"""
 # --- Unraid Themer: prepare directories ---
 rm -rf {WEBROOT}
-mkdir -p {WEBROOT}/presets {WEBROOT}/js
+mkdir -p {WEBROOT}/presets {WEBROOT}/js {WEBROOT}/defaults
 mkdir -p {FLASH}/presets
 exit 0
 """.strip()
@@ -129,16 +134,21 @@ BOOT = f"""
 # Config (SERVICE/PRESET) is read straight from flash by parse_plugin_cfg,
 # merged over the shipped default.cfg — nothing to copy for it.
 
+# Seed the default themes onto flash ONCE (first install). After that they are
+# user-removable and won't come back. Only bebamu is built-in (from the .plg).
+if [ ! -f {FLASH}/presets/.seeded ]; then
+    cp -n {WEBROOT}/defaults/*.css {FLASH}/presets/ 2>/dev/null
+    touch {FLASH}/presets/.seeded
+fi
+
 # User custom overrides live on flash; recreate the webroot copy nginx serves.
 if [ ! -f {FLASH}/custom.css ]; then
     echo '/* Your custom CSS overrides — loaded on top of the selected preset. */' > {FLASH}/custom.css
 fi
 cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 
-# Let users drop extra presets on the flash; mirror them into the webroot too.
-if [ -d {FLASH}/presets ]; then
-    cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
-fi
+# Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
+cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

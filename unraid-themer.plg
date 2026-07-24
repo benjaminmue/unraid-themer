@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24l">
+  <!ENTITY version   "2026.07.24m">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24m
+- Only bebamu is now built-in; the other default themes are seeded to flash on
+  first install, so they can be uninstalled from the store like any added theme
+  (and stay removed).
+
 ## 2026.07.24l
 - Store: user-added themes now show an "Uninstall" button (built-in stay
   "Installed"). The separate "Added themes" row now only lists URL imports
@@ -80,7 +85,7 @@
 <INLINE>
 # --- Unraid Themer: prepare directories ---
 rm -rf /usr/local/emhttp/plugins/unraid.themer
-mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js
+mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js /usr/local/emhttp/plugins/unraid.themer/defaults
 mkdir -p /boot/config/plugins/unraid.themer/presets
 exit 0
 </INLINE>
@@ -453,6 +458,1429 @@ Link="nav-user"
 <INLINE>
 <![CDATA[SERVICE="disabled"
 PRESET="bebamu"
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/catppuccin-latte.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Catppuccin Latte — soft light pastel, mauve and blue accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --lat-bg: #eff1f5;
+  --lat-bg2: #e6e9ef;
+  --lat-surface: #dce0e8;
+  --lat-text: #4c4f69;
+  --lat-dim: #6c6f85;
+  --lat-border: #bcc0cc;
+  --lat-accent: #8839ef;
+  --lat-accent2: #1e66f5;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--lat-text);
+  --alt-text-color: var(--lat-dim);
+  --link-text-color: var(--lat-accent);
+
+  --background-color: var(--lat-bg);
+  --mild-background-color: var(--lat-bg2);
+
+  --border-color: var(--lat-border);
+  --input-border-color: var(--lat-border);
+  --table-border-color: var(--lat-border);
+  --table-background-color: var(--lat-bg2);
+  --table-header-background-color: var(--lat-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--lat-border);
+  --shade-bg-color: var(--lat-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--lat-bg2);
+  --footer-text: var(--lat-text);
+  --footer-background-color: var(--lat-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--lat-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--lat-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--lat-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--lat-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--lat-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--lat-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--lat-accent);
+  --orange-800: var(--lat-accent2);
+  --brand-orange: var(--lat-accent);
+  --brand-red: var(--lat-accent2);
+  --blue-700: var(--lat-accent);
+  --blue-800: var(--lat-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--lat-bg);
+  --ui-bg-muted: var(--lat-bg2);
+  --ui-bg-elevated: var(--lat-surface);
+  --ui-bg-accented: var(--lat-surface);
+  --ui-text: var(--lat-text);
+  --ui-text-muted: var(--lat-dim);
+  --ui-text-dimmed: var(--lat-dim);
+  --ui-text-highlighted: var(--lat-text);
+  --ui-border: var(--lat-border);
+  --ui-primary: var(--lat-accent);
+  --primary: var(--lat-accent);
+  --background: var(--lat-bg);
+  --foreground: var(--lat-text);
+  --card: var(--lat-bg2);
+  --popover: var(--lat-bg2);
+  --border: var(--lat-border);
+  --ring: var(--lat-accent);
+  --accent: var(--lat-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--lat-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--lat-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--lat-accent) !important; }
+#docker_view .blue-text { color: var(--lat-accent2) !important; }
+#menu .nav-item.active a { color: var(--lat-accent) !important; }
+#menu .nav-item.active:after { background: var(--lat-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--lat-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--lat-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--lat-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/dracula.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Dracula — purple/pink accents on deep grey-violet dark */
+:root {
+  /* ---------------- Palette ---------------- */
+  --dracula-bg: #282A36;
+  --dracula-bg2: #343746;
+  --dracula-surface: #44475A;
+  --dracula-text: #F8F8F2;
+  --dracula-dim: #BFC0D0;
+  --dracula-border: #44475A;
+  --dracula-accent: #BD93F9;
+  --dracula-accent2: #FF79C6;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--dracula-text);
+  --alt-text-color: var(--dracula-dim);
+  --link-text-color: var(--dracula-accent);
+
+  --background-color: var(--dracula-bg);
+  --mild-background-color: var(--dracula-bg2);
+
+  --border-color: var(--dracula-border);
+  --input-border-color: var(--dracula-border);
+  --table-border-color: var(--dracula-border);
+  --table-background-color: var(--dracula-bg2);
+  --table-header-background-color: var(--dracula-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--dracula-border);
+  --shade-bg-color: var(--dracula-surface);
+  --focus-input-bg-color: var(--dracula-surface);
+
+  --header-background-color: var(--dracula-surface);
+  --header-text-color: var(--dracula-text);
+  --header-text-primary: var(--dracula-text);
+  --header-text-secondary: var(--dracula-dim);
+
+  --title-header-background-color: var(--dracula-bg2);
+
+  --footer-text: var(--dracula-text);
+  --footer-background-color: var(--dracula-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--dracula-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--dracula-accent);
+  --button-border: 1px solid var(--dracula-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--dracula-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--dracula-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Dracula purple/pink) ---------------- */
+  --orange-500: var(--dracula-accent);
+  --orange-800: var(--dracula-accent2);
+  --brand-orange: var(--dracula-accent);
+  --brand-red: var(--dracula-accent2);
+  --blue-700: var(--dracula-accent);
+  --blue-800: var(--dracula-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--dracula-bg);
+  --ui-bg-muted: var(--dracula-bg2);
+  --ui-bg-elevated: var(--dracula-surface);
+  --ui-bg-accented: var(--dracula-surface);
+  --ui-text: var(--dracula-text);
+  --ui-text-muted: var(--dracula-dim);
+  --ui-text-dimmed: var(--dracula-dim);
+  --ui-text-highlighted: var(--dracula-text);
+  --ui-border: var(--dracula-border);
+  --ui-primary: var(--dracula-accent);
+  --primary: var(--dracula-accent);
+  --background: var(--dracula-bg);
+  --foreground: var(--dracula-text);
+  --card: var(--dracula-bg2);
+  --popover: var(--dracula-bg2);
+  --border: var(--dracula-border);
+  --ring: var(--dracula-accent);
+  --accent: var(--dracula-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--dracula-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--dracula-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Purple-Akzent */
+a.blue-text, .blue-text { color: var(--dracula-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Pink) */
+#docker_view .blue-text { color: var(--dracula-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--dracula-accent) !important; }
+#menu .nav-item.active:after { background: var(--dracula-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--dracula-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--dracula-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--dracula-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/github-light.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: GitHub Light — clean white, blue and green accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --ghl-bg: #ffffff;
+  --ghl-bg2: #f6f8fa;
+  --ghl-surface: #eaeef2;
+  --ghl-text: #1f2328;
+  --ghl-dim: #656d76;
+  --ghl-border: #d0d7de;
+  --ghl-accent: #0969da;
+  --ghl-accent2: #1a7f37;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--ghl-text);
+  --alt-text-color: var(--ghl-dim);
+  --link-text-color: var(--ghl-accent);
+
+  --background-color: var(--ghl-bg);
+  --mild-background-color: var(--ghl-bg2);
+
+  --border-color: var(--ghl-border);
+  --input-border-color: var(--ghl-border);
+  --table-border-color: var(--ghl-border);
+  --table-background-color: var(--ghl-bg2);
+  --table-header-background-color: var(--ghl-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--ghl-border);
+  --shade-bg-color: var(--ghl-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--ghl-bg2);
+  --footer-text: var(--ghl-text);
+  --footer-background-color: var(--ghl-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--ghl-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--ghl-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--ghl-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--ghl-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--ghl-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--ghl-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--ghl-accent);
+  --orange-800: var(--ghl-accent2);
+  --brand-orange: var(--ghl-accent);
+  --brand-red: var(--ghl-accent2);
+  --blue-700: var(--ghl-accent);
+  --blue-800: var(--ghl-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--ghl-bg);
+  --ui-bg-muted: var(--ghl-bg2);
+  --ui-bg-elevated: var(--ghl-surface);
+  --ui-bg-accented: var(--ghl-surface);
+  --ui-text: var(--ghl-text);
+  --ui-text-muted: var(--ghl-dim);
+  --ui-text-dimmed: var(--ghl-dim);
+  --ui-text-highlighted: var(--ghl-text);
+  --ui-border: var(--ghl-border);
+  --ui-primary: var(--ghl-accent);
+  --primary: var(--ghl-accent);
+  --background: var(--ghl-bg);
+  --foreground: var(--ghl-text);
+  --card: var(--ghl-bg2);
+  --popover: var(--ghl-bg2);
+  --border: var(--ghl-border);
+  --ring: var(--ghl-accent);
+  --accent: var(--ghl-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--ghl-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--ghl-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--ghl-accent) !important; }
+#docker_view .blue-text { color: var(--ghl-accent2) !important; }
+#menu .nav-item.active a { color: var(--ghl-accent) !important; }
+#menu .nav-item.active:after { background: var(--ghl-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--ghl-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--ghl-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--ghl-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/gruvbox-dark.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Gruvbox Dark — warm orange/yellow accents on retro-groove brown-grey */
+:root {
+  /* ---------------- Palette ---------------- */
+  --gruvbox-bg: #282828;
+  --gruvbox-bg2: #32302F;
+  --gruvbox-surface: #3C3836;
+  --gruvbox-text: #EBDBB2;
+  --gruvbox-dim: #A89984;
+  --gruvbox-border: #504945;
+  --gruvbox-accent: #FE8019;
+  --gruvbox-accent2: #FABD2F;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--gruvbox-text);
+  --alt-text-color: var(--gruvbox-dim);
+  --link-text-color: var(--gruvbox-accent);
+
+  --background-color: var(--gruvbox-bg);
+  --mild-background-color: var(--gruvbox-bg2);
+
+  --border-color: var(--gruvbox-border);
+  --input-border-color: var(--gruvbox-border);
+  --table-border-color: var(--gruvbox-border);
+  --table-background-color: var(--gruvbox-bg2);
+  --table-header-background-color: var(--gruvbox-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--gruvbox-border);
+  --shade-bg-color: var(--gruvbox-surface);
+  --focus-input-bg-color: var(--gruvbox-surface);
+
+  --header-background-color: var(--gruvbox-surface);
+  --header-text-color: var(--gruvbox-text);
+  --header-text-primary: var(--gruvbox-text);
+  --header-text-secondary: var(--gruvbox-dim);
+
+  --title-header-background-color: var(--gruvbox-bg2);
+
+  --footer-text: var(--gruvbox-text);
+  --footer-background-color: var(--gruvbox-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--gruvbox-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--gruvbox-accent);
+  --button-border: 1px solid var(--gruvbox-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--gruvbox-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--gruvbox-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Gruvbox orange/yellow) ---------------- */
+  --orange-500: var(--gruvbox-accent);
+  --orange-800: var(--gruvbox-accent2);
+  --brand-orange: var(--gruvbox-accent);
+  --brand-red: var(--gruvbox-accent2);
+  --blue-700: var(--gruvbox-accent);
+  --blue-800: var(--gruvbox-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--gruvbox-bg);
+  --ui-bg-muted: var(--gruvbox-bg2);
+  --ui-bg-elevated: var(--gruvbox-surface);
+  --ui-bg-accented: var(--gruvbox-surface);
+  --ui-text: var(--gruvbox-text);
+  --ui-text-muted: var(--gruvbox-dim);
+  --ui-text-dimmed: var(--gruvbox-dim);
+  --ui-text-highlighted: var(--gruvbox-text);
+  --ui-border: var(--gruvbox-border);
+  --ui-primary: var(--gruvbox-accent);
+  --primary: var(--gruvbox-accent);
+  --background: var(--gruvbox-bg);
+  --foreground: var(--gruvbox-text);
+  --card: var(--gruvbox-bg2);
+  --popover: var(--gruvbox-bg2);
+  --border: var(--gruvbox-border);
+  --ring: var(--gruvbox-accent);
+  --accent: var(--gruvbox-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--gruvbox-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--gruvbox-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Orange-Akzent */
+a.blue-text, .blue-text { color: var(--gruvbox-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Gelb) */
+#docker_view .blue-text { color: var(--gruvbox-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--gruvbox-accent) !important; }
+#menu .nav-item.active:after { background: var(--gruvbox-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--gruvbox-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--gruvbox-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--gruvbox-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/monokai.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Monokai — magenta/lime accents on classic olive-charcoal dark */
+:root {
+  /* ---------------- Palette ---------------- */
+  --monokai-bg: #272822;
+  --monokai-bg2: #2F312A;
+  --monokai-surface: #3E3D32;
+  --monokai-text: #F8F8F2;
+  --monokai-dim: #CFCFC2;
+  --monokai-border: #49483E;
+  --monokai-accent: #F92672;
+  --monokai-accent2: #A6E22E;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--monokai-text);
+  --alt-text-color: var(--monokai-dim);
+  --link-text-color: var(--monokai-accent);
+
+  --background-color: var(--monokai-bg);
+  --mild-background-color: var(--monokai-bg2);
+
+  --border-color: var(--monokai-border);
+  --input-border-color: var(--monokai-border);
+  --table-border-color: var(--monokai-border);
+  --table-background-color: var(--monokai-bg2);
+  --table-header-background-color: var(--monokai-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--monokai-border);
+  --shade-bg-color: var(--monokai-surface);
+  --focus-input-bg-color: var(--monokai-surface);
+
+  --header-background-color: var(--monokai-surface);
+  --header-text-color: var(--monokai-text);
+  --header-text-primary: var(--monokai-text);
+  --header-text-secondary: var(--monokai-dim);
+
+  --title-header-background-color: var(--monokai-bg2);
+
+  --footer-text: var(--monokai-text);
+  --footer-background-color: var(--monokai-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--monokai-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--monokai-accent);
+  --button-border: 1px solid var(--monokai-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--monokai-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--monokai-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Monokai magenta/lime) ---------------- */
+  --orange-500: var(--monokai-accent);
+  --orange-800: var(--monokai-accent2);
+  --brand-orange: var(--monokai-accent);
+  --brand-red: var(--monokai-accent2);
+  --blue-700: var(--monokai-accent);
+  --blue-800: var(--monokai-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--monokai-bg);
+  --ui-bg-muted: var(--monokai-bg2);
+  --ui-bg-elevated: var(--monokai-surface);
+  --ui-bg-accented: var(--monokai-surface);
+  --ui-text: var(--monokai-text);
+  --ui-text-muted: var(--monokai-dim);
+  --ui-text-dimmed: var(--monokai-dim);
+  --ui-text-highlighted: var(--monokai-text);
+  --ui-border: var(--monokai-border);
+  --ui-primary: var(--monokai-accent);
+  --primary: var(--monokai-accent);
+  --background: var(--monokai-bg);
+  --foreground: var(--monokai-text);
+  --card: var(--monokai-bg2);
+  --popover: var(--monokai-bg2);
+  --border: var(--monokai-border);
+  --ring: var(--monokai-accent);
+  --accent: var(--monokai-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--monokai-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--monokai-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Magenta-Akzent */
+a.blue-text, .blue-text { color: var(--monokai-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Lime) */
+#docker_view .blue-text { color: var(--monokai-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--monokai-accent) !important; }
+#menu .nav-item.active:after { background: var(--monokai-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--monokai-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--monokai-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--monokai-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/nord.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Nord — arctic blue-grey palette, frost accents on polar night */
+:root {
+  /* ---------------- Palette ---------------- */
+  --nord-bg: #2E3440;
+  --nord-bg2: #3B4252;
+  --nord-surface: #434C5E;
+  --nord-text: #ECEFF4;
+  --nord-dim: #D8DEE9;
+  --nord-border: #4C566A;
+  --nord-accent: #88C0D0;
+  --nord-accent2: #5E81AC;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--nord-text);
+  --alt-text-color: var(--nord-dim);
+  --link-text-color: var(--nord-accent);
+
+  --background-color: var(--nord-bg);
+  --mild-background-color: var(--nord-bg2);
+
+  --border-color: var(--nord-border);
+  --input-border-color: var(--nord-border);
+  --table-border-color: var(--nord-border);
+  --table-background-color: var(--nord-bg2);
+  --table-header-background-color: var(--nord-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--nord-border);
+  --shade-bg-color: var(--nord-surface);
+  --focus-input-bg-color: var(--nord-surface);
+
+  --header-background-color: var(--nord-surface);
+  --header-text-color: var(--nord-text);
+  --header-text-primary: var(--nord-text);
+  --header-text-secondary: var(--nord-dim);
+
+  --title-header-background-color: var(--nord-bg2);
+
+  --footer-text: var(--nord-text);
+  --footer-background-color: var(--nord-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--nord-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--nord-accent);
+  --button-border: 1px solid var(--nord-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--nord-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--nord-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Nord frost) ---------------- */
+  --orange-500: var(--nord-accent);
+  --orange-800: var(--nord-accent2);
+  --brand-orange: var(--nord-accent);
+  --brand-red: var(--nord-accent2);
+  --blue-700: var(--nord-accent);
+  --blue-800: var(--nord-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--nord-bg);
+  --ui-bg-muted: var(--nord-bg2);
+  --ui-bg-elevated: var(--nord-surface);
+  --ui-bg-accented: var(--nord-surface);
+  --ui-text: var(--nord-text);
+  --ui-text-muted: var(--nord-dim);
+  --ui-text-dimmed: var(--nord-dim);
+  --ui-text-highlighted: var(--nord-text);
+  --ui-border: var(--nord-border);
+  --ui-primary: var(--nord-accent);
+  --primary: var(--nord-accent);
+  --background: var(--nord-bg);
+  --foreground: var(--nord-text);
+  --card: var(--nord-bg2);
+  --popover: var(--nord-bg2);
+  --border: var(--nord-border);
+  --ring: var(--nord-accent);
+  --accent: var(--nord-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--nord-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--nord-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Frost-Akzent */
+a.blue-text, .blue-text { color: var(--nord-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent */
+#docker_view .blue-text { color: var(--nord-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--nord-accent) !important; }
+#menu .nav-item.active:after { background: var(--nord-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--nord-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--nord-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--nord-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/rose-pine-dawn.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Rose Pine Dawn — soft rosy light, iris and rose accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --rpd-bg: #faf4ed;
+  --rpd-bg2: #fffaf3;
+  --rpd-surface: #f2e9e1;
+  --rpd-text: #575279;
+  --rpd-dim: #797593;
+  --rpd-border: #dfdad9;
+  --rpd-accent: #907aa9;
+  --rpd-accent2: #d7827e;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--rpd-text);
+  --alt-text-color: var(--rpd-dim);
+  --link-text-color: var(--rpd-accent);
+
+  --background-color: var(--rpd-bg);
+  --mild-background-color: var(--rpd-bg2);
+
+  --border-color: var(--rpd-border);
+  --input-border-color: var(--rpd-border);
+  --table-border-color: var(--rpd-border);
+  --table-background-color: var(--rpd-bg2);
+  --table-header-background-color: var(--rpd-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--rpd-border);
+  --shade-bg-color: var(--rpd-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--rpd-bg2);
+  --footer-text: var(--rpd-text);
+  --footer-background-color: var(--rpd-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--rpd-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--rpd-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--rpd-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--rpd-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--rpd-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--rpd-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--rpd-accent);
+  --orange-800: var(--rpd-accent2);
+  --brand-orange: var(--rpd-accent);
+  --brand-red: var(--rpd-accent2);
+  --blue-700: var(--rpd-accent);
+  --blue-800: var(--rpd-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--rpd-bg);
+  --ui-bg-muted: var(--rpd-bg2);
+  --ui-bg-elevated: var(--rpd-surface);
+  --ui-bg-accented: var(--rpd-surface);
+  --ui-text: var(--rpd-text);
+  --ui-text-muted: var(--rpd-dim);
+  --ui-text-dimmed: var(--rpd-dim);
+  --ui-text-highlighted: var(--rpd-text);
+  --ui-border: var(--rpd-border);
+  --ui-primary: var(--rpd-accent);
+  --primary: var(--rpd-accent);
+  --background: var(--rpd-bg);
+  --foreground: var(--rpd-text);
+  --card: var(--rpd-bg2);
+  --popover: var(--rpd-bg2);
+  --border: var(--rpd-border);
+  --ring: var(--rpd-accent);
+  --accent: var(--rpd-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--rpd-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--rpd-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--rpd-accent) !important; }
+#docker_view .blue-text { color: var(--rpd-accent2) !important; }
+#menu .nav-item.active a { color: var(--rpd-accent) !important; }
+#menu .nav-item.active:after { background: var(--rpd-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--rpd-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--rpd-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--rpd-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/solarized-dark.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Solarized Dark — teal/cyan-blue accents on deep base03/base02 */
+:root {
+  /* ---------------- Palette ---------------- */
+  --solar-bg: #002B36;
+  --solar-bg2: #073642;
+  --solar-surface: #0B3A46;
+  --solar-text: #EEE8D5;
+  --solar-dim: #93A1A1;
+  --solar-border: #0A4653;
+  --solar-accent: #268BD2;
+  --solar-accent2: #2AA198;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--solar-text);
+  --alt-text-color: var(--solar-dim);
+  --link-text-color: var(--solar-accent);
+
+  --background-color: var(--solar-bg);
+  --mild-background-color: var(--solar-bg2);
+
+  --border-color: var(--solar-border);
+  --input-border-color: var(--solar-border);
+  --table-border-color: var(--solar-border);
+  --table-background-color: var(--solar-bg2);
+  --table-header-background-color: var(--solar-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--solar-border);
+  --shade-bg-color: var(--solar-surface);
+  --focus-input-bg-color: var(--solar-surface);
+
+  --header-background-color: var(--solar-surface);
+  --header-text-color: var(--solar-text);
+  --header-text-primary: var(--solar-text);
+  --header-text-secondary: var(--solar-dim);
+
+  --title-header-background-color: var(--solar-bg2);
+
+  --footer-text: var(--solar-text);
+  --footer-background-color: var(--solar-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--solar-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--solar-accent);
+  --button-border: 1px solid var(--solar-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--solar-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--solar-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Solarized blue/cyan) ---------------- */
+  --orange-500: var(--solar-accent);
+  --orange-800: var(--solar-accent2);
+  --brand-orange: var(--solar-accent);
+  --brand-red: var(--solar-accent2);
+  --blue-700: var(--solar-accent);
+  --blue-800: var(--solar-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--solar-bg);
+  --ui-bg-muted: var(--solar-bg2);
+  --ui-bg-elevated: var(--solar-surface);
+  --ui-bg-accented: var(--solar-surface);
+  --ui-text: var(--solar-text);
+  --ui-text-muted: var(--solar-dim);
+  --ui-text-dimmed: var(--solar-dim);
+  --ui-text-highlighted: var(--solar-text);
+  --ui-border: var(--solar-border);
+  --ui-primary: var(--solar-accent);
+  --primary: var(--solar-accent);
+  --background: var(--solar-bg);
+  --foreground: var(--solar-text);
+  --card: var(--solar-bg2);
+  --popover: var(--solar-bg2);
+  --border: var(--solar-border);
+  --ring: var(--solar-accent);
+  --accent: var(--solar-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--solar-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--solar-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Blau-Akzent */
+a.blue-text, .blue-text { color: var(--solar-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Cyan) */
+#docker_view .blue-text { color: var(--solar-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--solar-accent) !important; }
+#menu .nav-item.active:after { background: var(--solar-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--solar-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--solar-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--solar-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/defaults/solarized-light.css">
+<INLINE>
+<![CDATA[/* Unraid Themer preset: Solarized Light — warm paper base, blue and cyan accents */
+:root {
+  /* ---------------- Palette (light) ---------------- */
+  --sol-bg: #fdf6e3;
+  --sol-bg2: #eee8d5;
+  --sol-surface: #e3ddc7;
+  --sol-text: #073642;
+  --sol-dim: #657b83;
+  --sol-border: #d9d2bd;
+  --sol-accent: #268bd2;
+  --sol-accent2: #2aa198;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--sol-text);
+  --alt-text-color: var(--sol-dim);
+  --link-text-color: var(--sol-accent);
+
+  --background-color: var(--sol-bg);
+  --mild-background-color: var(--sol-bg2);
+
+  --border-color: var(--sol-border);
+  --input-border-color: var(--sol-border);
+  --table-border-color: var(--sol-border);
+  --table-background-color: var(--sol-bg2);
+  --table-header-background-color: var(--sol-surface);
+  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
+  --hr-color: var(--sol-border);
+  --shade-bg-color: var(--sol-surface);
+  --focus-input-bg-color: #ffffff;
+
+  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
+  --header-background-color: #141414;
+  --header-text-color: #f0f0f0;
+  --header-text-primary: #f0f0f0;
+  --header-text-secondary: rgba(240, 240, 240, 0.6);
+
+  --title-header-background-color: var(--sol-bg2);
+  --footer-text: var(--sol-text);
+  --footer-background-color: var(--sol-surface);
+
+  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
+  --usage-bar-used-background-color: var(--sol-accent);
+  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--sol-accent);
+  --button-background-size: auto;
+  --button-border: 1px solid var(--sol-accent);
+  --hover-button-text-color: #ffffff;
+  --hover-button-border: var(--sol-text);
+
+  --scrollbar-color: rgba(0, 0, 0, 0.3);
+  --scrollbar-hover-color: var(--sol-accent);
+  --small-shadow: none;
+  --dashboard-icon-color: var(--sol-dim);
+
+  /* brand + link remap */
+  --orange-500: var(--sol-accent);
+  --orange-800: var(--sol-accent2);
+  --brand-orange: var(--sol-accent);
+  --brand-red: var(--sol-accent2);
+  --blue-700: var(--sol-accent);
+  --blue-800: var(--sol-accent);
+
+  /* Unraid 7 UUI / shadcn tokens */
+  --ui-bg: var(--sol-bg);
+  --ui-bg-muted: var(--sol-bg2);
+  --ui-bg-elevated: var(--sol-surface);
+  --ui-bg-accented: var(--sol-surface);
+  --ui-text: var(--sol-text);
+  --ui-text-muted: var(--sol-dim);
+  --ui-text-dimmed: var(--sol-dim);
+  --ui-text-highlighted: var(--sol-text);
+  --ui-border: var(--sol-border);
+  --ui-primary: var(--sol-accent);
+  --primary: var(--sol-accent);
+  --background: var(--sol-bg);
+  --foreground: var(--sol-text);
+  --card: var(--sol-bg2);
+  --popover: var(--sol-bg2);
+  --border: var(--sol-border);
+  --ring: var(--sol-accent);
+  --accent: var(--sol-accent2);
+}
+
+/* ---------------- Elements (flat, editorial) ---------------- */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--sol-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--sol-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--sol-accent) !important; }
+#docker_view .blue-text { color: var(--sol-accent2) !important; }
+#menu .nav-item.active a { color: var(--sol-accent) !important; }
+#menu .nav-item.active:after { background: var(--sol-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--sol-accent2) !important; }
+.orangebar { background: #c67100 !important; }
+div.title { border-left: 3px solid var(--sol-accent); }
+table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
+.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--sol-accent); margin-right: 9px; vertical-align: -1px; }
+
+/* ---------------- compat: base-theme-driven surfaces ---------------- */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: white */
 ]]>
 </INLINE>
 </FILE>
@@ -858,1434 +2286,18 @@ html.Theme--black {
 </INLINE>
 </FILE>
 
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/catppuccin-latte.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Catppuccin Latte — soft light pastel, mauve and blue accents */
-:root {
-  /* ---------------- Palette (light) ---------------- */
-  --lat-bg: #eff1f5;
-  --lat-bg2: #e6e9ef;
-  --lat-surface: #dce0e8;
-  --lat-text: #4c4f69;
-  --lat-dim: #6c6f85;
-  --lat-border: #bcc0cc;
-  --lat-accent: #8839ef;
-  --lat-accent2: #1e66f5;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--lat-text);
-  --alt-text-color: var(--lat-dim);
-  --link-text-color: var(--lat-accent);
-
-  --background-color: var(--lat-bg);
-  --mild-background-color: var(--lat-bg2);
-
-  --border-color: var(--lat-border);
-  --input-border-color: var(--lat-border);
-  --table-border-color: var(--lat-border);
-  --table-background-color: var(--lat-bg2);
-  --table-header-background-color: var(--lat-surface);
-  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
-  --hr-color: var(--lat-border);
-  --shade-bg-color: var(--lat-surface);
-  --focus-input-bg-color: #ffffff;
-
-  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
-  --header-background-color: #141414;
-  --header-text-color: #f0f0f0;
-  --header-text-primary: #f0f0f0;
-  --header-text-secondary: rgba(240, 240, 240, 0.6);
-
-  --title-header-background-color: var(--lat-bg2);
-  --footer-text: var(--lat-text);
-  --footer-background-color: var(--lat-surface);
-
-  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
-  --usage-bar-used-background-color: var(--lat-accent);
-  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--lat-accent);
-  --button-background-size: auto;
-  --button-border: 1px solid var(--lat-accent);
-  --hover-button-text-color: #ffffff;
-  --hover-button-border: var(--lat-text);
-
-  --scrollbar-color: rgba(0, 0, 0, 0.3);
-  --scrollbar-hover-color: var(--lat-accent);
-  --small-shadow: none;
-  --dashboard-icon-color: var(--lat-dim);
-
-  /* brand + link remap */
-  --orange-500: var(--lat-accent);
-  --orange-800: var(--lat-accent2);
-  --brand-orange: var(--lat-accent);
-  --brand-red: var(--lat-accent2);
-  --blue-700: var(--lat-accent);
-  --blue-800: var(--lat-accent);
-
-  /* Unraid 7 UUI / shadcn tokens */
-  --ui-bg: var(--lat-bg);
-  --ui-bg-muted: var(--lat-bg2);
-  --ui-bg-elevated: var(--lat-surface);
-  --ui-bg-accented: var(--lat-surface);
-  --ui-text: var(--lat-text);
-  --ui-text-muted: var(--lat-dim);
-  --ui-text-dimmed: var(--lat-dim);
-  --ui-text-highlighted: var(--lat-text);
-  --ui-border: var(--lat-border);
-  --ui-primary: var(--lat-accent);
-  --primary: var(--lat-accent);
-  --background: var(--lat-bg);
-  --foreground: var(--lat-text);
-  --card: var(--lat-bg2);
-  --popover: var(--lat-bg2);
-  --border: var(--lat-border);
-  --ring: var(--lat-accent);
-  --accent: var(--lat-accent2);
-}
-
-/* ---------------- Elements (flat, editorial) ---------------- */
-.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--lat-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--lat-accent) !important;
-  box-shadow: none !important;
-}
-a.blue-text, .blue-text { color: var(--lat-accent) !important; }
-#docker_view .blue-text { color: var(--lat-accent2) !important; }
-#menu .nav-item.active a { color: var(--lat-accent) !important; }
-#menu .nav-item.active:after { background: var(--lat-accent) !important; }
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--lat-accent2) !important; }
-.orangebar { background: #c67100 !important; }
-div.title { border-left: 3px solid var(--lat-accent); }
-table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
-.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--lat-accent); margin-right: 9px; vertical-align: -1px; }
-
-/* ---------------- compat: base-theme-driven surfaces ---------------- */
-:root {
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: white */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/dracula.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Dracula — purple/pink accents on deep grey-violet dark */
-:root {
-  /* ---------------- Palette ---------------- */
-  --dracula-bg: #282A36;
-  --dracula-bg2: #343746;
-  --dracula-surface: #44475A;
-  --dracula-text: #F8F8F2;
-  --dracula-dim: #BFC0D0;
-  --dracula-border: #44475A;
-  --dracula-accent: #BD93F9;
-  --dracula-accent2: #FF79C6;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--dracula-text);
-  --alt-text-color: var(--dracula-dim);
-  --link-text-color: var(--dracula-accent);
-
-  --background-color: var(--dracula-bg);
-  --mild-background-color: var(--dracula-bg2);
-
-  --border-color: var(--dracula-border);
-  --input-border-color: var(--dracula-border);
-  --table-border-color: var(--dracula-border);
-  --table-background-color: var(--dracula-bg2);
-  --table-header-background-color: var(--dracula-surface);
-  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
-  --hr-color: var(--dracula-border);
-  --shade-bg-color: var(--dracula-surface);
-  --focus-input-bg-color: var(--dracula-surface);
-
-  --header-background-color: var(--dracula-surface);
-  --header-text-color: var(--dracula-text);
-  --header-text-primary: var(--dracula-text);
-  --header-text-secondary: var(--dracula-dim);
-
-  --title-header-background-color: var(--dracula-bg2);
-
-  --footer-text: var(--dracula-text);
-  --footer-background-color: var(--dracula-surface);
-
-  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
-  --usage-bar-used-background-color: var(--dracula-accent);
-  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--dracula-accent);
-  --button-border: 1px solid var(--dracula-accent);
-
-  --scrollbar-color: rgba(255, 255, 255, 0.3);
-  --scrollbar-hover-color: var(--dracula-accent);
-  --small-shadow: none;
-
-  --dashboard-icon-color: var(--dracula-dim);
-
-  /* ---------------- Brand remap (Unraid orange/blue -> Dracula purple/pink) ---------------- */
-  --orange-500: var(--dracula-accent);
-  --orange-800: var(--dracula-accent2);
-  --brand-orange: var(--dracula-accent);
-  --brand-red: var(--dracula-accent2);
-  --blue-700: var(--dracula-accent);
-  --blue-800: var(--dracula-accent);
-
-  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
-  --ui-bg: var(--dracula-bg);
-  --ui-bg-muted: var(--dracula-bg2);
-  --ui-bg-elevated: var(--dracula-surface);
-  --ui-bg-accented: var(--dracula-surface);
-  --ui-text: var(--dracula-text);
-  --ui-text-muted: var(--dracula-dim);
-  --ui-text-dimmed: var(--dracula-dim);
-  --ui-text-highlighted: var(--dracula-text);
-  --ui-border: var(--dracula-border);
-  --ui-primary: var(--dracula-accent);
-  --primary: var(--dracula-accent);
-  --background: var(--dracula-bg);
-  --foreground: var(--dracula-text);
-  --card: var(--dracula-bg2);
-  --popover: var(--dracula-bg2);
-  --border: var(--dracula-border);
-  --ring: var(--dracula-accent);
-  --accent: var(--dracula-accent2);
-}
-
-/* ==================== Elemente ==================== */
-
-/* flach + editorial */
-.button, button, input, select, textarea, .tabs label {
-  border-radius: 0 !important;
-}
-/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--dracula-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--dracula-accent) !important;
-  box-shadow: none !important;
-}
-
-/* Echte Links -> Purple-Akzent */
-a.blue-text, .blue-text { color: var(--dracula-accent) !important; }
-/* Docker "Update verfügbar" -> zweiter Akzent (Pink) */
-#docker_view .blue-text { color: var(--dracula-accent2) !important; }
-
-/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
-#menu .nav-item.active a { color: var(--dracula-accent) !important; }
-#menu .nav-item.active:after { background: var(--dracula-accent) !important; }
-
-/* Auslastungsbalken */
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--dracula-accent2) !important; }
-
-/* Sektions-Titelbalken (Main-Seite) */
-div.title { border-left: 3px solid var(--dracula-accent); }
-
-/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
-table.dashboard tbody {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* Box-Titel linksbündig, Uppercase, getrackt */
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main {
-  text-align: left !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 800;
-}
-/* Akzent-Tick direkt vor dem Box-Titel */
-.tile-header-main::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 0.95em;
-  background: var(--dracula-accent);
-  margin-right: 9px;
-  vertical-align: -1px;
-}
-
-/* ==================== compat: base-theme-driven surfaces ====================
-   Tables (Plugins/Docker-advanced) and Community Applications ship their own
-   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
-   their variables to this preset's own semantic vars so they match either way.
-   Values reference vars every preset defines → identical block across presets. */
-:root {
-  /* Dynamix sortable tables */
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  /* Community Applications (own theme files — force to match this preset) */
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: black */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/github-light.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: GitHub Light — clean white, blue and green accents */
-:root {
-  /* ---------------- Palette (light) ---------------- */
-  --ghl-bg: #ffffff;
-  --ghl-bg2: #f6f8fa;
-  --ghl-surface: #eaeef2;
-  --ghl-text: #1f2328;
-  --ghl-dim: #656d76;
-  --ghl-border: #d0d7de;
-  --ghl-accent: #0969da;
-  --ghl-accent2: #1a7f37;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--ghl-text);
-  --alt-text-color: var(--ghl-dim);
-  --link-text-color: var(--ghl-accent);
-
-  --background-color: var(--ghl-bg);
-  --mild-background-color: var(--ghl-bg2);
-
-  --border-color: var(--ghl-border);
-  --input-border-color: var(--ghl-border);
-  --table-border-color: var(--ghl-border);
-  --table-background-color: var(--ghl-bg2);
-  --table-header-background-color: var(--ghl-surface);
-  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
-  --hr-color: var(--ghl-border);
-  --shade-bg-color: var(--ghl-surface);
-  --focus-input-bg-color: #ffffff;
-
-  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
-  --header-background-color: #141414;
-  --header-text-color: #f0f0f0;
-  --header-text-primary: #f0f0f0;
-  --header-text-secondary: rgba(240, 240, 240, 0.6);
-
-  --title-header-background-color: var(--ghl-bg2);
-  --footer-text: var(--ghl-text);
-  --footer-background-color: var(--ghl-surface);
-
-  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
-  --usage-bar-used-background-color: var(--ghl-accent);
-  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--ghl-accent);
-  --button-background-size: auto;
-  --button-border: 1px solid var(--ghl-accent);
-  --hover-button-text-color: #ffffff;
-  --hover-button-border: var(--ghl-text);
-
-  --scrollbar-color: rgba(0, 0, 0, 0.3);
-  --scrollbar-hover-color: var(--ghl-accent);
-  --small-shadow: none;
-  --dashboard-icon-color: var(--ghl-dim);
-
-  /* brand + link remap */
-  --orange-500: var(--ghl-accent);
-  --orange-800: var(--ghl-accent2);
-  --brand-orange: var(--ghl-accent);
-  --brand-red: var(--ghl-accent2);
-  --blue-700: var(--ghl-accent);
-  --blue-800: var(--ghl-accent);
-
-  /* Unraid 7 UUI / shadcn tokens */
-  --ui-bg: var(--ghl-bg);
-  --ui-bg-muted: var(--ghl-bg2);
-  --ui-bg-elevated: var(--ghl-surface);
-  --ui-bg-accented: var(--ghl-surface);
-  --ui-text: var(--ghl-text);
-  --ui-text-muted: var(--ghl-dim);
-  --ui-text-dimmed: var(--ghl-dim);
-  --ui-text-highlighted: var(--ghl-text);
-  --ui-border: var(--ghl-border);
-  --ui-primary: var(--ghl-accent);
-  --primary: var(--ghl-accent);
-  --background: var(--ghl-bg);
-  --foreground: var(--ghl-text);
-  --card: var(--ghl-bg2);
-  --popover: var(--ghl-bg2);
-  --border: var(--ghl-border);
-  --ring: var(--ghl-accent);
-  --accent: var(--ghl-accent2);
-}
-
-/* ---------------- Elements (flat, editorial) ---------------- */
-.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--ghl-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--ghl-accent) !important;
-  box-shadow: none !important;
-}
-a.blue-text, .blue-text { color: var(--ghl-accent) !important; }
-#docker_view .blue-text { color: var(--ghl-accent2) !important; }
-#menu .nav-item.active a { color: var(--ghl-accent) !important; }
-#menu .nav-item.active:after { background: var(--ghl-accent) !important; }
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--ghl-accent2) !important; }
-.orangebar { background: #c67100 !important; }
-div.title { border-left: 3px solid var(--ghl-accent); }
-table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
-.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--ghl-accent); margin-right: 9px; vertical-align: -1px; }
-
-/* ---------------- compat: base-theme-driven surfaces ---------------- */
-:root {
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: white */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/gruvbox-dark.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Gruvbox Dark — warm orange/yellow accents on retro-groove brown-grey */
-:root {
-  /* ---------------- Palette ---------------- */
-  --gruvbox-bg: #282828;
-  --gruvbox-bg2: #32302F;
-  --gruvbox-surface: #3C3836;
-  --gruvbox-text: #EBDBB2;
-  --gruvbox-dim: #A89984;
-  --gruvbox-border: #504945;
-  --gruvbox-accent: #FE8019;
-  --gruvbox-accent2: #FABD2F;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--gruvbox-text);
-  --alt-text-color: var(--gruvbox-dim);
-  --link-text-color: var(--gruvbox-accent);
-
-  --background-color: var(--gruvbox-bg);
-  --mild-background-color: var(--gruvbox-bg2);
-
-  --border-color: var(--gruvbox-border);
-  --input-border-color: var(--gruvbox-border);
-  --table-border-color: var(--gruvbox-border);
-  --table-background-color: var(--gruvbox-bg2);
-  --table-header-background-color: var(--gruvbox-surface);
-  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
-  --hr-color: var(--gruvbox-border);
-  --shade-bg-color: var(--gruvbox-surface);
-  --focus-input-bg-color: var(--gruvbox-surface);
-
-  --header-background-color: var(--gruvbox-surface);
-  --header-text-color: var(--gruvbox-text);
-  --header-text-primary: var(--gruvbox-text);
-  --header-text-secondary: var(--gruvbox-dim);
-
-  --title-header-background-color: var(--gruvbox-bg2);
-
-  --footer-text: var(--gruvbox-text);
-  --footer-background-color: var(--gruvbox-surface);
-
-  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
-  --usage-bar-used-background-color: var(--gruvbox-accent);
-  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--gruvbox-accent);
-  --button-border: 1px solid var(--gruvbox-accent);
-
-  --scrollbar-color: rgba(255, 255, 255, 0.3);
-  --scrollbar-hover-color: var(--gruvbox-accent);
-  --small-shadow: none;
-
-  --dashboard-icon-color: var(--gruvbox-dim);
-
-  /* ---------------- Brand remap (Unraid orange/blue -> Gruvbox orange/yellow) ---------------- */
-  --orange-500: var(--gruvbox-accent);
-  --orange-800: var(--gruvbox-accent2);
-  --brand-orange: var(--gruvbox-accent);
-  --brand-red: var(--gruvbox-accent2);
-  --blue-700: var(--gruvbox-accent);
-  --blue-800: var(--gruvbox-accent);
-
-  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
-  --ui-bg: var(--gruvbox-bg);
-  --ui-bg-muted: var(--gruvbox-bg2);
-  --ui-bg-elevated: var(--gruvbox-surface);
-  --ui-bg-accented: var(--gruvbox-surface);
-  --ui-text: var(--gruvbox-text);
-  --ui-text-muted: var(--gruvbox-dim);
-  --ui-text-dimmed: var(--gruvbox-dim);
-  --ui-text-highlighted: var(--gruvbox-text);
-  --ui-border: var(--gruvbox-border);
-  --ui-primary: var(--gruvbox-accent);
-  --primary: var(--gruvbox-accent);
-  --background: var(--gruvbox-bg);
-  --foreground: var(--gruvbox-text);
-  --card: var(--gruvbox-bg2);
-  --popover: var(--gruvbox-bg2);
-  --border: var(--gruvbox-border);
-  --ring: var(--gruvbox-accent);
-  --accent: var(--gruvbox-accent2);
-}
-
-/* ==================== Elemente ==================== */
-
-/* flach + editorial */
-.button, button, input, select, textarea, .tabs label {
-  border-radius: 0 !important;
-}
-/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--gruvbox-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--gruvbox-accent) !important;
-  box-shadow: none !important;
-}
-
-/* Echte Links -> Orange-Akzent */
-a.blue-text, .blue-text { color: var(--gruvbox-accent) !important; }
-/* Docker "Update verfügbar" -> zweiter Akzent (Gelb) */
-#docker_view .blue-text { color: var(--gruvbox-accent2) !important; }
-
-/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
-#menu .nav-item.active a { color: var(--gruvbox-accent) !important; }
-#menu .nav-item.active:after { background: var(--gruvbox-accent) !important; }
-
-/* Auslastungsbalken */
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--gruvbox-accent2) !important; }
-
-/* Sektions-Titelbalken (Main-Seite) */
-div.title { border-left: 3px solid var(--gruvbox-accent); }
-
-/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
-table.dashboard tbody {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* Box-Titel linksbündig, Uppercase, getrackt */
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main {
-  text-align: left !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 800;
-}
-/* Akzent-Tick direkt vor dem Box-Titel */
-.tile-header-main::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 0.95em;
-  background: var(--gruvbox-accent);
-  margin-right: 9px;
-  vertical-align: -1px;
-}
-
-/* ==================== compat: base-theme-driven surfaces ====================
-   Tables (Plugins/Docker-advanced) and Community Applications ship their own
-   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
-   their variables to this preset's own semantic vars so they match either way.
-   Values reference vars every preset defines → identical block across presets. */
-:root {
-  /* Dynamix sortable tables */
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  /* Community Applications (own theme files — force to match this preset) */
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: black */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/monokai.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Monokai — magenta/lime accents on classic olive-charcoal dark */
-:root {
-  /* ---------------- Palette ---------------- */
-  --monokai-bg: #272822;
-  --monokai-bg2: #2F312A;
-  --monokai-surface: #3E3D32;
-  --monokai-text: #F8F8F2;
-  --monokai-dim: #CFCFC2;
-  --monokai-border: #49483E;
-  --monokai-accent: #F92672;
-  --monokai-accent2: #A6E22E;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--monokai-text);
-  --alt-text-color: var(--monokai-dim);
-  --link-text-color: var(--monokai-accent);
-
-  --background-color: var(--monokai-bg);
-  --mild-background-color: var(--monokai-bg2);
-
-  --border-color: var(--monokai-border);
-  --input-border-color: var(--monokai-border);
-  --table-border-color: var(--monokai-border);
-  --table-background-color: var(--monokai-bg2);
-  --table-header-background-color: var(--monokai-surface);
-  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
-  --hr-color: var(--monokai-border);
-  --shade-bg-color: var(--monokai-surface);
-  --focus-input-bg-color: var(--monokai-surface);
-
-  --header-background-color: var(--monokai-surface);
-  --header-text-color: var(--monokai-text);
-  --header-text-primary: var(--monokai-text);
-  --header-text-secondary: var(--monokai-dim);
-
-  --title-header-background-color: var(--monokai-bg2);
-
-  --footer-text: var(--monokai-text);
-  --footer-background-color: var(--monokai-surface);
-
-  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
-  --usage-bar-used-background-color: var(--monokai-accent);
-  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--monokai-accent);
-  --button-border: 1px solid var(--monokai-accent);
-
-  --scrollbar-color: rgba(255, 255, 255, 0.3);
-  --scrollbar-hover-color: var(--monokai-accent);
-  --small-shadow: none;
-
-  --dashboard-icon-color: var(--monokai-dim);
-
-  /* ---------------- Brand remap (Unraid orange/blue -> Monokai magenta/lime) ---------------- */
-  --orange-500: var(--monokai-accent);
-  --orange-800: var(--monokai-accent2);
-  --brand-orange: var(--monokai-accent);
-  --brand-red: var(--monokai-accent2);
-  --blue-700: var(--monokai-accent);
-  --blue-800: var(--monokai-accent);
-
-  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
-  --ui-bg: var(--monokai-bg);
-  --ui-bg-muted: var(--monokai-bg2);
-  --ui-bg-elevated: var(--monokai-surface);
-  --ui-bg-accented: var(--monokai-surface);
-  --ui-text: var(--monokai-text);
-  --ui-text-muted: var(--monokai-dim);
-  --ui-text-dimmed: var(--monokai-dim);
-  --ui-text-highlighted: var(--monokai-text);
-  --ui-border: var(--monokai-border);
-  --ui-primary: var(--monokai-accent);
-  --primary: var(--monokai-accent);
-  --background: var(--monokai-bg);
-  --foreground: var(--monokai-text);
-  --card: var(--monokai-bg2);
-  --popover: var(--monokai-bg2);
-  --border: var(--monokai-border);
-  --ring: var(--monokai-accent);
-  --accent: var(--monokai-accent2);
-}
-
-/* ==================== Elemente ==================== */
-
-/* flach + editorial */
-.button, button, input, select, textarea, .tabs label {
-  border-radius: 0 !important;
-}
-/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--monokai-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--monokai-accent) !important;
-  box-shadow: none !important;
-}
-
-/* Echte Links -> Magenta-Akzent */
-a.blue-text, .blue-text { color: var(--monokai-accent) !important; }
-/* Docker "Update verfügbar" -> zweiter Akzent (Lime) */
-#docker_view .blue-text { color: var(--monokai-accent2) !important; }
-
-/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
-#menu .nav-item.active a { color: var(--monokai-accent) !important; }
-#menu .nav-item.active:after { background: var(--monokai-accent) !important; }
-
-/* Auslastungsbalken */
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--monokai-accent2) !important; }
-
-/* Sektions-Titelbalken (Main-Seite) */
-div.title { border-left: 3px solid var(--monokai-accent); }
-
-/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
-table.dashboard tbody {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* Box-Titel linksbündig, Uppercase, getrackt */
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main {
-  text-align: left !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 800;
-}
-/* Akzent-Tick direkt vor dem Box-Titel */
-.tile-header-main::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 0.95em;
-  background: var(--monokai-accent);
-  margin-right: 9px;
-  vertical-align: -1px;
-}
-
-/* ==================== compat: base-theme-driven surfaces ====================
-   Tables (Plugins/Docker-advanced) and Community Applications ship their own
-   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
-   their variables to this preset's own semantic vars so they match either way.
-   Values reference vars every preset defines → identical block across presets. */
-:root {
-  /* Dynamix sortable tables */
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  /* Community Applications (own theme files — force to match this preset) */
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: black */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/nord.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Nord — arctic blue-grey palette, frost accents on polar night */
-:root {
-  /* ---------------- Palette ---------------- */
-  --nord-bg: #2E3440;
-  --nord-bg2: #3B4252;
-  --nord-surface: #434C5E;
-  --nord-text: #ECEFF4;
-  --nord-dim: #D8DEE9;
-  --nord-border: #4C566A;
-  --nord-accent: #88C0D0;
-  --nord-accent2: #5E81AC;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--nord-text);
-  --alt-text-color: var(--nord-dim);
-  --link-text-color: var(--nord-accent);
-
-  --background-color: var(--nord-bg);
-  --mild-background-color: var(--nord-bg2);
-
-  --border-color: var(--nord-border);
-  --input-border-color: var(--nord-border);
-  --table-border-color: var(--nord-border);
-  --table-background-color: var(--nord-bg2);
-  --table-header-background-color: var(--nord-surface);
-  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
-  --hr-color: var(--nord-border);
-  --shade-bg-color: var(--nord-surface);
-  --focus-input-bg-color: var(--nord-surface);
-
-  --header-background-color: var(--nord-surface);
-  --header-text-color: var(--nord-text);
-  --header-text-primary: var(--nord-text);
-  --header-text-secondary: var(--nord-dim);
-
-  --title-header-background-color: var(--nord-bg2);
-
-  --footer-text: var(--nord-text);
-  --footer-background-color: var(--nord-surface);
-
-  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
-  --usage-bar-used-background-color: var(--nord-accent);
-  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--nord-accent);
-  --button-border: 1px solid var(--nord-accent);
-
-  --scrollbar-color: rgba(255, 255, 255, 0.3);
-  --scrollbar-hover-color: var(--nord-accent);
-  --small-shadow: none;
-
-  --dashboard-icon-color: var(--nord-dim);
-
-  /* ---------------- Brand remap (Unraid orange/blue -> Nord frost) ---------------- */
-  --orange-500: var(--nord-accent);
-  --orange-800: var(--nord-accent2);
-  --brand-orange: var(--nord-accent);
-  --brand-red: var(--nord-accent2);
-  --blue-700: var(--nord-accent);
-  --blue-800: var(--nord-accent);
-
-  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
-  --ui-bg: var(--nord-bg);
-  --ui-bg-muted: var(--nord-bg2);
-  --ui-bg-elevated: var(--nord-surface);
-  --ui-bg-accented: var(--nord-surface);
-  --ui-text: var(--nord-text);
-  --ui-text-muted: var(--nord-dim);
-  --ui-text-dimmed: var(--nord-dim);
-  --ui-text-highlighted: var(--nord-text);
-  --ui-border: var(--nord-border);
-  --ui-primary: var(--nord-accent);
-  --primary: var(--nord-accent);
-  --background: var(--nord-bg);
-  --foreground: var(--nord-text);
-  --card: var(--nord-bg2);
-  --popover: var(--nord-bg2);
-  --border: var(--nord-border);
-  --ring: var(--nord-accent);
-  --accent: var(--nord-accent2);
-}
-
-/* ==================== Elemente ==================== */
-
-/* flach + editorial */
-.button, button, input, select, textarea, .tabs label {
-  border-radius: 0 !important;
-}
-/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--nord-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--nord-accent) !important;
-  box-shadow: none !important;
-}
-
-/* Echte Links -> Frost-Akzent */
-a.blue-text, .blue-text { color: var(--nord-accent) !important; }
-/* Docker "Update verfügbar" -> zweiter Akzent */
-#docker_view .blue-text { color: var(--nord-accent2) !important; }
-
-/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
-#menu .nav-item.active a { color: var(--nord-accent) !important; }
-#menu .nav-item.active:after { background: var(--nord-accent) !important; }
-
-/* Auslastungsbalken */
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--nord-accent2) !important; }
-
-/* Sektions-Titelbalken (Main-Seite) */
-div.title { border-left: 3px solid var(--nord-accent); }
-
-/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
-table.dashboard tbody {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* Box-Titel linksbündig, Uppercase, getrackt */
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main {
-  text-align: left !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 800;
-}
-/* Akzent-Tick direkt vor dem Box-Titel */
-.tile-header-main::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 0.95em;
-  background: var(--nord-accent);
-  margin-right: 9px;
-  vertical-align: -1px;
-}
-
-/* ==================== compat: base-theme-driven surfaces ====================
-   Tables (Plugins/Docker-advanced) and Community Applications ship their own
-   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
-   their variables to this preset's own semantic vars so they match either way.
-   Values reference vars every preset defines → identical block across presets. */
-:root {
-  /* Dynamix sortable tables */
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  /* Community Applications (own theme files — force to match this preset) */
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: black */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/rose-pine-dawn.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Rose Pine Dawn — soft rosy light, iris and rose accents */
-:root {
-  /* ---------------- Palette (light) ---------------- */
-  --rpd-bg: #faf4ed;
-  --rpd-bg2: #fffaf3;
-  --rpd-surface: #f2e9e1;
-  --rpd-text: #575279;
-  --rpd-dim: #797593;
-  --rpd-border: #dfdad9;
-  --rpd-accent: #907aa9;
-  --rpd-accent2: #d7827e;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--rpd-text);
-  --alt-text-color: var(--rpd-dim);
-  --link-text-color: var(--rpd-accent);
-
-  --background-color: var(--rpd-bg);
-  --mild-background-color: var(--rpd-bg2);
-
-  --border-color: var(--rpd-border);
-  --input-border-color: var(--rpd-border);
-  --table-border-color: var(--rpd-border);
-  --table-background-color: var(--rpd-bg2);
-  --table-header-background-color: var(--rpd-surface);
-  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
-  --hr-color: var(--rpd-border);
-  --shade-bg-color: var(--rpd-surface);
-  --focus-input-bg-color: #ffffff;
-
-  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
-  --header-background-color: #141414;
-  --header-text-color: #f0f0f0;
-  --header-text-primary: #f0f0f0;
-  --header-text-secondary: rgba(240, 240, 240, 0.6);
-
-  --title-header-background-color: var(--rpd-bg2);
-  --footer-text: var(--rpd-text);
-  --footer-background-color: var(--rpd-surface);
-
-  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
-  --usage-bar-used-background-color: var(--rpd-accent);
-  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--rpd-accent);
-  --button-background-size: auto;
-  --button-border: 1px solid var(--rpd-accent);
-  --hover-button-text-color: #ffffff;
-  --hover-button-border: var(--rpd-text);
-
-  --scrollbar-color: rgba(0, 0, 0, 0.3);
-  --scrollbar-hover-color: var(--rpd-accent);
-  --small-shadow: none;
-  --dashboard-icon-color: var(--rpd-dim);
-
-  /* brand + link remap */
-  --orange-500: var(--rpd-accent);
-  --orange-800: var(--rpd-accent2);
-  --brand-orange: var(--rpd-accent);
-  --brand-red: var(--rpd-accent2);
-  --blue-700: var(--rpd-accent);
-  --blue-800: var(--rpd-accent);
-
-  /* Unraid 7 UUI / shadcn tokens */
-  --ui-bg: var(--rpd-bg);
-  --ui-bg-muted: var(--rpd-bg2);
-  --ui-bg-elevated: var(--rpd-surface);
-  --ui-bg-accented: var(--rpd-surface);
-  --ui-text: var(--rpd-text);
-  --ui-text-muted: var(--rpd-dim);
-  --ui-text-dimmed: var(--rpd-dim);
-  --ui-text-highlighted: var(--rpd-text);
-  --ui-border: var(--rpd-border);
-  --ui-primary: var(--rpd-accent);
-  --primary: var(--rpd-accent);
-  --background: var(--rpd-bg);
-  --foreground: var(--rpd-text);
-  --card: var(--rpd-bg2);
-  --popover: var(--rpd-bg2);
-  --border: var(--rpd-border);
-  --ring: var(--rpd-accent);
-  --accent: var(--rpd-accent2);
-}
-
-/* ---------------- Elements (flat, editorial) ---------------- */
-.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--rpd-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--rpd-accent) !important;
-  box-shadow: none !important;
-}
-a.blue-text, .blue-text { color: var(--rpd-accent) !important; }
-#docker_view .blue-text { color: var(--rpd-accent2) !important; }
-#menu .nav-item.active a { color: var(--rpd-accent) !important; }
-#menu .nav-item.active:after { background: var(--rpd-accent) !important; }
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--rpd-accent2) !important; }
-.orangebar { background: #c67100 !important; }
-div.title { border-left: 3px solid var(--rpd-accent); }
-table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
-.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--rpd-accent); margin-right: 9px; vertical-align: -1px; }
-
-/* ---------------- compat: base-theme-driven surfaces ---------------- */
-:root {
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: white */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/solarized-dark.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Solarized Dark — teal/cyan-blue accents on deep base03/base02 */
-:root {
-  /* ---------------- Palette ---------------- */
-  --solar-bg: #002B36;
-  --solar-bg2: #073642;
-  --solar-surface: #0B3A46;
-  --solar-text: #EEE8D5;
-  --solar-dim: #93A1A1;
-  --solar-border: #0A4653;
-  --solar-accent: #268BD2;
-  --solar-accent2: #2AA198;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--solar-text);
-  --alt-text-color: var(--solar-dim);
-  --link-text-color: var(--solar-accent);
-
-  --background-color: var(--solar-bg);
-  --mild-background-color: var(--solar-bg2);
-
-  --border-color: var(--solar-border);
-  --input-border-color: var(--solar-border);
-  --table-border-color: var(--solar-border);
-  --table-background-color: var(--solar-bg2);
-  --table-header-background-color: var(--solar-surface);
-  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
-  --hr-color: var(--solar-border);
-  --shade-bg-color: var(--solar-surface);
-  --focus-input-bg-color: var(--solar-surface);
-
-  --header-background-color: var(--solar-surface);
-  --header-text-color: var(--solar-text);
-  --header-text-primary: var(--solar-text);
-  --header-text-secondary: var(--solar-dim);
-
-  --title-header-background-color: var(--solar-bg2);
-
-  --footer-text: var(--solar-text);
-  --footer-background-color: var(--solar-surface);
-
-  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
-  --usage-bar-used-background-color: var(--solar-accent);
-  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--solar-accent);
-  --button-border: 1px solid var(--solar-accent);
-
-  --scrollbar-color: rgba(255, 255, 255, 0.3);
-  --scrollbar-hover-color: var(--solar-accent);
-  --small-shadow: none;
-
-  --dashboard-icon-color: var(--solar-dim);
-
-  /* ---------------- Brand remap (Unraid orange/blue -> Solarized blue/cyan) ---------------- */
-  --orange-500: var(--solar-accent);
-  --orange-800: var(--solar-accent2);
-  --brand-orange: var(--solar-accent);
-  --brand-red: var(--solar-accent2);
-  --blue-700: var(--solar-accent);
-  --blue-800: var(--solar-accent);
-
-  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
-  --ui-bg: var(--solar-bg);
-  --ui-bg-muted: var(--solar-bg2);
-  --ui-bg-elevated: var(--solar-surface);
-  --ui-bg-accented: var(--solar-surface);
-  --ui-text: var(--solar-text);
-  --ui-text-muted: var(--solar-dim);
-  --ui-text-dimmed: var(--solar-dim);
-  --ui-text-highlighted: var(--solar-text);
-  --ui-border: var(--solar-border);
-  --ui-primary: var(--solar-accent);
-  --primary: var(--solar-accent);
-  --background: var(--solar-bg);
-  --foreground: var(--solar-text);
-  --card: var(--solar-bg2);
-  --popover: var(--solar-bg2);
-  --border: var(--solar-border);
-  --ring: var(--solar-accent);
-  --accent: var(--solar-accent2);
-}
-
-/* ==================== Elemente ==================== */
-
-/* flach + editorial */
-.button, button, input, select, textarea, .tabs label {
-  border-radius: 0 !important;
-}
-/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--solar-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--solar-accent) !important;
-  box-shadow: none !important;
-}
-
-/* Echte Links -> Blau-Akzent */
-a.blue-text, .blue-text { color: var(--solar-accent) !important; }
-/* Docker "Update verfügbar" -> zweiter Akzent (Cyan) */
-#docker_view .blue-text { color: var(--solar-accent2) !important; }
-
-/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
-#menu .nav-item.active a { color: var(--solar-accent) !important; }
-#menu .nav-item.active:after { background: var(--solar-accent) !important; }
-
-/* Auslastungsbalken */
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--solar-accent2) !important; }
-
-/* Sektions-Titelbalken (Main-Seite) */
-div.title { border-left: 3px solid var(--solar-accent); }
-
-/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
-table.dashboard tbody {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-/* Box-Titel linksbündig, Uppercase, getrackt */
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main {
-  text-align: left !important;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 800;
-}
-/* Akzent-Tick direkt vor dem Box-Titel */
-.tile-header-main::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 0.95em;
-  background: var(--solar-accent);
-  margin-right: 9px;
-  vertical-align: -1px;
-}
-
-/* ==================== compat: base-theme-driven surfaces ====================
-   Tables (Plugins/Docker-advanced) and Community Applications ship their own
-   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
-   their variables to this preset's own semantic vars so they match either way.
-   Values reference vars every preset defines → identical block across presets. */
-:root {
-  /* Dynamix sortable tables */
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  /* Community Applications (own theme files — force to match this preset) */
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: black */
-]]>
-</INLINE>
-</FILE>
-
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/presets/solarized-light.css">
-<INLINE>
-<![CDATA[/* Unraid Themer preset: Solarized Light — warm paper base, blue and cyan accents */
-:root {
-  /* ---------------- Palette (light) ---------------- */
-  --sol-bg: #fdf6e3;
-  --sol-bg2: #eee8d5;
-  --sol-surface: #e3ddc7;
-  --sol-text: #073642;
-  --sol-dim: #657b83;
-  --sol-border: #d9d2bd;
-  --sol-accent: #268bd2;
-  --sol-accent2: #2aa198;
-
-  /* ---------------- Dynamix core ---------------- */
-  --text-color: var(--sol-text);
-  --alt-text-color: var(--sol-dim);
-  --link-text-color: var(--sol-accent);
-
-  --background-color: var(--sol-bg);
-  --mild-background-color: var(--sol-bg2);
-
-  --border-color: var(--sol-border);
-  --input-border-color: var(--sol-border);
-  --table-border-color: var(--sol-border);
-  --table-background-color: var(--sol-bg2);
-  --table-header-background-color: var(--sol-surface);
-  --hover-table-row-background-color: rgba(0, 0, 0, 0.045);
-  --hr-color: var(--sol-border);
-  --shade-bg-color: var(--sol-surface);
-  --focus-input-bg-color: #ffffff;
-
-  /* Header stays dark (like bebamu light) so the logo + web-component text read well */
-  --header-background-color: #141414;
-  --header-text-color: #f0f0f0;
-  --header-text-primary: #f0f0f0;
-  --header-text-secondary: rgba(240, 240, 240, 0.6);
-
-  --title-header-background-color: var(--sol-bg2);
-  --footer-text: var(--sol-text);
-  --footer-background-color: var(--sol-surface);
-
-  --usage-bar-background-color: rgba(0, 0, 0, 0.12);
-  --usage-bar-used-background-color: var(--sol-accent);
-  --usage-disk-background-color: rgba(0, 0, 0, 0.12);
-
-  --button-text-color: #ffffff;
-  --button-background: var(--sol-accent);
-  --button-background-size: auto;
-  --button-border: 1px solid var(--sol-accent);
-  --hover-button-text-color: #ffffff;
-  --hover-button-border: var(--sol-text);
-
-  --scrollbar-color: rgba(0, 0, 0, 0.3);
-  --scrollbar-hover-color: var(--sol-accent);
-  --small-shadow: none;
-  --dashboard-icon-color: var(--sol-dim);
-
-  /* brand + link remap */
-  --orange-500: var(--sol-accent);
-  --orange-800: var(--sol-accent2);
-  --brand-orange: var(--sol-accent);
-  --brand-red: var(--sol-accent2);
-  --blue-700: var(--sol-accent);
-  --blue-800: var(--sol-accent);
-
-  /* Unraid 7 UUI / shadcn tokens */
-  --ui-bg: var(--sol-bg);
-  --ui-bg-muted: var(--sol-bg2);
-  --ui-bg-elevated: var(--sol-surface);
-  --ui-bg-accented: var(--sol-surface);
-  --ui-text: var(--sol-text);
-  --ui-text-muted: var(--sol-dim);
-  --ui-text-dimmed: var(--sol-dim);
-  --ui-text-highlighted: var(--sol-text);
-  --ui-border: var(--sol-border);
-  --ui-primary: var(--sol-accent);
-  --primary: var(--sol-accent);
-  --background: var(--sol-bg);
-  --foreground: var(--sol-text);
-  --card: var(--sol-bg2);
-  --popover: var(--sol-bg2);
-  --border: var(--sol-border);
-  --ring: var(--sol-accent);
-  --accent: var(--sol-accent2);
-}
-
-/* ---------------- Elements (flat, editorial) ---------------- */
-.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
-input[type="button"], input[type="submit"], input[type="reset"], button,
-.button:not(.apps):not(.vms):not(.compose-stacks) {
-  background: var(--sol-accent) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--sol-accent) !important;
-  box-shadow: none !important;
-}
-a.blue-text, .blue-text { color: var(--sol-accent) !important; }
-#docker_view .blue-text { color: var(--sol-accent2) !important; }
-#menu .nav-item.active a { color: var(--sol-accent) !important; }
-#menu .nav-item.active:after { background: var(--sol-accent) !important; }
-.greenbar { background: var(--usage-bar-used-background-color) !important; }
-.redbar { background: var(--sol-accent2) !important; }
-.orangebar { background: #c67100 !important; }
-div.title { border-left: 3px solid var(--sol-accent); }
-table.dashboard tbody { border: 1px solid var(--border-color) !important; border-radius: 0 !important; box-shadow: none !important; }
-.tile-header-left { justify-content: flex-start !important; }
-.tile-header-main { text-align: left !important; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; }
-.tile-header-main::before { content: ""; display: inline-block; width: 3px; height: 0.95em; background: var(--sol-accent); margin-right: 9px; vertical-align: -1px; }
-
-/* ---------------- compat: base-theme-driven surfaces ---------------- */
-:root {
-  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
-  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
-  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
-  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
-  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
-  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
-  --dynamix-select-bg-color: var(--table-background-color);
-  --dynamix-box-text-color: var(--text-color);
-
-  --template-background: var(--mild-background-color) !important;
-  --template-hover-background: var(--shade-bg-color) !important;
-  --ca-legacy-background-color: var(--background-color) !important;
-  --sidebar-background: var(--mild-background-color) !important;
-  --support-popup-background: var(--mild-background-color) !important;
-  --ca-light-bg-color: var(--mild-background-color) !important;
-  --ca-dark-text-color: var(--text-color) !important;
-  --ca-medium-text-color: var(--alt-text-color) !important;
-  --ca-light-text-color: var(--text-color) !important;
-  --ca-lighter-text-color: var(--text-color) !important;
-}
-
-/*! themer-base: white */
-]]>
-</INLINE>
-</FILE>
-
 <FILE Run="/bin/bash">
 <INLINE>
 # --- Unraid Themer: restore user data from flash to webroot ---
 # Config (SERVICE/PRESET) is read straight from flash by parse_plugin_cfg,
 # merged over the shipped default.cfg — nothing to copy for it.
+
+# Seed the default themes onto flash ONCE (first install). After that they are
+# user-removable and won't come back. Only bebamu is built-in (from the .plg).
+if [ ! -f /boot/config/plugins/unraid.themer/presets/.seeded ]; then
+    cp -n /usr/local/emhttp/plugins/unraid.themer/defaults/*.css /boot/config/plugins/unraid.themer/presets/ 2>/dev/null
+    touch /boot/config/plugins/unraid.themer/presets/.seeded
+fi
 
 # User custom overrides live on flash; recreate the webroot copy nginx serves.
 if [ ! -f /boot/config/plugins/unraid.themer/custom.css ]; then
@@ -2293,10 +2305,8 @@ if [ ! -f /boot/config/plugins/unraid.themer/custom.css ]; then
 fi
 cp -f /boot/config/plugins/unraid.themer/custom.css /usr/local/emhttp/plugins/unraid.themer/custom.css 2>/dev/null
 
-# Let users drop extra presets on the flash; mirror them into the webroot too.
-if [ -d /boot/config/plugins/unraid.themer/presets ]; then
-    cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
-fi
+# Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
+cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."
