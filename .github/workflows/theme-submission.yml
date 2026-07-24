@@ -22,6 +22,7 @@ jobs:
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number }}
           BODY: ${{ github.event.issue.body }}
+          OWNER: ${{ github.repository_owner }}
         run: |
           python3 - << 'PY'
           import os, re, json, subprocess
@@ -75,9 +76,11 @@ jobs:
                              "(the check re-runs on edit):\n\n"
                              + "\n".join(f"- {e}" for e in errs))
               else:
+                  owner = os.environ.get("OWNER", "")
+                  ping = f"\n\ncc @{owner} — to publish, add the **`approved`** label and it's " \
+                         f"committed to the store automatically (credited to the submitter)." if owner else ""
                   body_md = (f"✅ **Automated check passed** — no scripts, `@import` or external "
-                             f"`url()`; {n} bytes, balanced braces.\n\nA maintainer will review it "
-                             f"and, if it fits, add it to the store. Thanks for contributing!")
+                             f"`url()`; {n} bytes, balanced braces.{ping}\n\nThanks for contributing!")
 
           marker = "<!-- themer-bot -->"
           full = marker + "\n" + body_md

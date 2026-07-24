@@ -1,0 +1,117 @@
+name: Publish approved theme
+
+# When a maintainer adds the "approved" label to a theme-submission issue, the
+# submitted CSS is re-validated, written to themes/<slug>.css and registered in
+# themes/index.json (credited to the issue opener), committed, and the issue is
+# closed. Only users with write access can approve.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    if: >
+      github.event.label.name == 'approved' &&
+      contains(join(github.event.issue.labels.*.name, ','), 'theme-submission')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Only a maintainer may approve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.event.sender.login }}
+        run: |
+          perm=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq '.permission' 2>/dev/null || echo none)
+          echo "$ACTOR has permission: $perm"
+          case "$perm" in admin|write|maintain) : ;; *) echo "::error::$ACTOR is not a maintainer"; exit 1 ;; esac
+
+      - name: Validate, publish, close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          BODY: ${{ github.event.issue.body }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          python3 - << 'PY'
+          import os, re, json, subprocess
+
+          body = os.environ.get("BODY", "") or ""
+          repo, num = os.environ["REPO"], os.environ["NUMBER"]
+          author = os.environ.get("AUTHOR", "").strip()
+
+          def section(label):
+              m = re.search(r"#{1,6}\s*" + re.escape(label) + r"\s*\n(.*?)(?:\n#{1,6}\s|\Z)", body, re.S | re.I)
+              return m.group(1).strip() if m else ""
+
+          # CSS (tolerate a broken/missing closing fence)
+          css = section("Theme CSS")
+          css = re.sub(r"^```[^\n]*\n?", "", css)
+          css = re.sub(r"\n?```\s*$", "", css).strip()
+
+          name = section("Theme name").splitlines()[0].strip() if section("Theme name") else ""
+          desc = section("One-line description").splitlines()[0].strip() if section("One-line description") else ""
+          base_raw = section("Base").lower()
+          base = "white" if "light" in base_raw else "black"
+
+          def comment(msg, close=False):
+              with open("c.md", "w", encoding="utf-8") as f:
+                  f.write("<!-- themer-bot -->\n" + msg)
+              subprocess.run(["gh", "issue", "comment", num, "--repo", repo, "--body-file", "c.md"], check=True)
+              if close:
+                  subprocess.run(["gh", "issue", "close", num, "--repo", repo], check=True)
+
+          # re-validate before publishing (defence in depth)
+          BLOCKED = [
+              (r"<\s*script", "a <script> tag"), (r"javascript\s*:", "a javascript: URI"),
+              (r"expression\s*\(", "a CSS expression()"), (r"behaviou?r\s*:", "a CSS behavior:"),
+              (r"-moz-binding", "-moz-binding"), (r"@import", "@import"),
+              (r"url\s*\(\s*['\"]?\s*(https?:|//)", "an external url()"),
+              (r"<\s*/?\s*(iframe|object|embed|base)", "embedded HTML"),
+          ]
+          errs = []
+          if not css or (":root" not in css and "--background-color" not in css):
+              errs.append("no valid CSS found")
+          elif css.count("{") != css.count("}"):
+              errs.append("unbalanced braces")
+          else:
+              for rx, why in BLOCKED:
+                  if re.search(rx, css, re.I):
+                      errs.append("contains " + why)
+          if not name:
+              errs.append("no theme name")
+          if errs:
+              comment("❌ Cannot publish — " + "; ".join(errs) + ". Removing the `approved` label.")
+              subprocess.run(["gh", "issue", "edit", num, "--repo", repo, "--remove-label", "approved"])
+              raise SystemExit(0)
+
+          slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "theme"
+          path = os.path.join("themes", slug + ".css")
+          with open(path, "w", encoding="utf-8") as f:
+              f.write(css if css.endswith("\n") else css + "\n")
+
+          idx_path = os.path.join("themes", "index.json")
+          idx = json.load(open(idx_path, encoding="utf-8"))
+          entry = {"name": name, "file": slug + ".css", "author": author or "community",
+                   "base": base, "description": desc or name}
+          idx["themes"] = [t for t in idx["themes"] if t.get("file") != entry["file"]] + [entry]
+          with open(idx_path, "w", encoding="utf-8") as f:
+              json.dump(idx, f, indent=2, ensure_ascii=False); f.write("\n")
+
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email",
+                          "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "add", path, idx_path], check=True)
+          subprocess.run(["git", "commit", "-m",
+                          f"Add theme \"{name}\" by @{author} (from #{num})"], check=True)
+          subprocess.run(["git", "push"], check=True)
+
+          comment(f"🎉 Published **{name}** to the store as `{slug}.css`, credited to @{author}. "
+                  f"It'll appear in everyone's Theme store shortly. Thanks!", close=True)
+          PY
