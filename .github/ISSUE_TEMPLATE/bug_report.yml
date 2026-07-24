@@ -1,0 +1,44 @@
+name: 🐛 Bug report
+description: Something is wrong, broken, or looks off.
+labels: [bug]
+body:
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Shown at the bottom of Settings → Utilities → Unraid Themer.
+      placeholder: "2026.07.25.5"
+    validations:
+      required: true
+  - type: input
+    id: unraid-version
+    attributes:
+      label: Unraid version
+      placeholder: "7.3.2"
+    validations:
+      required: true
+  - type: input
+    id: theme-iconset
+    attributes:
+      label: Theme + icon set in use
+      placeholder: "Nord + Lucide, Black base"
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Apply …
+        3. See …
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots / browser console errors
+      description: Drag images here. Console errors (F12) help a lot for icon/JS issues.

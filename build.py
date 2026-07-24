@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.5",
+    "version": "2026.07.25.6",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.6
+- Theme builder: the color pickers now start from your CURRENT running theme, so
+  you tweak from where you are instead of a generic default. Added an optional
+  Font field (a font-family stack) with live preview.
+- Guided GitHub issue forms (bug report, feature request, submit a theme) linked
+  from the settings page; submitted theme CSS is auto-validated by a bot before a
+  human reviews it.
+
 ## 2026.07.25.5
 - Theme builder (color picker): pick 8 colors — with a swatch or by typing
   #rrggbb / rgb(r,g,b) — see them preview live on the page, then Build+Apply

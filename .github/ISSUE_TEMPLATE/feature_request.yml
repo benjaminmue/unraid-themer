@@ -1,0 +1,21 @@
+name: 💡 Feature or theme request
+description: Suggest an idea, an icon set, or a theme you'd like to see.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What would you like Unraid Themer to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why / use case
+      description: What problem does it solve, or what would it make nicer?
+  - type: input
+    id: refs
+    attributes:
+      label: References (optional)
+      description: Links to a theme, icon set, or example that shows what you mean.

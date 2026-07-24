@@ -1,0 +1,78 @@
+name: Theme submission check
+
+# When someone opens/edits a "🎨 Submit a theme" issue, extract the pasted CSS,
+# run the same safety checks the store uses, and comment the result. A human then
+# reviews and (if good) adds it to themes/. The bot only validates — it never merges.
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  validate:
+    if: contains(join(github.event.issue.labels.*.name, ','), 'theme-submission')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate submitted CSS and comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          python3 - << 'PY'
+          import os, re, subprocess
+
+          body = os.environ.get("BODY", "") or ""
+          # Grab all fenced code blocks; the CSS field (render: css) is one of them.
+          blocks = re.findall(r"```[^\n]*\n(.*?)```", body, re.S)
+          css = ""
+          for b in blocks:
+              if "{" in b and "}" in b and ("--" in b or ":root" in b or "color" in b.lower()):
+                  if len(b) > len(css):
+                      css = b
+          css = css.strip()
+
+          BLOCKED = [
+              (re.compile(r"<\s*script", re.I),                          "a <script> tag"),
+              (re.compile(r"<\s*/?\s*(iframe|object|embed|base)", re.I),  "embedded HTML"),
+              (re.compile(r"javascript\s*:", re.I),                      "a javascript: URI"),
+              (re.compile(r"expression\s*\(", re.I),                     "a CSS expression()"),
+              (re.compile(r"behaviou?r\s*:", re.I),                      "a CSS behavior:"),
+              (re.compile(r"-moz-binding", re.I),                        "-moz-binding"),
+              (re.compile(r"@import", re.I),                             "@import"),
+              (re.compile(r"url\s*\(\s*['\"]?\s*(https?:|//)", re.I),     "an external url()"),
+          ]
+
+          errs = []
+          if not css:
+              body_md = ("⚠️ I couldn't find any CSS. Please paste the **full contents** of your "
+                         "`<name>.css` in the **Theme CSS** field and the check will re-run.")
+          else:
+              if len(css.encode("utf-8")) > 512 * 1024:
+                  errs.append("file too large (>512 KB)")
+              if css.count("{") != css.count("}"):
+                  errs.append("unbalanced `{` / `}` braces")
+              if "--background-color" not in css and ":root" not in css:
+                  errs.append("doesn't look like a theme (no `:root` / CSS variables)")
+              for rx, why in BLOCKED:
+                  if rx.search(css):
+                      errs.append(f"contains {why}")
+              n = len(css.encode("utf-8"))
+              if errs:
+                  body_md = ("❌ **Automated check found issues** — please fix and edit this issue "
+                             "(the check re-runs on edit):\n\n"
+                             + "\n".join(f"- {e}" for e in errs))
+              else:
+                  body_md = (f"✅ **Automated check passed** — no scripts, `@import` or external "
+                             f"`url()`; {n} bytes, balanced braces.\n\nA maintainer will review it "
+                             f"and, if it fits, add it to the store. Thanks for contributing!")
+
+          with open("comment.md", "w", encoding="utf-8") as f:
+              f.write("<!-- themer-bot -->\n" + body_md)
+          subprocess.run(["gh", "issue", "comment", os.environ["NUMBER"],
+                          "--repo", os.environ["REPO"], "--body-file", "comment.md"], check=True)
+          PY

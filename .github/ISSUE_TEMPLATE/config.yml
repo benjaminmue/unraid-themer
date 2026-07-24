@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Theme guide & template
+    url: https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md
+    about: How to build a theme (it's mostly 8 colors) before you submit one.
+  - name: 💬 Questions & ideas
+    url: https://github.com/benjaminmue/unraid-themer/discussions
+    about: For open-ended questions, prefer Discussions.

@@ -1,0 +1,62 @@
+name: 🎨 Submit a theme
+description: Share a CSS theme for the community store. It gets auto-validated, then reviewed.
+labels: [theme-submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing a theme! Build it from the
+        [template](https://github.com/benjaminmue/unraid-themer/blob/main/themes/_template.css)
+        (see the [guide](https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md)) —
+        it's mostly 8 colors. On submit, a bot validates your CSS and comments the
+        result; a maintainer then reviews it and, if it's good, adds it to the store.
+  - type: input
+    id: name
+    attributes:
+      label: Theme name
+      placeholder: "Midnight Teal"
+    validations:
+      required: true
+  - type: input
+    id: author
+    attributes:
+      label: Author / credit
+      placeholder: "your-github-handle"
+    validations:
+      required: true
+  - type: dropdown
+    id: base
+    attributes:
+      label: Base
+      description: Dark theme or light theme?
+      options:
+        - "dark (black / gray)"
+        - "light (white / azure)"
+    validations:
+      required: true
+  - type: input
+    id: description
+    attributes:
+      label: One-line description
+      placeholder: "Deep teal with cyan accents."
+    validations:
+      required: true
+  - type: textarea
+    id: css
+    attributes:
+      label: Theme CSS
+      description: Paste the FULL contents of your <name>.css here. It will be validated automatically.
+      render: css
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirm
+      options:
+        - label: No `<script>`, `javascript:`, `@import` or external `url()` in the CSS.
+          required: true
+        - label: I built it from the template and tested it on my own Unraid.
+          required: true
+        - label: I'm OK with it being shared in the store under my credit.
+          required: true
