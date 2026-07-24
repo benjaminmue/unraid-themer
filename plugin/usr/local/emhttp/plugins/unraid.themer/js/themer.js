@@ -99,6 +99,110 @@
     });
   }
 
+  /* ---- 4. Header web-component icons (bell + menu) ----------------------- *
+   * The notifications bell and the hamburger menu live in Unraid's Vue header
+   * (OPEN shadow DOM) with their own inline SVGs, unreachable by the CSS icon
+   * set. When an icon set is active we swap just those SVGs to match. Fully
+   * defensive: only runs on an active set, only replaces the <svg> visual (never
+   * the button/handlers), and no-ops on any miss or error.
+   */
+  var UT_ICONED = "data-ut-iconed";
+  var _svgCache = {};                 // name -> svg markup (or null)
+
+  // Header toolbar: match a button by its accessible name → icon. Ordered:
+  // first match wins, so more specific patterns come before broad ones.
+  var HEADER_MAP = [
+    [/search|magnif|suche/,                         "search"],
+    [/log\s*out|sign\s*out|logout|abmeld/,          "log-out"],
+    [/terminal|console|konsole/,                    "terminal"],
+    [/clone|copy|duplicate|new\s*(tab|window)|kopier/, "copy"],
+    [/feedback|comment|message|chat|kommentar/,     "message-square"],
+    [/remote|desktop|display|monitor|vnc|gui/,      "monitor"],
+    [/notif|bell|alert|benachrichtig/,              "bell"],
+    [/hamburger|navigation|\bmenu\b|menü/,          "menu"],
+    [/help|manual|guide|documentation|docs|hilfe|handbuch/, "circle-help"],
+    [/\blog\b|banner|task|activity|feed|protokoll/, "list"]
+  ];
+
+  function activeSet() {
+    try {
+      var l = document.querySelector('link[href*="/plugins/unraid.themer/icons/"][href*=".css"]');
+      if (!l) return null;            // icon set = Default → leave the header alone
+      var m = /\/icons\/([A-Za-z0-9_-]+)\.css/.exec(l.getAttribute("href") || "");
+      return m ? m[1] : null;
+    } catch (e) { return null; }
+  }
+
+  function loadSvg(name, set, cb) {
+    if (name in _svgCache) { cb(_svgCache[name]); return; }
+    if (typeof fetch !== "function") { cb(null); return; }
+    var base = "/plugins/unraid.themer/icons/svg/";
+    var urls = set ? [base + set + "/" + name + ".svg", base + name + ".svg"] : [base + name + ".svg"];
+    (function tryNext(i) {
+      if (i >= urls.length) { _svgCache[name] = null; cb(null); return; }
+      fetch(urls[i]).then(function (r) { return r.ok ? r.text() : Promise.reject(0); })
+        .then(function (t) { if (t.indexOf("<svg") < 0) throw 0; _svgCache[name] = t; cb(t); })
+        .catch(function () { tryNext(i + 1); });
+    })(0);
+  }
+
+  function collectShadowRoots(root, acc, depth) {
+    if (depth > 8) return acc;
+    var els;
+    try { els = root.querySelectorAll("*"); } catch (e) { return acc; }
+    for (var i = 0; i < els.length; i++) {
+      var sr = els[i].shadowRoot;
+      if (sr) { acc.push(sr); collectShadowRoots(sr, acc, depth + 1); }
+    }
+    return acc;
+  }
+
+  function accName(el) {
+    try { return ((el.getAttribute("aria-label") || el.getAttribute("title") || el.title || "") + "").toLowerCase(); }
+    catch (e) { return ""; }
+  }
+
+  function swapIcon(target, markup) {
+    try {
+      if (!target || target.getAttribute(UT_ICONED)) return false;
+      var oldSvg = target.querySelector("svg");
+      if (!oldSvg) return false;
+      var neu = new DOMParser().parseFromString(markup, "image/svg+xml").documentElement;
+      if (!neu || neu.nodeName.toLowerCase() !== "svg") return false;
+      var w = oldSvg.getAttribute("width") || oldSvg.clientWidth || 24;
+      var h = oldSvg.getAttribute("height") || oldSvg.clientHeight || 24;
+      neu.setAttribute("width", w); neu.setAttribute("height", h);
+      neu.style.color = "currentColor";
+      oldSvg.replaceWith(document.importNode(neu, true));
+      target.setAttribute(UT_ICONED, "1");
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function themeHeaderIcons() {
+    var set = activeSet();
+    if (!set) return;
+    var roots = collectShadowRoots(document, [document], 0);
+    for (var r = 0; r < roots.length; r++) {
+      var cand;
+      try { cand = roots[r].querySelectorAll('button, a, [role="button"]'); } catch (e) { continue; }
+      for (var i = 0; i < cand.length; i++) {
+        var el = cand[i];
+        if (el.getAttribute(UT_ICONED) || !el.querySelector("svg")) continue;
+        var n = accName(el);
+        if (!n) continue;
+        for (var k = 0; k < HEADER_MAP.length; k++) {
+          if (HEADER_MAP[k][0].test(n)) {
+            (function (target, icon) {
+              loadSvg(icon, set, function (m) { if (m) swapIcon(target, m); });
+            })(el, HEADER_MAP[k][1]);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   /* ---- run + observe ----------------------------------------------------- */
   function run(root) {
     injectBadgeStyle();
@@ -111,6 +215,9 @@
     run(document);
     // Charts are created by the dashboard script after us → retry a few times.
     [400, 1200, 3000].forEach(function (d) { setTimeout(patchCharts, d); });
+    // The Vue header mounts async → try the bell/menu swap a few times, then stop.
+    themeHeaderIcons();
+    [600, 1500, 3000, 5000].forEach(function (d) { setTimeout(themeHeaderIcons, d); });
     // Docker tile + web-components mount/re-render after load → observe.
     if (window.MutationObserver) {
       var obs = new MutationObserver(function (muts) {

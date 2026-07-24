@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24t",
+    "version": "2026.07.24u",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24u
+- Header icons: best-effort swap of the whole Vue-header toolbar (search, logout,
+  terminal, clone, feedback, remote, notifications bell, menu, help, ...) — which
+  lives in an open shadow DOM unreachable by CSS — to match the active icon set,
+  via a defensive shadow-DOM pass in themer.js. Only runs with an icon set active,
+  matches buttons by their accessible name, and only replaces the SVG visual —
+  no-ops on any miss, never touches handlers.
+
 ## 2026.07.24t
 - Icon sets: three more bundled open-source sets — Tabler, Phosphor, Heroicons
   (in addition to Lucide). Pick one under "Icon set". Missing glyphs in a set
