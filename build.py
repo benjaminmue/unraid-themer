@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.4",
+    "version": "2026.07.25.5",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.5
+- Theme builder (color picker): pick 8 colors — with a swatch or by typing
+  #rrggbb / rgb(r,g,b) — see them preview live on the page, then Build & Apply
+  to save them as a preset and switch to it. Like the old pre-7.2 theme editor.
+- The alternative icon sets now also cover the newly-mapped Settings/nav/toolbar
+  icons (Iconoir/Remix/Bootstrap/Carbon/Material natively; the others fall back
+  to Lucide), so switching sets stays consistent across the whole UI.
+
 ## 2026.07.25.4
 - Much wider icon coverage: mapped ~98 more Unraid glyphs (Settings/nav icons —
   dashboard, network, security, scheduler, shares, plugins, ... — and the
