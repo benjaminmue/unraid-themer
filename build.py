@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24k",
+    "version": "2026.07.24l",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24l
+- Store: user-added themes now show an "Uninstall" button (built-in stay
+  "Installed"). The separate "Added themes" row now only lists URL imports
+  that aren't in the store.
+
 ## 2026.07.24k
 - Move the "Added themes" (remove) section down next to the theme store, so
   all theme management is grouped together.

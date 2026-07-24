@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24k">
+  <!ENTITY version   "2026.07.24l">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24l
+- Store: user-added themes now show an "Uninstall" button (built-in stay
+  "Installed"). The separate "Added themes" row now only lists URL imports
+  that aren't in the store.
+
 ## 2026.07.24k
 - Move the "Added themes" (remove) section down next to the theme store, so
   all theme management is grouped together.
@@ -264,31 +269,30 @@ if ($raw) $store_index = @json_decode($raw, true);
 
 // Build the "Added themes" and "Theme store" blocks as HTML strings, echoed
 // inline in the form so Unraid's markdown parser keeps them in the value column.
-$btn = 'display:inline-block; width:auto; padding:2px 12px;';
+$btn = 'display:inline-block; width:auto; padding:2px 12px; min-width:88px;';
 
-$addedHtml = "";
-if ($user_presets) {
-    foreach ($user_presets as $up) {
-        $lbl = htmlspecialchars(ucwords(str_replace(['-', '_'], ' ', $up)));
-        $val = htmlspecialchars($up);
-        $addedHtml .= "<button type='submit' name='remove_preset' value='$val' onclick='return confirm(\"Remove theme &quot;$val&quot;?\")' style='$btn margin:0 6px 6px 0;'>$lbl &times;</button>";
-    }
-    $addedHtml .= "<br><span>Themes you imported or got from the store. Click to remove. Built-in themes can't be removed.</span>";
-} else {
-    $addedHtml = "<span>None yet. Themes you import or get from the store appear here and can be removed; built-in themes can't.</span>";
-}
-
+// theme store rows — three button states: Get / Uninstall (user-added) / Installed (built-in)
+$store_stems = [];
 if (!empty($store_index['themes'])) {
     $rows = "";
     foreach ($store_index['themes'] as $t) {
         $stem = pathinfo($t['file'], PATHINFO_FILENAME);
-        $ins  = isset($have_preset[$stem]);
+        $store_stems[$stem] = 1;
+        $ins     = isset($have_preset[$stem]);
+        $onflash = is_file("$flash/presets/$stem.css");   // present on flash → user-added → removable
         $base = strtolower($t['base'] ?? '');
         $L = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
         $D = in_array($base, ['black', 'gray', 'any']) ? '1' : '0';
         $dn = htmlspecialchars(strtolower($t['name'] . ' ' . $t['description']));
+        if (!$ins) {
+            $b = "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "' style='$btn'>Get</button>";
+        } elseif ($onflash) {
+            $b = "<button type='submit' name='remove_preset' value='$stem' onclick='return confirm(\"Uninstall $stem?\")' style='$btn'>Uninstall</button>";
+        } else {
+            $b = "<button type='button' disabled style='$btn'>Installed</button>";
+        }
         $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:flex; align-items:baseline; gap:10px; padding:6px 8px; border-top:1px solid rgba(128,128,128,0.18);'>"
-            . "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "'" . ($ins ? " disabled" : "") . " style='$btn min-width:78px;'>" . ($ins ? "Installed" : "Get") . "</button>"
+            . $b
             . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em></span>"
             . "</div>";
     }
@@ -301,6 +305,21 @@ if (!empty($store_index['themes'])) {
         . "<script>function utStoreFilter(){var q=(document.getElementById('ut-store-search').value||'').toLowerCase().trim();var f=document.getElementById('ut-store-filter').value;var rows=document.querySelectorAll('#ut-store-list .ut-store-row');for(var i=0;i<rows.length;i++){var r=rows[i];var okq=!q||r.getAttribute('data-name').indexOf(q)>=0;var okf=f=='all'||(f=='light'&&r.getAttribute('data-light')=='1')||(f=='dark'&&r.getAttribute('data-dark')=='1');r.style.display=(okq&&okf)?'':'none';}}</script>";
 } else {
     $storeHtml = "<span>Store unavailable (no internet, or GitHub unreachable). The URL import above still works.</span>";
+}
+
+// "Added themes" now only covers user imports that AREN'T in the registry
+// (arbitrary URL imports); registry themes are removed via "Uninstall" in the store.
+$orphans = array_values(array_diff($user_presets, array_keys($store_stems)));
+if ($orphans) {
+    $addedHtml = "";
+    foreach ($orphans as $up) {
+        $lbl = htmlspecialchars(ucwords(str_replace(['-', '_'], ' ', $up)));
+        $val = htmlspecialchars($up);
+        $addedHtml .= "<button type='submit' name='remove_preset' value='$val' onclick='return confirm(\"Remove $val?\")' style='$btn margin:0 6px 6px 0;'>$lbl &times;</button>";
+    }
+    $addedHtml .= "<br><span>Themes you imported by URL that aren't in the store. Click to remove.</span>";
+} else {
+    $addedHtml = "<span>Store themes are removed with <strong>Uninstall</strong> in the store above; built-in themes stay.</span>";
 }
 ?>
 
