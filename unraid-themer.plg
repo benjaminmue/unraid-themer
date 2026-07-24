@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24p">
+  <!ENTITY version   "2026.07.24q">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,14 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24q
+- Custom Icons: new sub-page (Settings > Utilities > Unraid Themer > Custom
+  Icons) listing every themeable icon slot with its reference icon and a live
+  preview. Assign a custom icon per slot — a bundled Lucide name, a raw https
+  SVG URL, or pasted SVG markup. Inputs are validated (no scripts, event
+  handlers or external refs), stored on flash, and compiled into overrides.css
+  that wins over the icon set (works even with set = Default).
+
 ## 2026.07.24p
 - Icon set (Lucide): remap the remaining Docker-menu action glyphs — WebUI /
   Project Page (globe), Edit (wrench), Support (life-ring), Logs (list) and
@@ -100,8 +108,8 @@
 <INLINE>
 # --- Unraid Themer: prepare directories ---
 rm -rf /usr/local/emhttp/plugins/unraid.themer
-mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js /usr/local/emhttp/plugins/unraid.themer/defaults
-mkdir -p /boot/config/plugins/unraid.themer/presets
+mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js /usr/local/emhttp/plugins/unraid.themer/defaults /usr/local/emhttp/plugins/unraid.themer/overrides
+mkdir -p /boot/config/plugins/unraid.themer/presets /boot/config/plugins/unraid.themer/overrides
 exit 0
 </INLINE>
 </FILE>
@@ -429,6 +437,288 @@ Added themes:
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/UnraidThemerIcons.page">
+<INLINE>
+<![CDATA[Menu="UnraidThemer"
+Title="Custom Icons"
+Icon="picture-o"
+---
+<?php
+/* Unraid Themer — per-icon overrides (Settings → Utilities → Unraid Themer → Custom Icons).
+ * Lists every themeable icon slot and lets the user assign a custom icon per slot:
+ * a bundled Lucide name, a raw https SVG URL, or pasted <svg> markup. The chosen
+ * icons are validated, stored on flash, and compiled into overrides.css, which the
+ * loader injects AFTER the icon set — so a single swap wins even with set = Default.
+ */
+require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+
+$name    = "unraid.themer";
+$flash   = "/boot/config/plugins/$name";
+$webroot = "/usr/local/emhttp/plugins/$name";
+$weburl  = "/plugins/$name";
+$ov_dir_f = "$flash/overrides";       // flash: custom SVGs (persist)
+$ov_dir_w = "$webroot/overrides";     // webroot: served copies
+$ov_json  = "$flash/overrides.json";  // slot -> {src}
+$ov_css_f = "$flash/overrides.css";
+$ov_css_w = "$webroot/overrides.css";
+$msg = "";
+
+/* The themeable icon slots. `sel` = CSS selectors the override targets (must match
+ * the icon-set stylesheet). `def` = bundled Lucide stem shown as the reference. */
+$REG = [
+    'System' => [
+        'performance'    => ['Dashboard / Tower header', ['.icon-performance'], 'gauge'],
+        'motherboard'    => ['Motherboard',              ['.icon-motherboard'], 'circuit-board'],
+        'cpu'            => ['Processor',                ['.icon-cpu'], 'cpu'],
+        'ram'            => ['Memory',                   ['.icon-ram'], 'memory-stick'],
+        'ethernet'       => ['Network',                  ['.icon-ethernet'], 'ethernet-port'],
+        'ups'            => ['UPS',                      ['.icon-ups'], 'battery-charging'],
+        'fan'            => ['Fan',                      ['.icon-fan'], 'fan'],
+        'docker'         => ['Docker',                   ['.icon-docker'], 'container'],
+        'virtualization' => ['Virtual Machines',         ['.icon-virtualization'], 'monitor'],
+        'folder'         => ['Shares',                   ['.icon-folder'], 'folder'],
+        'users'          => ['Users',                    ['.icon-users'], 'users'],
+        'user'           => ['User',                     ['.icon-user'], 'user'],
+        'disks'          => ['Array / Disks',            ['.icon-disks', '.icon-disk'], 'hard-drive'],
+        'disc'           => ['Disc',                     ['.icon-disc'], 'disc'],
+        'health'         => ['Health',                   ['.icon-health'], 'activity'],
+        'hardware'       => ['Hardware / System',        ['.icon-hardware'], 'server'],
+    ],
+    'Actions' => [
+        'play'      => ['Start',              ['.fa-play'], 'play'],
+        'stop'      => ['Stop',               ['.fa-stop'], 'square'],
+        'pause'     => ['Pause',              ['.fa-pause'], 'pause'],
+        'restart'   => ['Restart / Refresh',  ['.fa-refresh', '.fa-rotate-right'], 'refresh-cw'],
+        'power'     => ['Power off',          ['.fa-power-off'], 'power'],
+        'settings'  => ['Settings (cog)',     ['.fa-cog', '.fa-gear'], 'settings'],
+        'trash'     => ['Remove (trash)',     ['.fa-trash', '.fa-trash-o'], 'trash-2'],
+        'terminal'  => ['Console',            ['.fa-terminal'], 'terminal'],
+        'download'  => ['Download',           ['.fa-download'], 'download'],
+        'globe'     => ['WebUI / Project',    ['.fa-globe'], 'globe'],
+        'wrench'    => ['Edit (wrench)',      ['.fa-wrench'], 'wrench'],
+        'support'   => ['Support',            ['.fa-life-ring', '.fa-support'], 'life-buoy'],
+        'logs'      => ['Logs (list)',        ['.fa-align-justify', '.fa-list', '.fa-list-ul'], 'list'],
+        'info'      => ['More info',          ['.fa-info-circle', '.fa-info'], 'info'],
+        'warning'   => ['Warning',            ['.fa-exclamation-triangle', '.fa-warning'], 'triangle-alert'],
+        'pencil'    => ['Edit (pencil)',      ['.fa-pencil', '.fa-edit', '.fa-pencil-square-o'], 'square-pen'],
+        'chevup'    => ['Chevron up',         ['.fa-chevron-up'], 'chevron-up'],
+        'chevdown'  => ['Chevron down',       ['.fa-chevron-down'], 'chevron-down'],
+        'menu'      => ['Menu (bars)',        ['.fa-bars', '.fa-navicon'], 'menu'],
+    ],
+];
+// flat key -> entry, for lookups during save/CSS generation
+$FLAT = [];
+foreach ($REG as $cat => $slots) foreach ($slots as $k => $e) $FLAT[$k] = $e;
+
+// bundled Lucide SVG stems, offered as an autocomplete list
+$bundled = [];
+foreach (glob("$webroot/icons/svg/*.svg") as $s) $bundled[] = basename($s, '.svg');
+sort($bundled);
+$have_bundled = array_flip($bundled);
+
+/* Validate an SVG before it is ever written to disk. Returns [clean, error]. */
+function themer_sanitize_svg($svg) {
+    $svg = (string) $svg;
+    if (trim($svg) === '')            return ["", "empty or download failed"];
+    if (strlen($svg) > 64 * 1024)     return ["", "too large (>64 KB)"];
+    if (!preg_match('/<svg[\s>]/i', $svg)) return ["", "not an <svg> document"];
+    $blocked = [
+        '/<\s*script/i'                                          => "a <script> tag",
+        '/<\s*(foreignObject|iframe|image|use|animate|set)\b/i'  => "an embedded/external element",
+        '/\son\w+\s*=/i'                                         => "an inline event handler",
+        '/javascript\s*:/i'                                      => "a javascript: URI",
+        '/(?:href|xlink:href)\s*=\s*[\'"]?\s*(?:https?:|\/\/|data:)/i' => "an external/data href",
+        '/<!ENTITY|<!DOCTYPE/i'                                  => "an XML entity/doctype",
+    ];
+    foreach ($blocked as $re => $why) if (preg_match($re, $svg)) return ["", "contains $why"];
+    return [$svg, ""];
+}
+
+/* Resolve one slot's raw input to a served icon URL, saving a custom SVG if needed.
+ * Returns [targetUrl, error]. Empty input => ["", ""] (no override). */
+function themer_resolve_icon($key, $src, $ctx) {
+    extract($ctx); // $webroot, $weburl, $ov_dir_f, $ov_dir_w, $have_bundled
+    $src = trim($src);
+    if ($src === '') return ["", ""];
+
+    // (a) pasted <svg> markup
+    if (stripos($src, '<svg') !== false) {
+        [$clean, $err] = themer_sanitize_svg($src);
+        if ($err) return ["", $err];
+        @mkdir($ov_dir_f, 0755, true); @mkdir($ov_dir_w, 0755, true);
+        file_put_contents("$ov_dir_f/$key.svg", $clean);
+        @copy("$ov_dir_f/$key.svg", "$ov_dir_w/$key.svg");
+        return ["$weburl/overrides/$key.svg", ""];
+    }
+    // (b) https URL to an SVG
+    if (preg_match('#^https://[^\s\'"<>]+$#i', $src)) {
+        $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 65536 " . escapeshellarg($src) . " 2>/dev/null");
+        [$clean, $err] = themer_sanitize_svg($raw);
+        if ($err) return ["", $err];
+        @mkdir($ov_dir_f, 0755, true); @mkdir($ov_dir_w, 0755, true);
+        file_put_contents("$ov_dir_f/$key.svg", $clean);
+        @copy("$ov_dir_f/$key.svg", "$ov_dir_w/$key.svg");
+        return ["$weburl/overrides/$key.svg", ""];
+    }
+    // (c) a bundled Lucide stem
+    $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower($src));
+    if ($stem !== '' && isset($have_bundled[$stem])) {
+        return ["$weburl/icons/svg/$stem.svg", ""];
+    }
+    return ["", "not a bundled name, https URL or <svg> markup"];
+}
+
+/* (Re)compile overrides.css from the stored slot->src map. */
+function themer_build_overrides_css($map, $FLAT, $ctx) {
+    extract($ctx);
+    $blocks = [];
+    foreach ($map as $key => $src) {
+        if (!isset($FLAT[$key])) continue;
+        [$target, $err] = themer_resolve_icon($key, $src, $ctx);
+        if ($err || $target === '') continue;
+        $sel = implode(",\n", array_map(fn($s) => "$s::before", $FLAT[$key][1]));
+        $blocks[] = "$sel {\n"
+            . "  content: \"\" !important;\n"
+            . "  -webkit-mask: url('$target') center / contain no-repeat;\n"
+            . "  mask: url('$target') center / contain no-repeat;\n"
+            . "  background-color: currentColor;\n"
+            . "  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;\n"
+            . "}";
+    }
+    $css = "/* Unraid Themer — per-icon overrides (generated). */\n" . implode("\n", $blocks) . "\n";
+    file_put_contents($ov_css_f, $css);
+    @copy($ov_css_f, $ov_css_w);
+}
+
+$ctx = compact('webroot', 'weburl', 'ov_dir_f', 'ov_dir_w', 'have_bundled', 'ov_css_f', 'ov_css_w');
+
+// read current override map
+$map = file_exists($ov_json) ? (json_decode(file_get_contents($ov_json), true) ?: []) : [];
+
+// --- SAVE all slots ---
+if ($_POST && isset($_POST['SAVE_ICONS'])) {
+    $newmap = [];
+    $errs = [];
+    foreach ($FLAT as $key => $e) {
+        $src = trim($_POST["ov_$key"] ?? '');
+        if ($src === '') { @unlink("$ov_dir_f/$key.svg"); @unlink("$ov_dir_w/$key.svg"); continue; }
+        [$target, $err] = themer_resolve_icon($key, $src, $ctx);
+        if ($err) { $errs[] = "{$e[0]}: $err"; continue; }
+        $newmap[$key] = $src;
+    }
+    $map = $newmap;
+    file_put_contents($ov_json, json_encode($map, JSON_PRETTY_PRINT));
+    themer_build_overrides_css($map, $FLAT, $ctx);
+    $msg = $errs
+        ? "Saved. Skipped: " . implode("; ", $errs) . "."
+        : "Icons saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.";
+}
+
+// --- RESET all ---
+if ($_POST && isset($_POST['RESET_ICONS'])) {
+    foreach (glob("$ov_dir_f/*.svg") as $f) @unlink($f);
+    foreach (glob("$ov_dir_w/*.svg") as $f) @unlink($f);
+    @unlink($ov_json);
+    file_put_contents($ov_css_f, "/* Unraid Themer — per-icon overrides (generated). */\n");
+    @copy($ov_css_f, $ov_css_w);
+    $map = [];
+    $msg = "All custom icons cleared.";
+}
+
+// preview helper: a masked span using the given served SVG url
+function themer_prev($url, $title = '') {
+    if ($url === '') return "<span style='display:inline-block;width:22px;height:22px;opacity:.35;text-align:center;'>&mdash;</span>";
+    $u = htmlspecialchars($url);
+    return "<span title='" . htmlspecialchars($title) . "' style='display:inline-block;width:22px;height:22px;"
+        . "-webkit-mask:url(\"$u\") center/contain no-repeat;mask:url(\"$u\") center/contain no-repeat;"
+        . "background-color:currentColor;vertical-align:middle;'></span>";
+}
+?>
+
+<style>
+  #ut-icons { border-collapse: collapse; width: 100%; max-width: 900px; }
+  #ut-icons th, #ut-icons td { padding: 6px 10px; border-top: 1px solid rgba(128,128,128,0.18); text-align: left; vertical-align: middle; }
+  #ut-icons th { border-top: none; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
+  #ut-icons tr.ut-cat td { padding-top: 16px; font-weight: 700; opacity: .85; border-top: none; }
+  #ut-icons input[type=text] { width: 100%; min-width: 220px; }
+  #ut-icons .ut-desc { white-space: nowrap; }
+</style>
+
+<div markdown="1">
+<?php if ($msg): ?>
+<span class="green"><?= htmlspecialchars($msg) ?></span>
+<?php endif; ?>
+
+Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
+A value can be a **bundled Lucide name** (type to autocomplete), a raw **https SVG URL**
+(e.g. from [lucide.dev](https://lucide.dev) or [tabler-icons](https://tabler.io/icons)), or
+pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handlers/external refs)
+and tinted with the theme color, so single-color line icons work best.
+</div>
+
+<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off">
+<datalist id="ut-bundled">
+  <?php foreach ($bundled as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
+</datalist>
+
+<table id="ut-icons">
+  <thead>
+    <tr><th>Icon</th><th>Set&nbsp;icon</th><th>Yours</th><th>Custom (name, https URL or &lt;svg&gt;)</th></tr>
+  </thead>
+  <tbody>
+  <?php foreach ($REG as $cat => $slots): ?>
+    <tr class="ut-cat"><td colspan="4"><?= htmlspecialchars($cat) ?></td></tr>
+    <?php foreach ($slots as $key => $e):
+        [$label, $sel, $def] = $e;
+        $ref_url = isset($have_bundled[$def]) ? "$weburl/icons/svg/$def.svg" : "";
+        $src = $map[$key] ?? '';
+        [$own_url] = $src !== '' ? themer_resolve_icon($key, $src, $ctx) : ['', ''];
+    ?>
+    <tr>
+      <td class="ut-desc"><?= htmlspecialchars($label) ?></td>
+      <td><?= themer_prev($ref_url, $def) ?></td>
+      <td class="ut-own" data-key="<?= htmlspecialchars($key) ?>"><?= themer_prev($own_url, $src) ?></td>
+      <td><input type="text" name="ov_<?= htmlspecialchars($key) ?>" list="ut-bundled"
+                 value="<?= htmlspecialchars($src) ?>" spellcheck="false"
+                 placeholder="<?= htmlspecialchars($def) ?>"
+                 oninput="utIconPrev(this)" data-key="<?= htmlspecialchars($key) ?>"></td>
+    </tr>
+    <?php endforeach; ?>
+  <?php endforeach; ?>
+  </tbody>
+</table>
+
+<p style="margin-top:16px;">
+  <input type="submit" name="SAVE_ICONS" value="_(Apply)_">
+  <input type="submit" name="RESET_ICONS" value="Reset all" onclick="return confirm('Clear all custom icons?')">
+  <input type="button" value="_(Done)_" onclick="done()">
+</p>
+</form>
+
+<script>
+// Live preview for bundled Lucide names (same-origin SVGs). URLs / <svg> markup are
+// previewed after Apply (server validates first).
+var UT_BUNDLED = <?= json_encode($bundled) ?>;
+function utIconPrev(inp){
+  var key = inp.getAttribute('data-key');
+  var cell = document.querySelector('.ut-own[data-key="'+key+'"]');
+  if(!cell) return;
+  var span = cell.querySelector('span');
+  var v = (inp.value||'').trim().toLowerCase();
+  if(v && UT_BUNDLED.indexOf(v) >= 0){
+    var u = '<?= $weburl ?>/icons/svg/'+v+'.svg';
+    span.style.webkitMask = 'url("'+u+'") center/contain no-repeat';
+    span.style.mask = 'url("'+u+'") center/contain no-repeat';
+    span.style.backgroundColor = 'currentColor';
+    span.style.opacity = '1';
+    span.innerHTML = '';
+  }
+}
+</script>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/UnraidThemerLoader.page">
 <INLINE>
 <![CDATA[Menu="Buttons:100"
@@ -476,7 +766,15 @@ Link="nav-user"
         }
     }
 
-    // 3) user custom overrides (loaded AFTER the preset so they win)
+    // 3) per-icon overrides (loaded AFTER the icon set so single-icon swaps win,
+    //    and work even when the icon set is "default")
+    $ovcss = "$webroot/overrides.css";
+    if (file_exists($ovcss) && trim(file_get_contents($ovcss)) !== '') {
+        $v = filemtime($ovcss);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/overrides.css?v=$v\">\n";
+    }
+
+    // 4) user custom overrides (loaded AFTER the preset so they win)
     $override = "$webroot/custom.css";
     if (file_exists($override) && trim(file_get_contents($override)) !== '') {
         $v = filemtime($override);
@@ -3670,6 +3968,11 @@ cp -f /boot/config/plugins/unraid.themer/custom.css /usr/local/emhttp/plugins/un
 
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
+
+# Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
+mkdir -p /usr/local/emhttp/plugins/unraid.themer/overrides
+cp -f /boot/config/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/overrides/ 2>/dev/null
+cp -f /boot/config/plugins/unraid.themer/overrides.css /usr/local/emhttp/plugins/unraid.themer/overrides.css 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

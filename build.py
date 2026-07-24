@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24p",
+    "version": "2026.07.24q",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24q
+- Custom Icons: new sub-page (Settings > Utilities > Unraid Themer > Custom
+  Icons) listing every themeable icon slot with its reference icon and a live
+  preview. Assign a custom icon per slot — a bundled Lucide name, a raw https
+  SVG URL, or pasted SVG markup. Inputs are validated (no scripts, event
+  handlers or external refs), stored on flash, and compiled into overrides.css
+  that wins over the icon set (works even with set = Default).
+
 ## 2026.07.24p
 - Icon set (Lucide): remap the remaining Docker-menu action glyphs — WebUI /
   Project Page (globe), Edit (wrench), Support (life-ring), Logs (list) and
@@ -138,8 +146,8 @@ def collect_files():
 INSTALL = f"""
 # --- Unraid Themer: prepare directories ---
 rm -rf {WEBROOT}
-mkdir -p {WEBROOT}/presets {WEBROOT}/js {WEBROOT}/defaults
-mkdir -p {FLASH}/presets
+mkdir -p {WEBROOT}/presets {WEBROOT}/js {WEBROOT}/defaults {WEBROOT}/overrides
+mkdir -p {FLASH}/presets {FLASH}/overrides
 exit 0
 """.strip()
 
@@ -164,6 +172,11 @@ cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
+
+# Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
+mkdir -p {WEBROOT}/overrides
+cp -f {FLASH}/overrides/*.svg {WEBROOT}/overrides/ 2>/dev/null
+cp -f {FLASH}/overrides.css {WEBROOT}/overrides.css 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

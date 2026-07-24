@@ -43,7 +43,15 @@ Link="nav-user"
         }
     }
 
-    // 3) user custom overrides (loaded AFTER the preset so they win)
+    // 3) per-icon overrides (loaded AFTER the icon set so single-icon swaps win,
+    //    and work even when the icon set is "default")
+    $ovcss = "$webroot/overrides.css";
+    if (file_exists($ovcss) && trim(file_get_contents($ovcss)) !== '') {
+        $v = filemtime($ovcss);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/overrides.css?v=$v\">\n";
+    }
+
+    // 4) user custom overrides (loaded AFTER the preset so they win)
     $override = "$webroot/custom.css";
     if (file_exists($override) && trim(file_get_contents($override)) !== '') {
         $v = filemtime($override);
