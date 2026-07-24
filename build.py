@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24f",
+    "version": "2026.07.24g",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,10 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24g
+- Store browser now uses a non-CDN-cached URL so newly published themes appear
+  immediately (added Catppuccin Mocha to the registry).
+
 ## 2026.07.24f
 - Theme store (mode B): browse the community registry in the settings page and
   download themes on demand (validated before saving). Already-installed themes

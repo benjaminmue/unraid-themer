@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24f">
+  <!ENTITY version   "2026.07.24g">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,10 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24g
+- Store browser now uses a non-CDN-cached URL so newly published themes appear
+  immediately (added Catppuccin Mocha to the registry).
+
 ## 2026.07.24f
 - Theme store (mode B): browse the community registry in the settings page and
   download themes on demand (validated before saving). Already-installed themes
@@ -121,7 +125,9 @@ $webroot     = "/usr/local/emhttp/plugins/$name";
 $cfg_path    = "$flash/$name.cfg";
 $custom_flash= "$flash/custom.css";
 $custom_web  = "$webroot/custom.css";
-$store_base  = "https://raw.githubusercontent.com/benjaminmue/unraid-themer/main/themes";
+// github.com/.../raw/ serves fresh content immediately; raw.githubusercontent
+// is CDN-cached (~5 min), so new store themes would appear late.
+$store_base  = "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/themes";
 $msg = "";
 $switch_base = "";   // set to a theme name if we need to pair the Dynamix base
 

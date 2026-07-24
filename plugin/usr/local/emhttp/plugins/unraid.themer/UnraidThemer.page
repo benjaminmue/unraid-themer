@@ -39,7 +39,9 @@ $webroot     = "/usr/local/emhttp/plugins/$name";
 $cfg_path    = "$flash/$name.cfg";
 $custom_flash= "$flash/custom.css";
 $custom_web  = "$webroot/custom.css";
-$store_base  = "https://raw.githubusercontent.com/benjaminmue/unraid-themer/main/themes";
+// github.com/.../raw/ serves fresh content immediately; raw.githubusercontent
+// is CDN-cached (~5 min), so new store themes would appear late.
+$store_base  = "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/themes";
 $msg = "";
 $switch_base = "";   // set to a theme name if we need to pair the Dynamix base
 
