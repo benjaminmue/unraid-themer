@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25.3">
+  <!ENTITY version   "2026.07.25.4">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,16 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.25.4
+- Much wider icon coverage: mapped ~98 more Unraid glyphs (Settings/nav icons —
+  dashboard, network, security, scheduler, shares, plugins, ... — and the
+  icon-u-* toolbar/sort glyphs) so the Lucide set now themes the whole UI, not
+  just the dashboard.
+- Settings page: shows the installed version and adds GitHub, "Report an issue"
+  and "Request a theme / feature" links.
+- New theme guide (THEMES.md) + annotated sample (themes/_template.css); the
+  settings page links to both.
+
 ## 2026.07.25.3
 - Removed the SpongeBob icon set and the SpongeBob / Simpsons / Rick and Morty
   store themes.
@@ -534,8 +544,22 @@ Added themes:
 &nbsp;
 : <span class="description" style="max-width:640px; margin:0; padding:15px; background:rgba(0,0,0,0.1); border-radius:6px;">
     <strong>How it works.</strong> Unraid Themer injects the selected preset's stylesheet into every page (via a <code>Buttons</code> loader page), plus a small deferred script for shadow-DOM tweaks and Docker "update available" badges.<br/><br/>
-    <strong>Presets</strong> are CSS files in <code>/boot/config/plugins/unraid.themer/presets/</code> — drop your own <code>&lt;name&gt;.css</code> there to add one.<br/><br/>
+    <strong>Presets</strong> are CSS files in <code>/boot/config/plugins/unraid.themer/presets/</code> — drop your own <code>&lt;name&gt;.css</code> there to add one. See the <a href="https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md" target="_blank">theme guide</a> and <a href="https://github.com/benjaminmue/unraid-themer/blob/main/themes/_template.css" target="_blank">sample template</a> to make your own.<br/><br/>
     Explore Unraid's variables in <a href="/webGui/styles/themes/white.css" target="_blank">white.css</a> / <a href="/webGui/styles/themes/black.css" target="_blank">black.css</a>. Semantic status colors (disk health, array state) are intentionally left untouched by all presets.
+  </span>
+
+<?php
+// installed plugin version (from the .plg on flash)
+$ut_ver = '';
+$ut_plg = "/boot/config/plugins/$name.plg";
+if (is_file($ut_plg) && preg_match('/<!ENTITY\s+version\s+"([^"]+)"/', file_get_contents($ut_plg), $vm)) $ut_ver = $vm[1];
+?>
+&nbsp;
+: <span style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; opacity:.85;">
+    <span><strong>Unraid Themer</strong><?= $ut_ver ? " &middot; v$ut_ver" : "" ?></span>
+    <a href="https://github.com/benjaminmue/unraid-themer" target="_blank">GitHub</a>
+    <a href="https://github.com/benjaminmue/unraid-themer/issues/new?labels=bug&amp;template=" target="_blank">Report an issue</a>
+    <a href="https://github.com/benjaminmue/unraid-themer/issues/new?labels=enhancement&amp;title=%5BRequest%5D%20" target="_blank">Request a theme / feature</a>
   </span>
 </form>
 ]]>
@@ -4505,6 +4529,656 @@ help --- */
   background-color: currentColor;
   display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
 }
+
+/* --- Extended coverage: Settings/nav/notification icons + icon-u-* toolbar glyphs --- */
+.icon-processes::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/activity.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/activity.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-archive::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/archive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/archive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-arrow-down::before,
+.icon-u-sort-down::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/arrow-down.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/arrow-down.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-arrow-left::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/arrow-left.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/arrow-left.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-arrow-right::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/arrow-right.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/arrow-right.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-mover::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/arrow-right-left.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/arrow-right-left.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-arrow-up::before,
+.icon-u-sort-up::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/arrow-up.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/arrow-up.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-credits::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/award.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/award.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-certificate::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/badge-check.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/badge-check.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-notifications::before,
+.icon-u-bell::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/bell.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/bell.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-vars::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/braces.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/braces.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-scheduler::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/calendar-clock.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/calendar-clock.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-snapshot::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/camera.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/camera.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-fort::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/castle.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/castle.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-check::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/check.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/check.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-confirmations::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/check-check.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/check-check.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-sort::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/chevrons-up-down.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/chevrons-up-down.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-circle::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circle.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-stop::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle-stop.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circle-stop.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-profile::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/circle-user.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/circle-user.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-clock::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/clock.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/clock.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-cloud-services::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/cloud.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/cloud.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-download::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/download.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/download.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-preclear::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/eraser.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/eraser.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-zip::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/file-archive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/file-archive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-experiments::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/flask-conical.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/flask-conical.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-sharing-protocol::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/folder-cog.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/folder-cog.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-ftp::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/folder-symlink.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/folder-symlink.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-globe::before,
+.icon-u-globe::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/globe.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-nvme::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/hard-drive.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-polygon::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/hexagon.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/hexagon.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-home::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/house.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/house.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-registration::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/id-card.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/id-card.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-picture::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/image.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/image.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-info::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/info.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/info.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-key::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/key.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/key.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-language-filled::before,
+.icon-language::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/languages.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/languages.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-main::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/layers.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/layers.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-dashboard::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/layout-dashboard.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/layout-dashboard.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-apps::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/layout-grid.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/layout-grid.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-template::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/layout-template.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/layout-template.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-energysaving::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/leaf.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/leaf.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-lighting::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/lightbulb.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/lightbulb.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-link::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/link.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/link.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-list::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/list.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-disk-encrypted::before,
+.icon-u-lock::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/lock.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/lock.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-permissions::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/lock-keyhole.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/lock-keyhole.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-lock-open::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/lock-open.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/lock-open.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-pagemap::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/map.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/map.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-expand::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/maximize-2.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/maximize-2.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-chat::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/message-square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/message-square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-minimize::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/minimize-2.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/minimize-2.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-minus::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/minus.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/minus.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-display::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/monitor.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-pause::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/pause.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/pause.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-play::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/play.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/play.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-plus::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/plus.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/plus.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-shutdown::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/power.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/power.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-sync::before,
+.icon-u-change::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/refresh-cw.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/refresh-cw.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-restart::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/rotate-cw.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/rotate-cw.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-square::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/square.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/square.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-edit::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/square-pen.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/square-pen.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-delete::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/trash-2.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/trash-2.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+
+/* --- Extended coverage (round 2) --- */
+.icon-update::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/arrow-up-circle.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/arrow-up-circle.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-move::before,
+.icon-u-move::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/move.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/move.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-audio::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/music.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/music.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-network::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/network.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/network.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-packages::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/package.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/package.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-themes::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/palette.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/palette.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-plugins-fill::before,
+.icon-plugins::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/plug.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/plug.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-custom::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/puzzle.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/puzzle.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-remote-access::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/radio-tower.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/radio-tower.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-recycle::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/recycle.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/recycle.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-repeatable::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/repeat.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/repeat.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-rocket::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/rocket.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/rocket.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-log::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/scroll-text.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/scroll-text.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-share::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/share-2.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/share-2.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-security::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/shield.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/shield.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-vpn::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/shield-check.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/shield-check.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-wireguard::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/shield-half.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/shield-half.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-config::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/sliders-horizontal.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/sliders-horizontal.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-star::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/star.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/star.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-diagnostics::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/stethoscope.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/stethoscope.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-shop::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/store.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/store.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-tag::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/tag.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/tag.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-temp::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/thermometer.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/thermometer.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-thumbs-down::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/thumbs-down.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/thumbs-down.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-thumbs-up::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/thumbs-up.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/thumbs-up.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-u-triangle::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/triangle.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/triangle.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-usb::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/usb.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/usb.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
+.icon-video::before {
+  content: "" !important;
+  -webkit-mask: url('/plugins/unraid.themer/icons/svg/video.svg') center / contain no-repeat;
+  mask: url('/plugins/unraid.themer/icons/svg/video.svg') center / contain no-repeat;
+  background-color: currentColor;
+  display: inline-block; width: 1em; height: 1em; vertical-align: -0.125em;
+}
 ]]>
 </INLINE>
 </FILE>
@@ -6168,6 +6842,190 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/archive.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="20" height="5" x="2" y="3" rx="1" />
+  <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+  <path d="M10 12h4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/arrow-down.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 5v14" />
+  <path d="m19 12-7 7-7-7" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/arrow-left.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m12 19-7-7 7-7" />
+  <path d="M19 12H5" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/arrow-right-left.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m16 3 4 4-4 4" />
+  <path d="M20 7H4" />
+  <path d="m8 21-4-4 4-4" />
+  <path d="M4 17h16" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/arrow-right.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M5 12h14" />
+  <path d="m12 5 7 7-7 7" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/arrow-up-circle.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="m16 12-4-4-4 4" />
+  <path d="M12 16V8" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/arrow-up.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m5 12 7-7 7 7" />
+  <path d="M12 19V5" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/award.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526" />
+  <circle cx="12" cy="8" r="6" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/badge-check.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
+  <path d="m9 12 2 2 4-4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/battery-charging.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6205,6 +7063,116 @@ help --- */
 >
   <path d="M10.268 21a2 2 0 0 0 3.464 0" />
   <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/braces.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1" />
+  <path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/calendar-clock.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M16 14v2.2l1.6 1" />
+  <path d="M16 2v4" />
+  <path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5" />
+  <path d="M3 10h5" />
+  <path d="M8 2v4" />
+  <circle cx="16" cy="16" r="6" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/camera.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" />
+  <circle cx="12" cy="13" r="3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/castle.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10 5V3" />
+  <path d="M14 5V3" />
+  <path d="M15 21v-3a3 3 0 0 0-6 0v3" />
+  <path d="M18 3v8" />
+  <path d="M18 5H6" />
+  <path d="M22 11H2" />
+  <path d="M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9" />
+  <path d="M6 3v8" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/check-check.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M18 6 7 17l-5-5" />
+  <path d="m22 10-7.5 7.5L13 16" />
 </svg>
 ]]>
 </INLINE>
@@ -6267,6 +7235,26 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/chevrons-up-down.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m7 15 5 5 5-5" />
+  <path d="m7 9 5-5 5 5" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/circle-help.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6308,6 +7296,46 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/circle-user.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <circle cx="12" cy="10" r="3" />
+  <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/circle.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/circuit-board.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6331,6 +7359,26 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/clock.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="M12 6v6l4 2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/cloud-download.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6347,6 +7395,25 @@ help --- */
   <path d="M12 13v8l-4-4" />
   <path d="m12 21 4-4" />
   <path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/cloud.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
 </svg>
 ]]>
 </INLINE>
@@ -6468,6 +7535,26 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/eraser.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21" />
+  <path d="m5.082 11.09 8.828 8.828" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/ethernet-port.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6532,6 +7619,30 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/file-archive.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5" />
+  <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+  <path d="M8 12v-1" />
+  <path d="M8 18v-2" />
+  <path d="M8 7V6" />
+  <circle cx="8" cy="20" r="2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/file-text.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6550,6 +7661,75 @@ help --- */
   <path d="M10 9H8" />
   <path d="M16 13H8" />
   <path d="M16 17H8" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/flask-conical.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2" />
+  <path d="M6.453 15h11.094" />
+  <path d="M8.5 2h7" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/folder-cog.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10.3 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.98a2 2 0 0 1 1.69.9l.66 1.2A2 2 0 0 0 12 6h8a2 2 0 0 1 2 2v3.3" />
+  <path d="m14.305 19.53.923-.382" />
+  <path d="m15.228 16.852-.923-.383" />
+  <path d="m16.852 15.228-.383-.923" />
+  <path d="m16.852 20.772-.383.924" />
+  <path d="m19.148 15.228.383-.923" />
+  <path d="m19.53 21.696-.382-.924" />
+  <path d="m20.772 16.852.924-.383" />
+  <path d="m20.772 19.148.924.383" />
+  <circle cx="18" cy="18" r="3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/folder-symlink.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M2 9.35V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h7" />
+  <path d="m8 16 3-3-3-3" />
 </svg>
 ]]>
 </INLINE>
@@ -6637,6 +7817,89 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/hexagon.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/house.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+  <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/id-card.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M16 10h2" />
+  <path d="M16 14h2" />
+  <path d="M6.17 15a3 3 0 0 1 5.66 0" />
+  <circle cx="9" cy="11" r="2" />
+  <rect x="2" y="5" width="20" height="14" rx="2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/image.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+  <circle cx="9" cy="9" r="2" />
+  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/info.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6653,6 +7916,157 @@ help --- */
   <circle cx="12" cy="12" r="10" />
   <path d="M12 16v-4" />
   <path d="M12 8h.01" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/key.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
+  <path d="m21 2-9.6 9.6" />
+  <circle cx="7.5" cy="15.5" r="5.5" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/languages.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m5 8 6 6" />
+  <path d="m4 14 6-6 2-3" />
+  <path d="M2 5h12" />
+  <path d="M7 2h1" />
+  <path d="m22 22-5-10-5 10" />
+  <path d="M14 18h6" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/layers.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+  <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
+  <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/layout-dashboard.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="7" height="9" x="3" y="3" rx="1" />
+  <rect width="7" height="5" x="14" y="3" rx="1" />
+  <rect width="7" height="9" x="14" y="12" rx="1" />
+  <rect width="7" height="5" x="3" y="16" rx="1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/layout-grid.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="7" height="7" x="3" y="3" rx="1" />
+  <rect width="7" height="7" x="14" y="3" rx="1" />
+  <rect width="7" height="7" x="14" y="14" rx="1" />
+  <rect width="7" height="7" x="3" y="14" rx="1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/layout-template.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="18" height="7" x="3" y="3" rx="1" />
+  <rect width="9" height="7" x="3" y="14" rx="1" />
+  <rect width="5" height="7" x="16" y="14" rx="1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/leaf.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
 </svg>
 ]]>
 </INLINE>
@@ -6682,6 +8096,47 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/lightbulb.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+  <path d="M9 18h6" />
+  <path d="M10 22h4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/link.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/list.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6706,6 +8161,67 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/lock-keyhole.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="16" r="1" />
+  <rect x="3" y="10" width="18" height="12" rx="2" />
+  <path d="M7 10V7a5 5 0 0 1 10 0v3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/lock-open.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+  <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/lock.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/log-out.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6722,6 +8238,49 @@ help --- */
   <path d="m16 17 5-5-5-5" />
   <path d="M21 12H9" />
   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/map.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
+  <path d="M15 5.764v15" />
+  <path d="M9 3.236v15" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/maximize-2.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 3h6v6" />
+  <path d="m21 3-7 7" />
+  <path d="m3 21 7-7" />
+  <path d="M9 21H3v-6" />
 </svg>
 ]]>
 </INLINE>
@@ -6796,6 +8355,47 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/minimize-2.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m14 10 7-7" />
+  <path d="M20 10h-6V4" />
+  <path d="m3 21 7-7" />
+  <path d="M4 14h6v6" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/minus.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M5 12h14" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/monitor.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6812,6 +8412,119 @@ help --- */
   <rect width="20" height="14" x="2" y="3" rx="2" />
   <line x1="8" x2="16" y1="21" y2="21" />
   <line x1="12" x2="12" y1="17" y2="21" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/move.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 2v20" />
+  <path d="m15 19-3 3-3-3" />
+  <path d="m19 9 3 3-3 3" />
+  <path d="M2 12h20" />
+  <path d="m5 9-3 3 3 3" />
+  <path d="m9 5 3-3 3 3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/music.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M9 18V5l12-2v13" />
+  <circle cx="6" cy="18" r="3" />
+  <circle cx="18" cy="16" r="3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/network.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect x="16" y="16" width="6" height="6" rx="1" />
+  <rect x="2" y="16" width="6" height="6" rx="1" />
+  <rect x="9" y="2" width="6" height="6" rx="1" />
+  <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+  <path d="M12 12V8" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/package.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" />
+  <path d="M12 22V12" />
+  <polyline points="3.29 7 12 12 20.71 7" />
+  <path d="m7.5 4.27 9 5.15" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/palette.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
+  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+  <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+  <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
 </svg>
 ]]>
 </INLINE>
@@ -6851,6 +8564,28 @@ help --- */
   stroke-linejoin="round"
 >
   <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/plug.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 22v-5" />
+  <path d="M15 8V2" />
+  <path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" />
+  <path d="M9 8V2" />
 </svg>
 ]]>
 </INLINE>
@@ -6896,6 +8631,74 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/puzzle.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/radio-tower.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M4.9 16.1C1 12.2 1 5.8 4.9 1.9" />
+  <path d="M7.8 4.7a6.14 6.14 0 0 0-.8 7.5" />
+  <circle cx="12" cy="9" r="2" />
+  <path d="M16.2 4.8c2 2 2.26 5.11.8 7.47" />
+  <path d="M19.1 1.9a9.96 9.96 0 0 1 0 14.1" />
+  <path d="M9.5 18h5" />
+  <path d="m8 22 4-11 4 11" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/recycle.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+  <path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12" />
+  <path d="m14 16-3 3 3 3" />
+  <path d="M8.293 13.596 7.196 9.5 3.1 10.598" />
+  <path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843" />
+  <path d="m13.378 9.633 4.096 1.098 1.097-4.096" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/refresh-cw.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6918,6 +8721,50 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/repeat.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m17 2 4 4-4 4" />
+  <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+  <path d="m7 22-4-4 4-4" />
+  <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/rocket.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09" />
+  <path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z" />
+  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/rotate-cw.svg">
 <INLINE>
 <![CDATA[<svg
@@ -6933,6 +8780,28 @@ help --- */
 >
   <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
   <path d="M21 3v5h-5" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/scroll-text.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 12h-5" />
+  <path d="M15 8h-5" />
+  <path d="M19 17V5a2 2 0 0 0-2-2H4" />
+  <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" />
 </svg>
 ]]>
 </INLINE>
@@ -7000,6 +8869,115 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/share-2.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="18" cy="5" r="3" />
+  <circle cx="6" cy="12" r="3" />
+  <circle cx="18" cy="19" r="3" />
+  <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" />
+  <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/shield-check.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <path d="m9 12 2 2 4-4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/shield-half.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <path d="M12 22V2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/shield.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/sliders-horizontal.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10 5H3" />
+  <path d="M12 19H3" />
+  <path d="M14 3v4" />
+  <path d="M16 17v4" />
+  <path d="M21 12h-9" />
+  <path d="M21 19h-5" />
+  <path d="M21 5h-7" />
+  <path d="M8 10v4" />
+  <path d="M8 12H3" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/square-pen.svg">
 <INLINE>
 <![CDATA[<svg
@@ -7039,6 +9017,89 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/star.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/stethoscope.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M11 2v2" />
+  <path d="M5 2v2" />
+  <path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1" />
+  <path d="M8 15a6 6 0 0 0 12 0v-3" />
+  <circle cx="20" cy="10" r="2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/store.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5" />
+  <path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244" />
+  <path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/tag.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+  <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/terminal.svg">
 <INLINE>
 <![CDATA[<svg
@@ -7054,6 +9115,65 @@ help --- */
 >
   <path d="M12 19h8" />
   <path d="m4 17 6-6-6-6" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/thermometer.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/thumbs-down.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+  <path d="M17 14V2" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/thumbs-up.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+  <path d="M7 10v12" />
 </svg>
 ]]>
 </INLINE>
@@ -7103,6 +9223,25 @@ help --- */
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/triangle.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/upload.svg">
 <INLINE>
 <![CDATA[<svg
@@ -7119,6 +9258,31 @@ help --- */
   <path d="M12 3v12" />
   <path d="m17 8-5-5-5 5" />
   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/usb.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="10" cy="7" r="1" />
+  <circle cx="4" cy="20" r="1" />
+  <path d="M4.7 19.3 19 5" />
+  <path d="m21 3-3 1 2 2Z" />
+  <path d="M9.26 7.68 5 12l2 5" />
+  <path d="m10 14 5 2 3.5-3.5" />
+  <path d="m18 12 1-1 1 1-1 1Z" />
 </svg>
 ]]>
 </INLINE>
@@ -7161,6 +9325,26 @@ help --- */
   <path d="M16 3.128a4 4 0 0 1 0 7.744" />
   <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
   <circle cx="9" cy="7" r="4" />
+</svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/icons/svg/video.svg">
+<INLINE>
+<![CDATA[<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
+  <rect x="2" y="6" width="14" height="12" rx="2" />
 </svg>
 ]]>
 </INLINE>

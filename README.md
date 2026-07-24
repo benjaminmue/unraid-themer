@@ -1,115 +1,99 @@
 # Unraid Themer
 
-A generic theming plugin for the **Unraid 7** webGUI. Pick a preset (or write your
-own CSS), flip it on, and the whole interface restyles — the classic Dynamix pages
+A generic theming plugin for the **Unraid 7** webGUI. Pick a theme (or build your
+own), flip it on, and the whole interface restyles — the classic Dynamix pages
 **and** the new Vue web-components — through Unraid's own CSS custom properties.
+Swap the UI icons for open-source icon sets, or override individual icons.
 
-A modern, minimal successor in spirit to the discontinued *Theme Engine*, built on
-the same injection mechanism the community's *Custom WebUI CSS* plugin uses, but
-wrapped in a preset system instead of a raw textarea.
+A modern, minimal successor in spirit to the discontinued *Theme Engine*, wrapped
+in a theme + icon system instead of a raw CSS textarea.
 
-> ⚠️ **Work in progress.** This is an early scaffold. It has not yet been installed
-> or verified on real hardware. Don't run it on a production server yet.
+> 🤖 **Built with AI.** This plugin was written largely by an AI assistant
+> (Claude Code / Anthropic), directed, reviewed and tested on real hardware by
+> [@benjaminmue](https://github.com/benjaminmue). It runs on his own Unraid 7.3
+> server. Read the code before trusting it on yours — issues and PRs welcome.
 
-## Presets
+## Features
 
-| Preset | Look |
-|---|---|
-| **bebamu** | Editorial: cream paper / black hairlines / red signal. Ships a **Light + Dark** pair. |
-| **Nord** | Arctic blue-grey, frost accents |
-| **Dracula** | Dark with purple/pink accents |
-| **Solarized Dark** | Deep teal base, blue/cyan accents |
-| **Monokai** | Classic dark, magenta/green accents |
-| **Gruvbox Dark** | Warm retro, orange/yellow accents |
-
-All presets remap only *aesthetic* colors. **Semantic status colors** (disk health,
-array state, warnings) are deliberately left untouched so the UI still means what it says.
-
-## How it works
-
-Unraid 7 has no global CSS hook, but a `.page` file with `Menu="Buttons"` is executed
-by `DefaultPageLayout.php` inside `<head>` on **every** page. Unraid Themer uses that:
-
-- **`UnraidThemerLoader.page`** (`Menu="Buttons:100"`) injects `<link>`s for the active
-  preset + your custom overrides, plus a deferred `<script>`, only when enabled.
-- **`UnraidThemer.page`** (`Menu="Utilities"`) is the settings screen (enable, preset,
-  custom CSS).
-- Presets restyle via `:root` **custom-property overrides**. These inherit through the
-  open shadow DOM of the Vue web-components, so `--header-*`, `--ui-*` and the shadcn
-  tokens recolor the new UI too — no `::part()` needed.
-- **`js/themer.js`** does the things CSS can't: a Docker *"update available"* badge with a
-  tooltip, and a bridge to push selector-based CSS into component shadow roots.
-
-Config lives on the flash (`/boot/config/plugins/unraid.themer/`) and is mirrored to the
-RAM webroot on boot, so it survives reboots.
+- **Themes** — bundled presets plus a built-in **theme store** you can browse and
+  download from on demand. 19+ community themes and counting.
+- **Icon sets** — swap Unraid's UI glyphs for **9 open-source line sets**
+  (Lucide, Tabler, Phosphor, Heroicons, Iconoir, Remix, Bootstrap, Carbon,
+  Material Symbols) that tint with the theme. Or set **any individual icon** from
+  a grid picker, an SVG URL, or your own uploaded SVG.
+- **Whole-UI coverage** — classic Dynamix pages, the Vue header (bell, menu,
+  toolbar), Community Apps, tables, dashboard and the Settings icons.
+- **Sidebar layouts** — Azure / Gray are supported; the base pairing keeps you in
+  your layout family.
+- **Non-destructive** — disable it and the webGUI is 100% stock. Semantic status
+  colors (disk health, array state) are deliberately left untouched.
+- **Self-contained** — one `.plg`, no external runtime dependencies.
 
 ## Install
 
-Not released yet. Once published, install by pasting the raw `.plg` URL into
-**Plugins → Install Plugin**:
+**Plugins → Install Plugin**, paste:
 
 ```
 https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg
 ```
 
 Then open **Settings → Utilities → Unraid Themer**, set *Enable* to **Yes**, pick a
-preset, **Apply**, and hard-reload the browser.
+theme, **Apply**, and hard-reload the browser (Cmd/Ctrl+Shift+R).
 
-For the bebamu Light/Dark pair, switch the base theme at **Settings → Display →
-Dynamix color theme** (White = Light, Black = Dark).
+## Themes
 
-## Add your own preset
+Bundled and store themes appear in the **Theme preset** dropdown; the **Theme store**
+downloads more on demand (search + light/dark filter, validated before saving). On
+**Apply** the plugin pairs the Dynamix base (dark themes → Black/Gray, light → White/
+Azure) so the Vue components and Community Apps render in the right mode.
 
-Drop a `<name>.css` into `/boot/config/plugins/unraid.themer/presets/` — it appears in
-the dropdown. A preset is just a stylesheet that overrides Unraid's variables; copy an
-existing one as a template.
+**Make your own:** see [THEMES.md](THEMES.md) and the annotated
+[`themes/_template.css`](themes/_template.css). It's mostly 8 colors. Submit one with
+a PR to [`themes/`](themes/) — a GitHub Action validates every theme before it can be
+listed in the store.
+
+## Icons
+
+**Icon set** swaps every UI glyph for one open-source set. For finer control, the
+**Themer Icons** page lists every slot with a live preview — pick from a searchable
+grid of all bundled sets, paste an SVG URL, or upload your own SVG (all validated).
+
+## How it works
+
+Unraid 7 has no global CSS hook, but a `.page` with `Menu="Buttons"` runs inside
+`<head>` on every page. Unraid Themer uses that to inject the active theme + icon set
++ your overrides, only when enabled. Themes restyle via `:root` custom-property
+overrides, which inherit through the open shadow DOM of the Vue web-components, so the
+new UI recolors too. `js/themer.js` handles what CSS can't (the Vue header bell/menu
+icon swap, a Docker "update available" badge, dashboard chart colors). Config lives on
+the flash and is mirrored to the RAM webroot on boot, so it survives reboots.
 
 ## Development
 
-The `.plg` is fully self-contained (no external assets) and **generated** from the
-source tree:
+The `.plg` is fully self-contained and **generated** from the source tree:
 
 ```
-plugin/usr/local/emhttp/plugins/unraid.themer/   # source of every embedded file
-  ├── UnraidThemer.page          # settings page (Menu=Utilities)
-  ├── UnraidThemerLoader.page     # head injector (Menu=Buttons)
-  ├── default.cfg                 # shipped defaults
-  ├── js/themer.js                # runtime helper
-  └── presets/*.css               # the themes
-
-python3 build.py                  # regenerates unraid-themer.plg
+plugin/usr/local/emhttp/plugins/unraid.themer/   # every embedded file
+scripts/gen_iconsets.py                           # build the alt icon sets
+scripts/gen_themes.py                             # build community themes
+python3 build.py                                  # regenerate unraid-themer.plg
 ```
 
-Edit the source files, run `python3 build.py`, commit the regenerated `.plg`.
-
-## Roadmap
-
-- [ ] Verify on real hardware (Unraid 7.3.x)
-- [ ] Live preview in the settings page
-- [ ] Icon switcher — swap Unraid's UI icons (docker/cpu/disk…) for open-source sets
-      (Lucide / Tabler) via CSS `mask` (auto-tinting), custom per icon
-- [ ] Import/export presets (ZIP/URL)
-- [ ] Optional bundled fonts (Inter) and background-image assets
-- [ ] Community Applications submission
+Edit source, run `python3 build.py`, commit the regenerated `.plg`.
 
 ## Credits & prior art
 
 - Injection mechanism modeled on [WuSiYu/unraid-custom-css](https://github.com/WuSiYu/unraid-custom-css).
-- Preset/plugin structure informed by [Skitals/unraid-theme-engine](https://github.com/Skitals/unraid-theme-engine) (discontinued).
-- Classic palettes: Nord, Dracula, Solarized, Monokai, Gruvbox (respective communities).
+- Structure informed by [Skitals/unraid-theme-engine](https://github.com/Skitals/unraid-theme-engine) (discontinued).
+- Classic palettes: Nord, Dracula, Solarized, Monokai, Gruvbox, Everforest, Kanagawa,
+  Catppuccin, Tokyo Night, One Dark, Ayu (respective communities).
 
-## Transparency
-
-Built with heavy AI assistance (Claude Code). Reviewed and maintained by
-[@benjaminmue](https://github.com/benjaminmue).
-
-## Icon set credits
+### Icon set licenses
 
 The bundled icon sets are open source, each under its own license:
 
-- **Lucide** (ISC), **Tabler** (MIT), **Phosphor** (MIT), **Heroicons** (MIT),
-  **Iconoir** (MIT), **Bootstrap Icons** (MIT)
-- **Remix Icon**, **Carbon**, **Material Symbols** (Apache-2.0)
+- **Lucide** (ISC); **Tabler**, **Phosphor**, **Heroicons**, **Iconoir**,
+  **Bootstrap Icons** (MIT); **Remix Icon**, **Carbon**, **Material Symbols** (Apache-2.0).
 
 The plugin's own code is MIT. Icon glyphs remain under their respective licenses.
 

@@ -1,0 +1,140 @@
+/* =============================================================================
+   Unraid Themer — theme template.  Copy this file, rename it (kebab-case, e.g.
+   my-theme.css), edit the PALETTE below, and you have a working theme.
+
+   How it works: Unraid's whole webGUI is driven by CSS custom properties. A
+   theme just overrides those properties. You mostly only touch the 8 palette
+   colors — everything else is wired to them. Only the very last line (the
+   base marker) and the palette need your attention.
+
+   Test it: drop the file into  /boot/config/plugins/unraid.themer/presets/
+   then pick it in Settings > Utilities > Unraid Themer > Theme preset > Apply.
+   ============================================================================= */
+:root {
+  /* ---------------- PALETTE — edit these 8 colors ---------------- */
+  --t-bg:      #1b1d23;   /* page background                         */
+  --t-bg2:     #22252d;   /* cards / tables / mild surfaces          */
+  --t-surface: #2b2f39;   /* header bar, elevated surfaces           */
+  --t-text:    #e6e6e6;   /* main text                               */
+  --t-dim:     #9aa0ab;   /* secondary / muted text                  */
+  --t-border:  #363b46;   /* borders, hairlines                      */
+  --t-accent:  #5aa9e6;   /* primary accent (links, active, buttons) */
+  --t-accent2: #f78fb3;   /* secondary accent (Docker update, redbar)*/
+
+  /* ---------------- Dynamix core (leave as-is) ---------------- */
+  --text-color: var(--t-text);
+  --alt-text-color: var(--t-dim);
+  --link-text-color: var(--t-accent);
+
+  --background-color: var(--t-bg);
+  --mild-background-color: var(--t-bg2);
+
+  --border-color: var(--t-border);
+  --input-border-color: var(--t-border);
+  --table-border-color: var(--t-border);
+  --table-background-color: var(--t-bg2);
+  --table-header-background-color: var(--t-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.06);
+  --hr-color: var(--t-border);
+  --shade-bg-color: var(--t-surface);
+  --focus-input-bg-color: var(--t-surface);
+
+  --header-background-color: var(--t-surface);
+  --header-text-color: var(--t-text);
+  --header-text-primary: var(--t-text);
+  --header-text-secondary: var(--t-dim);
+
+  --title-header-background-color: var(--t-bg2);
+
+  --footer-text: var(--t-text);
+  --footer-background-color: var(--t-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--t-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--t-accent);
+  --button-border: 1px solid var(--t-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--t-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--t-dim);
+
+  /* Brand remap: Unraid's orange/blue -> your accents */
+  --orange-500: var(--t-accent);
+  --orange-800: var(--t-accent2);
+  --brand-orange: var(--t-accent);
+  --brand-red: var(--t-accent2);
+  --blue-700: var(--t-accent);
+  --blue-800: var(--t-accent);
+
+  /* Unraid 7 UUI / shadcn web-component tokens (notifications, Connect, etc.) */
+  --ui-bg: var(--t-bg);
+  --ui-bg-muted: var(--t-bg2);
+  --ui-bg-elevated: var(--t-surface);
+  --ui-bg-accented: var(--t-surface);
+  --ui-text: var(--t-text);
+  --ui-text-muted: var(--t-dim);
+  --ui-text-dimmed: var(--t-dim);
+  --ui-text-highlighted: var(--t-text);
+  --ui-border: var(--t-border);
+  --ui-primary: var(--t-accent);
+  --primary: var(--t-accent);
+  --background: var(--t-bg);
+  --foreground: var(--t-text);
+  --card: var(--t-bg2);
+  --popover: var(--t-bg2);
+  --border: var(--t-border);
+  --ring: var(--t-accent);
+  --accent: var(--t-accent2);
+}
+
+/* ==================== Elemente (optional flourishes — keep or trim) ==================== */
+.button, button, input, select, textarea, .tabs label { border-radius: 0 !important; }
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--t-accent) !important;
+  color: var(--button-text-color) !important;
+  border: 1px solid var(--t-accent) !important;
+  box-shadow: none !important;
+}
+a.blue-text, .blue-text { color: var(--t-accent) !important; }
+#docker_view .blue-text { color: var(--t-accent2) !important; }
+#menu .nav-item.active a { color: var(--t-accent) !important; }
+#menu .nav-item.active:after { background: var(--t-accent) !important; }
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--t-accent2) !important; }
+div.title { border-left: 3px solid var(--t-accent); }
+
+/* ==================== compat: keep tables + Community Apps on-theme (leave as-is) ==================== */
+:root {
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/* ==================== BASE MARKER — required, pick ONE ====================
+   Tells the plugin which Dynamix base to pair on Apply so the Vue components
+   and Community Apps render in the right light/dark mode:
+     black  = dark theme   |   white = light theme
+   For a LIGHT theme: change to  white  AND flip the rgba(255,255,255,...) fills
+   above to rgba(0,0,0,...) so translucent overlays stay subtle. */
+/*! themer-base: black */

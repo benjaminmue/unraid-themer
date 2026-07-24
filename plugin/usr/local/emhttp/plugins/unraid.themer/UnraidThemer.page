@@ -302,7 +302,21 @@ Added themes:
 &nbsp;
 : <span class="description" style="max-width:640px; margin:0; padding:15px; background:rgba(0,0,0,0.1); border-radius:6px;">
     <strong>How it works.</strong> Unraid Themer injects the selected preset's stylesheet into every page (via a <code>Buttons</code> loader page), plus a small deferred script for shadow-DOM tweaks and Docker "update available" badges.<br/><br/>
-    <strong>Presets</strong> are CSS files in <code>/boot/config/plugins/unraid.themer/presets/</code> — drop your own <code>&lt;name&gt;.css</code> there to add one.<br/><br/>
+    <strong>Presets</strong> are CSS files in <code>/boot/config/plugins/unraid.themer/presets/</code> — drop your own <code>&lt;name&gt;.css</code> there to add one. See the <a href="https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md" target="_blank">theme guide</a> and <a href="https://github.com/benjaminmue/unraid-themer/blob/main/themes/_template.css" target="_blank">sample template</a> to make your own.<br/><br/>
     Explore Unraid's variables in <a href="/webGui/styles/themes/white.css" target="_blank">white.css</a> / <a href="/webGui/styles/themes/black.css" target="_blank">black.css</a>. Semantic status colors (disk health, array state) are intentionally left untouched by all presets.
+  </span>
+
+<?php
+// installed plugin version (from the .plg on flash)
+$ut_ver = '';
+$ut_plg = "/boot/config/plugins/$name.plg";
+if (is_file($ut_plg) && preg_match('/<!ENTITY\s+version\s+"([^"]+)"/', file_get_contents($ut_plg), $vm)) $ut_ver = $vm[1];
+?>
+&nbsp;
+: <span style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; opacity:.85;">
+    <span><strong>Unraid Themer</strong><?= $ut_ver ? " &middot; v$ut_ver" : "" ?></span>
+    <a href="https://github.com/benjaminmue/unraid-themer" target="_blank">GitHub</a>
+    <a href="https://github.com/benjaminmue/unraid-themer/issues/new?labels=bug&amp;template=" target="_blank">Report an issue</a>
+    <a href="https://github.com/benjaminmue/unraid-themer/issues/new?labels=enhancement&amp;title=%5BRequest%5D%20" target="_blank">Request a theme / feature</a>
   </span>
 </form>

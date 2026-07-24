@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.3",
+    "version": "2026.07.25.4",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,16 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.4
+- Much wider icon coverage: mapped ~98 more Unraid glyphs (Settings/nav icons —
+  dashboard, network, security, scheduler, shares, plugins, ... — and the
+  icon-u-* toolbar/sort glyphs) so the Lucide set now themes the whole UI, not
+  just the dashboard.
+- Settings page: shows the installed version and adds GitHub, "Report an issue"
+  and "Request a theme / feature" links.
+- New theme guide (THEMES.md) + annotated sample (themes/_template.css); the
+  settings page links to both.
+
 ## 2026.07.25.3
 - Removed the SpongeBob icon set and the SpongeBob / Simpsons / Rick and Morty
   store themes.
