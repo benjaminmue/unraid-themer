@@ -168,9 +168,12 @@
       if (!oldSvg) return false;
       var neu = new DOMParser().parseFromString(markup, "image/svg+xml").documentElement;
       if (!neu || neu.nodeName.toLowerCase() !== "svg") return false;
-      var w = oldSvg.getAttribute("width") || oldSvg.clientWidth || 24;
-      var h = oldSvg.getAttribute("height") || oldSvg.clientHeight || 24;
-      neu.setAttribute("width", w); neu.setAttribute("height", h);
+      // Carry the original's sizing. Header SVGs size via classes (Tailwind
+      // h-6 w-6), not width/height attrs, so copy the class first and only add
+      // explicit width/height when the original actually had them.
+      var cls = oldSvg.getAttribute("class"); if (cls) neu.setAttribute("class", cls);
+      var w = oldSvg.getAttribute("width"); if (w) neu.setAttribute("width", w);
+      var h = oldSvg.getAttribute("height"); if (h) neu.setAttribute("height", h);
       neu.style.color = "currentColor";
       oldSvg.replaceWith(document.importNode(neu, true));
       target.setAttribute(UT_ICONED, "1");

@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24w",
+    "version": "2026.07.24x",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24x
+- Custom Icons page: the per-row grid + upload buttons now show their glyphs
+  (were blank on Unraid's button styling) — styled as subtle icon buttons.
+- Header swap keeps the original icon's sizing class, so swapped bell/menu
+  icons always render at the right size.
+
 ## 2026.07.24w
 - Header bell/menu swap is more robust: the Vue header mounts async from ES
   modules, so retry over a longer window and on DOM mutations until both the

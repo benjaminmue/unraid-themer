@@ -218,8 +218,12 @@ function themer_prev($url, $title = '') {
   #ut-icons input[type=text] { width: 100%; min-width: 200px; }
   #ut-icons .ut-desc { white-space: nowrap; }
   #ut-icons .ut-cell { display: flex; gap: 6px; align-items: center; }
-  #ut-icons .ut-pick { flex: none; width: 30px; height: 28px; padding: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-  #ut-icons .ut-pick span { width: 16px; height: 16px; background-color: currentColor;
+  #ut-icons .ut-pick { flex: none; width: 32px; height: 30px; padding: 0; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(128,128,128,0.14) !important; border: 1px solid rgba(128,128,128,0.4) !important;
+    border-radius: 6px !important; box-shadow: none !important; color: var(--text-color, #e6e6e6) !important; }
+  #ut-icons .ut-pick:hover { background: rgba(128,128,128,0.26) !important; }
+  #ut-icons .ut-pick span { width: 16px; height: 16px; display: inline-block; background-color: currentColor;
     -webkit-mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; }
   #ut-icons .ut-up span { -webkit-mask-image: url('<?= $weburl ?>/icons/svg/upload.svg'); mask-image: url('<?= $weburl ?>/icons/svg/upload.svg'); }
 
