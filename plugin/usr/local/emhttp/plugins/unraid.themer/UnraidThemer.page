@@ -17,6 +17,7 @@ $cfg_path    = "$flash/$name.cfg";
 $custom_flash= "$flash/custom.css";
 $custom_web  = "$webroot/custom.css";
 $msg = "";
+$switch_base = "";   // set to a theme name if we need to pair the Dynamix base
 
 // --- SAVE ---
 if ($_POST && isset($_POST['SAVE_CONFIG'])) {
@@ -32,7 +33,22 @@ if ($_POST && isset($_POST['SAVE_CONFIG'])) {
         file_put_contents($custom_flash, $css);
         @copy($custom_flash, $custom_web);
     }
-    $msg = "Settings saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.";
+
+    // Auto-pair the base theme: the Vue web-components (notifications, etc.) and
+    // Community Apps render light/dark by the BASE Dynamix theme, not by us. A
+    // preset can declare `themer-base: black|white`; if the base doesn't match,
+    // switch it via Unraid's own canonical writer below.
+    $sel_file = "$webroot/presets/$preset.css";
+    if ($service === "enabled" && is_file($sel_file)
+        && preg_match('/themer-base:\s*(black|white|azure|gray)/i', file_get_contents($sel_file), $m)) {
+        $want = strtolower($m[1]);
+        $cur  = @parse_ini_file('/boot/config/plugins/dynamix/dynamix.cfg', true)['display']['theme'] ?? 'white';
+        if ($want !== $cur) $switch_base = $want;
+    }
+
+    $msg = $switch_base
+        ? "Settings saved. Switching the base theme to \"" . ucfirst($switch_base) . "\" and reloading…"
+        : "Settings saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.";
 }
 
 // --- INIT / READ ---
@@ -57,6 +73,20 @@ sort($presets);
 <span class="green"><?= htmlspecialchars($msg) ?></span>
 <?php endif; ?>
 </div>
+
+<?php if ($switch_base): ?>
+<script>
+// Pair the Dynamix base theme with the selected preset, using Unraid's own
+// config writer (csrf is auto-appended by the global ajaxPrefilter), then reload.
+$(function () {
+  $.post('/update.php', {
+    '#file': 'dynamix/dynamix.cfg',
+    '#section': 'display',
+    'theme': '<?= $switch_base ?>'
+  }).always(function () { setTimeout(function () { location.reload(); }, 600); });
+});
+</script>
+<?php endif; ?>
 
 <form markdown="1" method="POST" action="/Settings/UnraidThemer">
 
