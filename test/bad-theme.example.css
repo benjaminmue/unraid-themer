@@ -1,0 +1,30 @@
+/* Bad Theme — INTENTIONALLY broken, to test the theme-submission bot.
+   Do NOT put this in themes/ (the CI sanitizer would reject the push). Paste it
+   into the "🎨 Submit a theme" issue's CSS field: the bot should comment ❌ and
+   list every problem below. */
+:root {
+  --background-color: #101010;
+  --text-color: #eeeeee;
+  --link-text-color: #5aa9e6;
+}
+
+/* 1) external stylesheet import */
+@import url("https://evil.example.com/tracker.css");
+
+body {
+  /* 2) external resource (beacon) */
+  background: url(https://evil.example.com/beacon.png) no-repeat;
+  /* 3) legacy IE behavior: */
+  behavior: url(#default#userData);
+  /* 4) CSS expression() */
+  width: expression(alert('xss'));
+}
+
+/* 5) javascript: URI */
+a { background-image: url("javascript:alert(1)"); }
+
+/* 6) a <script> tag smuggled in */
+.smuggle { color: red; } </style><script>console.log('nope')</script>
+
+/* 7) unbalanced braces — this rule is missing its closing brace
+.broken { color: blue;

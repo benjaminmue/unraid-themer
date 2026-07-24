@@ -24,6 +24,14 @@ Link="nav-user"
     // selected preset (sanitised to a safe filename stem)
     $preset = preg_replace('/[^A-Za-z0-9._-]/', '', $cfg['PRESET'] ?? 'bebamu');
 
+    // 0) bundled webfonts (@font-face) — available to any theme; the browser only
+    //    downloads a font when a font-family actually references it
+    $fonts = "$webroot/fonts.css";
+    if (file_exists($fonts)) {
+        $v = filemtime($fonts);
+        echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/fonts.css?v=$v\">\n";
+    }
+
     // 1) preset stylesheet
     if ($preset !== '' && $preset !== 'none') {
         $preset_file = "$webroot/presets/$preset.css";

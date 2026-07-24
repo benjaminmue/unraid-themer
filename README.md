@@ -102,7 +102,14 @@ The bundled icon sets are open source, each under its own license:
 - **Lucide** (ISC); **Tabler**, **Phosphor**, **Heroicons**, **Iconoir**,
   **Bootstrap Icons** (MIT); **Remix Icon**, **Carbon**, **Material Symbols** (Apache-2.0).
 
-The plugin's own code is MIT. Icon glyphs remain under their respective licenses.
+### Bundled fonts
+
+Optional webfonts you can pick in the theme builder, served locally:
+
+- **Inter**, **Source Sans 3**, **JetBrains Mono**, **Nunito** — SIL Open Font License
+- **Roboto** — Apache-2.0
+
+The plugin's own code is MIT. Icon glyphs and fonts remain under their respective licenses.
 
 ## License
 
