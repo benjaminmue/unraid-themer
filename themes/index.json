@@ -50,6 +50,13 @@
       "author": "benjaminmue",
       "base": "black",
       "description": "Deep night blue with blue and purple accents."
+    },
+    {
+      "name": "Catppuccin Mocha",
+      "file": "catppuccin-mocha.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Soft dark pastel with mauve and blue accents."
     }
   ]
 }
