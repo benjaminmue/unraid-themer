@@ -83,10 +83,17 @@ Edit source, run `python3 build.py`, commit the regenerated `.plg`.
 
 ## Credits & prior art
 
-- Injection mechanism modeled on [WuSiYu/unraid-custom-css](https://github.com/WuSiYu/unraid-custom-css).
-- Structure informed by [Skitals/unraid-theme-engine](https://github.com/Skitals/unraid-theme-engine) (discontinued).
-- Classic palettes: Nord, Dracula, Solarized, Monokai, Gruvbox, Everforest, Kanagawa,
-  Catppuccin, Tokyo Night, One Dark, Ayu (respective communities).
+This plugin was **inspired by** two prior community projects, which showed what's
+possible and how to hook into the webGUI:
+
+- [**WuSiYu/unraid-custom-css**](https://github.com/WuSiYu/unraid-custom-css) — the
+  CSS-injection mechanism (a `Menu="Buttons"` `.page` running in `<head>`).
+- [**Skitals/unraid-theme-engine**](https://github.com/Skitals/unraid-theme-engine)
+  (discontinued) — the theme-engine / plugin structure.
+
+Thanks to both authors. Classic palettes come from their respective communities:
+Nord, Dracula, Solarized, Monokai, Gruvbox, Everforest, Kanagawa, Catppuccin,
+Tokyo Night, One Dark, Ayu.
 
 ### Icon set licenses
 
