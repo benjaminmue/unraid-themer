@@ -1,0 +1,169 @@
+/* Unraid Themer preset: Dracula — purple/pink accents on deep grey-violet dark */
+:root {
+  /* ---------------- Palette ---------------- */
+  --dracula-bg: #282A36;
+  --dracula-bg2: #343746;
+  --dracula-surface: #44475A;
+  --dracula-text: #F8F8F2;
+  --dracula-dim: #BFC0D0;
+  --dracula-border: #44475A;
+  --dracula-accent: #BD93F9;
+  --dracula-accent2: #FF79C6;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--dracula-text);
+  --alt-text-color: var(--dracula-dim);
+  --link-text-color: var(--dracula-accent);
+
+  --background-color: var(--dracula-bg);
+  --mild-background-color: var(--dracula-bg2);
+
+  --border-color: var(--dracula-border);
+  --input-border-color: var(--dracula-border);
+  --table-border-color: var(--dracula-border);
+  --table-background-color: var(--dracula-bg2);
+  --table-header-background-color: var(--dracula-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--dracula-border);
+  --shade-bg-color: var(--dracula-surface);
+  --focus-input-bg-color: var(--dracula-surface);
+
+  --header-background-color: var(--dracula-surface);
+  --header-text-color: var(--dracula-text);
+  --header-text-primary: var(--dracula-text);
+  --header-text-secondary: var(--dracula-dim);
+
+  --title-header-background-color: var(--dracula-bg2);
+
+  --footer-text: var(--dracula-text);
+  --footer-background-color: var(--dracula-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--dracula-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--dracula-accent);
+  --button-border: 1px solid var(--dracula-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--dracula-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--dracula-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Dracula purple/pink) ---------------- */
+  --orange-500: var(--dracula-accent);
+  --orange-800: var(--dracula-accent2);
+  --brand-orange: var(--dracula-accent);
+  --brand-red: var(--dracula-accent2);
+  --blue-700: var(--dracula-accent);
+  --blue-800: var(--dracula-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--dracula-bg);
+  --ui-bg-muted: var(--dracula-bg2);
+  --ui-bg-elevated: var(--dracula-surface);
+  --ui-bg-accented: var(--dracula-surface);
+  --ui-text: var(--dracula-text);
+  --ui-text-muted: var(--dracula-dim);
+  --ui-text-dimmed: var(--dracula-dim);
+  --ui-text-highlighted: var(--dracula-text);
+  --ui-border: var(--dracula-border);
+  --ui-primary: var(--dracula-accent);
+  --primary: var(--dracula-accent);
+  --background: var(--dracula-bg);
+  --foreground: var(--dracula-text);
+  --card: var(--dracula-bg2);
+  --popover: var(--dracula-bg2);
+  --border: var(--dracula-border);
+  --ring: var(--dracula-accent);
+  --accent: var(--dracula-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--dracula-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--dracula-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Purple-Akzent */
+a.blue-text, .blue-text { color: var(--dracula-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent (Pink) */
+#docker_view .blue-text { color: var(--dracula-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--dracula-accent) !important; }
+#menu .nav-item.active:after { background: var(--dracula-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--dracula-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--dracula-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--dracula-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */

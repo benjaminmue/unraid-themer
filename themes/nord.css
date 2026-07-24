@@ -1,0 +1,169 @@
+/* Unraid Themer preset: Nord — arctic blue-grey palette, frost accents on polar night */
+:root {
+  /* ---------------- Palette ---------------- */
+  --nord-bg: #2E3440;
+  --nord-bg2: #3B4252;
+  --nord-surface: #434C5E;
+  --nord-text: #ECEFF4;
+  --nord-dim: #D8DEE9;
+  --nord-border: #4C566A;
+  --nord-accent: #88C0D0;
+  --nord-accent2: #5E81AC;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--nord-text);
+  --alt-text-color: var(--nord-dim);
+  --link-text-color: var(--nord-accent);
+
+  --background-color: var(--nord-bg);
+  --mild-background-color: var(--nord-bg2);
+
+  --border-color: var(--nord-border);
+  --input-border-color: var(--nord-border);
+  --table-border-color: var(--nord-border);
+  --table-background-color: var(--nord-bg2);
+  --table-header-background-color: var(--nord-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--nord-border);
+  --shade-bg-color: var(--nord-surface);
+  --focus-input-bg-color: var(--nord-surface);
+
+  --header-background-color: var(--nord-surface);
+  --header-text-color: var(--nord-text);
+  --header-text-primary: var(--nord-text);
+  --header-text-secondary: var(--nord-dim);
+
+  --title-header-background-color: var(--nord-bg2);
+
+  --footer-text: var(--nord-text);
+  --footer-background-color: var(--nord-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--nord-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--nord-accent);
+  --button-border: 1px solid var(--nord-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--nord-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--nord-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Nord frost) ---------------- */
+  --orange-500: var(--nord-accent);
+  --orange-800: var(--nord-accent2);
+  --brand-orange: var(--nord-accent);
+  --brand-red: var(--nord-accent2);
+  --blue-700: var(--nord-accent);
+  --blue-800: var(--nord-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--nord-bg);
+  --ui-bg-muted: var(--nord-bg2);
+  --ui-bg-elevated: var(--nord-surface);
+  --ui-bg-accented: var(--nord-surface);
+  --ui-text: var(--nord-text);
+  --ui-text-muted: var(--nord-dim);
+  --ui-text-dimmed: var(--nord-dim);
+  --ui-text-highlighted: var(--nord-text);
+  --ui-border: var(--nord-border);
+  --ui-primary: var(--nord-accent);
+  --primary: var(--nord-accent);
+  --background: var(--nord-bg);
+  --foreground: var(--nord-text);
+  --card: var(--nord-bg2);
+  --popover: var(--nord-bg2);
+  --border: var(--nord-border);
+  --ring: var(--nord-accent);
+  --accent: var(--nord-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--nord-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--nord-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Frost-Akzent */
+a.blue-text, .blue-text { color: var(--nord-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent */
+#docker_view .blue-text { color: var(--nord-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--nord-accent) !important; }
+#menu .nav-item.active:after { background: var(--nord-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--nord-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--nord-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--nord-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */

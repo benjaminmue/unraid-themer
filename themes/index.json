@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "updated": "2026-07-24",
+  "themes": [
+    {
+      "name": "bebamu",
+      "file": "bebamu.css",
+      "author": "benjaminmue",
+      "base": "any",
+      "description": "Editorial: cream paper, black hairlines, red signal. Light + Dark pair."
+    },
+    {
+      "name": "Nord",
+      "file": "nord.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Arctic blue-grey with frost accents."
+    },
+    {
+      "name": "Dracula",
+      "file": "dracula.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Dark with purple and pink accents."
+    },
+    {
+      "name": "Solarized Dark",
+      "file": "solarized-dark.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Deep teal base, blue and cyan accents."
+    },
+    {
+      "name": "Monokai",
+      "file": "monokai.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Classic dark with magenta and green accents."
+    },
+    {
+      "name": "Gruvbox Dark",
+      "file": "gruvbox-dark.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Warm retro with orange and yellow accents."
+    },
+    {
+      "name": "Tokyo Night",
+      "file": "tokyo-night.css",
+      "author": "benjaminmue",
+      "base": "black",
+      "description": "Deep night blue with blue and purple accents."
+    }
+  ]
+}

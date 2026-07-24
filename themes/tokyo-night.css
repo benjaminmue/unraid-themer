@@ -1,0 +1,169 @@
+/* Unraid Themer preset: Tokyo Night — deep night blue, blue and purple accents */
+:root {
+  /* ---------------- Palette ---------------- */
+  --tn-bg: #1a1b26;
+  --tn-bg2: #24283b;
+  --tn-surface: #2f3549;
+  --tn-text: #c0caf5;
+  --tn-dim: #565f89;
+  --tn-border: #3b4261;
+  --tn-accent: #7aa2f7;
+  --tn-accent2: #bb9af7;
+
+  /* ---------------- Dynamix core ---------------- */
+  --text-color: var(--tn-text);
+  --alt-text-color: var(--tn-dim);
+  --link-text-color: var(--tn-accent);
+
+  --background-color: var(--tn-bg);
+  --mild-background-color: var(--tn-bg2);
+
+  --border-color: var(--tn-border);
+  --input-border-color: var(--tn-border);
+  --table-border-color: var(--tn-border);
+  --table-background-color: var(--tn-bg2);
+  --table-header-background-color: var(--tn-surface);
+  --hover-table-row-background-color: rgba(255, 255, 255, 0.05);
+  --hr-color: var(--tn-border);
+  --shade-bg-color: var(--tn-surface);
+  --focus-input-bg-color: var(--tn-surface);
+
+  --header-background-color: var(--tn-surface);
+  --header-text-color: var(--tn-text);
+  --header-text-primary: var(--tn-text);
+  --header-text-secondary: var(--tn-dim);
+
+  --title-header-background-color: var(--tn-bg2);
+
+  --footer-text: var(--tn-text);
+  --footer-background-color: var(--tn-surface);
+
+  --usage-bar-background-color: rgba(255, 255, 255, 0.12);
+  --usage-bar-used-background-color: var(--tn-accent);
+  --usage-disk-background-color: rgba(255, 255, 255, 0.12);
+
+  --button-text-color: #ffffff;
+  --button-background: var(--tn-accent);
+  --button-border: 1px solid var(--tn-accent);
+
+  --scrollbar-color: rgba(255, 255, 255, 0.3);
+  --scrollbar-hover-color: var(--tn-accent);
+  --small-shadow: none;
+
+  --dashboard-icon-color: var(--tn-dim);
+
+  /* ---------------- Brand remap (Unraid orange/blue -> Nord frost) ---------------- */
+  --orange-500: var(--tn-accent);
+  --orange-800: var(--tn-accent2);
+  --brand-orange: var(--tn-accent);
+  --brand-red: var(--tn-accent2);
+  --blue-700: var(--tn-accent);
+  --blue-800: var(--tn-accent);
+
+  /* ---------------- Unraid 7 UUI / shadcn web-component tokens ---------------- */
+  --ui-bg: var(--tn-bg);
+  --ui-bg-muted: var(--tn-bg2);
+  --ui-bg-elevated: var(--tn-surface);
+  --ui-bg-accented: var(--tn-surface);
+  --ui-text: var(--tn-text);
+  --ui-text-muted: var(--tn-dim);
+  --ui-text-dimmed: var(--tn-dim);
+  --ui-text-highlighted: var(--tn-text);
+  --ui-border: var(--tn-border);
+  --ui-primary: var(--tn-accent);
+  --primary: var(--tn-accent);
+  --background: var(--tn-bg);
+  --foreground: var(--tn-text);
+  --card: var(--tn-bg2);
+  --popover: var(--tn-bg2);
+  --border: var(--tn-border);
+  --ring: var(--tn-accent);
+  --accent: var(--tn-accent2);
+}
+
+/* ==================== Elemente ==================== */
+
+/* flach + editorial */
+.button, button, input, select, textarea, .tabs label {
+  border-radius: 0 !important;
+}
+/* echte Buttons flach eingefärbt — Toggle-Wrapper (.apps/.vms/.compose-stacks) NICHT */
+input[type="button"], input[type="submit"], input[type="reset"], button,
+.button:not(.apps):not(.vms):not(.compose-stacks) {
+  background: var(--tn-accent) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--tn-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Echte Links -> Frost-Akzent */
+a.blue-text, .blue-text { color: var(--tn-accent) !important; }
+/* Docker "Update verfügbar" -> zweiter Akzent */
+#docker_view .blue-text { color: var(--tn-accent2) !important; }
+
+/* Aktiver Nav-Tab: Akzent-Text + Akzent-Unterstrich */
+#menu .nav-item.active a { color: var(--tn-accent) !important; }
+#menu .nav-item.active:after { background: var(--tn-accent) !important; }
+
+/* Auslastungsbalken */
+.greenbar { background: var(--usage-bar-used-background-color) !important; }
+.redbar { background: var(--tn-accent2) !important; }
+
+/* Sektions-Titelbalken (Main-Seite) */
+div.title { border-left: 3px solid var(--tn-accent); }
+
+/* Editoriale Dashboard-Boxen: crispe Haarlinie, flach, kein Schatten */
+table.dashboard tbody {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+/* Box-Titel linksbündig, Uppercase, getrackt */
+.tile-header-left { justify-content: flex-start !important; }
+.tile-header-main {
+  text-align: left !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+/* Akzent-Tick direkt vor dem Box-Titel */
+.tile-header-main::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 0.95em;
+  background: var(--tn-accent);
+  margin-right: 9px;
+  vertical-align: -1px;
+}
+
+/* ==================== compat: base-theme-driven surfaces ====================
+   Tables (Plugins/Docker-advanced) and Community Applications ship their own
+   light/dark CSS that follows the BASE Dynamix theme, not this preset. Remap
+   their variables to this preset's own semantic vars so they match either way.
+   Values reference vars every preset defines → identical block across presets. */
+:root {
+  /* Dynamix sortable tables */
+  --dynamix-tablesorter-tbody-row-bg-color: var(--table-background-color);
+  --dynamix-tablesorter-tbody-row-alt-bg-color: var(--mild-background-color);
+  --dynamix-tablesorter-tbody-row-border-color: var(--border-color);
+  --dynamix-tablesorter-thead-th-bg-color: var(--table-header-background-color);
+  --dynamix-tablesorter-thead-th-text-color: var(--text-color);
+  --dynamix-tablesorter-thead-row-border-color: var(--border-color);
+  --dynamix-select-bg-color: var(--table-background-color);
+  --dynamix-box-text-color: var(--text-color);
+
+  /* Community Applications (own theme files — force to match this preset) */
+  --template-background: var(--mild-background-color) !important;
+  --template-hover-background: var(--shade-bg-color) !important;
+  --ca-legacy-background-color: var(--background-color) !important;
+  --sidebar-background: var(--mild-background-color) !important;
+  --support-popup-background: var(--mild-background-color) !important;
+  --ca-light-bg-color: var(--mild-background-color) !important;
+  --ca-dark-text-color: var(--text-color) !important;
+  --ca-medium-text-color: var(--alt-text-color) !important;
+  --ca-light-text-color: var(--text-color) !important;
+  --ca-lighter-text-color: var(--text-color) !important;
+}
+
+/*! themer-base: black */
