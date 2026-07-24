@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.25.9">
+  <!ENTITY version   "2026.07.25.10">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,10 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.25.10
+- Fix the version not showing on the settings page: it is now embedded at build
+  time and read from the plugin folder (the old lookup path was unreliable).
+
 ## 2026.07.25.9
 - Settings page tidy-up: narrower hex fields in the theme builder and a
   left-aligned, less-centered layout (page-scoped, other pages unchanged).
@@ -747,10 +751,13 @@ Added themes:
   </span>
 
 <?php
-// installed plugin version (from the .plg on flash)
-$ut_ver = '';
-$ut_plg = "/boot/config/plugins/$name.plg";
-if (is_file($ut_plg) && preg_match('/<!ENTITY\s+version\s+"([^"]+)"/', file_get_contents($ut_plg), $vm)) $ut_ver = $vm[1];
+// installed plugin version — build.py writes it into the embedded "version" file,
+// recreated in the webroot on boot, so it is always the running version.
+$ut_ver = is_file("$webroot/version") ? trim(file_get_contents("$webroot/version")) : '';
+if ($ut_ver === '' && is_file("/boot/config/plugins/$name.plg")
+    && preg_match('/<!ENTITY\s+version\s+"([^"]+)"/', file_get_contents("/boot/config/plugins/$name.plg"), $vm)) {
+    $ut_ver = $vm[1];   // fallback
+}
 ?>
 &nbsp;
 : <span style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; opacity:.85;">
@@ -1254,6 +1261,13 @@ html.Theme--gray  #menu .nav-item:hover a {
   color: var(--text-color) !important;
   border-bottom-color: var(--brand-red, var(--brand-orange)) !important;
 }
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
+<INLINE>
+<![CDATA[2026.07.25.10
 ]]>
 </INLINE>
 </FILE>

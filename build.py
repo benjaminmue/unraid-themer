@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.25.9",
+    "version": "2026.07.25.10",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,10 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.25.10
+- Fix the version not showing on the settings page: it is now embedded at build
+  time and read from the plugin folder (the old lookup path was unreliable).
+
 ## 2026.07.25.9
 - Settings page tidy-up: narrower hex fields in the theme builder and a
   left-aligned, less-centered layout (page-scoped, other pages unchanged).
@@ -327,6 +331,11 @@ exit 0
 
 
 def build():
+    # embed the version as a plain file so the settings page can display it
+    # regardless of where Unraid stores the installed .plg
+    with open(os.path.join(SRC, "version"), "w", encoding="utf-8") as fh:
+        fh.write(META["version"] + "\n")
+
     parts = []
     parts.append("<?xml version='1.0' standalone='yes'?>")
     parts.append("<!DOCTYPE PLUGIN [")
