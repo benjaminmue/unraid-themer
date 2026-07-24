@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.24j">
+  <!ENTITY version   "2026.07.24k">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,10 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.24k
+- Move the "Added themes" (remove) section down next to the theme store, so
+  all theme management is grouped together.
+
 ## 2026.07.24j
 - Fix layout: "Added themes" remove buttons no longer span full width; the
   theme store list now stays in the form column instead of breaking left.
@@ -338,9 +342,6 @@ Theme preset:
   </select>
   <span>Applies on top of the Dynamix base theme. On <strong>Apply</strong> the base is paired automatically: dark presets switch it to <a href="/Settings/DisplaySettings" target="_blank">Black</a>, light presets to White — so tables, Community Apps and the Vue components render in the right mode with no manual step. "bebamu" is base-neutral (White = Light, Black = Dark). (Azure / Gray sidebar layouts are only partially themed for now.)</span>
 
-Added themes:
-: <?= $addedHtml ?>
-
 Custom CSS overrides:
 : <textarea name="custom_css" spellcheck="false" style="font-family:monospace; width:100%; max-width:820px; height:45vh; background:#111; color:#eee; border:1px solid #444; padding:10px;"><?= htmlspecialchars($custom_css) ?></textarea>
   <span>Optional. Loaded <em>after</em> the preset, so these rules win. Use Unraid CSS variables, e.g. <code>:root { --background-color:#101010; }</code>.</span>
@@ -352,6 +353,9 @@ Import a theme (URL):
 
 Theme store:
 : <?= $storeHtml ?>
+
+Added themes:
+: <?= $addedHtml ?>
 
 &nbsp;
 : <span class="buttons-spaced">

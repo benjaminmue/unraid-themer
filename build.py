@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.24j",
+    "version": "2026.07.24k",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,10 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.24k
+- Move the "Added themes" (remove) section down next to the theme store, so
+  all theme management is grouped together.
+
 ## 2026.07.24j
 - Fix layout: "Added themes" remove buttons no longer span full width; the
   theme store list now stays in the form column instead of breaking left.
