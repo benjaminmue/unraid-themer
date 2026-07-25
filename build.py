@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26",
+    "version": "2026.07.26.01",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26.01
+- Added Comic Neue to the bundled fonts (a free, OFL-licensed Comic Sans-alike;
+  the proprietary Comic Sans MS cannot be shipped). Pick it in the theme builder
+  Font field; it falls back to a locally installed Comic Sans MS if you have one.
+
 ## 2026.07.26
 - Fix updates getting stuck: Unraid compares plugin versions as plain strings,
   so 2026.07.25.10 / .11 sorted BEFORE .8 / .9 ('1' < '8') and were never

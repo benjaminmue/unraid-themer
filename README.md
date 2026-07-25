@@ -106,8 +106,11 @@ The bundled icon sets are open source, each under its own license:
 
 Optional webfonts you can pick in the theme builder, served locally:
 
-- **Inter**, **Source Sans 3**, **JetBrains Mono**, **Nunito** — SIL Open Font License
+- **Inter**, **Source Sans 3**, **JetBrains Mono**, **Nunito**, **Comic Neue** — SIL Open Font License
 - **Roboto** — Apache-2.0
+
+*Comic Neue* is a free, OFL-licensed Comic-Sans-alike (the proprietary Comic Sans MS
+can't be bundled); the font stack falls back to a locally installed Comic Sans MS if present.
 
 The plugin's own code is MIT. Icon glyphs and fonts remain under their respective licenses.
 
