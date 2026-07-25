@@ -12,6 +12,20 @@
   try { UT_BUNDLED = JSON.parse((picker && picker.getAttribute("data-values")) || "[]"); } catch (e) {}
   var UT_TARGET = null;   // input being edited via the picker
 
+  // Unraid's settings framework disables the Apply button until it sees a native
+  // change event. The grid picker and file upload set input.value from script,
+  // which fires no event — so Apply would stay greyed out. Enable it ourselves on
+  // any edit, and dispatch a real change so Unraid's own tracking agrees.
+  function utDirty(inp) {
+    var b = document.querySelector('input[name="SAVE_ICONS"]');
+    if (b) b.disabled = false;
+    if (inp) { try { inp.dispatchEvent(new Event("change", { bubbles: true })); } catch (e) {} }
+  }
+  // typing / editing any per-slot field also arms Apply
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute("data-key")) utDirty(null);
+  });
+
   // Live preview for a bundled name (same-origin SVG). URLs and pasted SVG
   // markup are only previewed after Apply (the server validates them first).
   window.utIconPrev = function (inp) {
@@ -46,7 +60,7 @@
         }
       }
       var t = document.querySelector('input[data-key="' + key + '"]');
-      if (t) t.value = "upload";   // staged; the uploaded file wins on Apply
+      if (t) { t.value = "upload"; utDirty(t); }   // staged; the uploaded file wins on Apply
     };
     rd.readAsDataURL(f);
   };
@@ -66,7 +80,7 @@
   };
 
   window.utPick = function (name) {
-    if (UT_TARGET) { UT_TARGET.value = name; window.utIconPrev(UT_TARGET); }
+    if (UT_TARGET) { UT_TARGET.value = name; window.utIconPrev(UT_TARGET); utDirty(UT_TARGET); }
     window.utClosePicker();
   };
 

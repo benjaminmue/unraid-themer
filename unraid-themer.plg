@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.26.03">
+  <!ENTITY version   "2026.07.26.04">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.26.04
+- Fix the Apply button staying greyed out on the Themer Icons page after picking
+  an icon from the grid or uploading an SVG: those set the field from script,
+  which fired no change event, so Unraid never armed Apply. It now enables on any
+  edit (pick, upload or typing).
+
 ## 2026.07.26.03
 - Fixed the broken grid glyph on the Themer Icons page title. It used a
   Font Awesome 4 name (picture-o) that no longer exists in Unraid 7, so the
@@ -1446,7 +1452,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.07.26.03
+<![CDATA[2026.07.26.04
 ]]>
 </INLINE>
 </FILE>
@@ -19449,6 +19455,20 @@ unicode: "eb55"
   try { UT_BUNDLED = JSON.parse((picker && picker.getAttribute("data-values")) || "[]"); } catch (e) {}
   var UT_TARGET = null;   // input being edited via the picker
 
+  // Unraid's settings framework disables the Apply button until it sees a native
+  // change event. The grid picker and file upload set input.value from script,
+  // which fires no event — so Apply would stay greyed out. Enable it ourselves on
+  // any edit, and dispatch a real change so Unraid's own tracking agrees.
+  function utDirty(inp) {
+    var b = document.querySelector('input[name="SAVE_ICONS"]');
+    if (b) b.disabled = false;
+    if (inp) { try { inp.dispatchEvent(new Event("change", { bubbles: true })); } catch (e) {} }
+  }
+  // typing / editing any per-slot field also arms Apply
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.getAttribute && e.target.getAttribute("data-key")) utDirty(null);
+  });
+
   // Live preview for a bundled name (same-origin SVG). URLs and pasted SVG
   // markup are only previewed after Apply (the server validates them first).
   window.utIconPrev = function (inp) {
@@ -19483,7 +19503,7 @@ unicode: "eb55"
         }
       }
       var t = document.querySelector('input[data-key="' + key + '"]');
-      if (t) t.value = "upload";   // staged; the uploaded file wins on Apply
+      if (t) { t.value = "upload"; utDirty(t); }   // staged; the uploaded file wins on Apply
     };
     rd.readAsDataURL(f);
   };
@@ -19503,7 +19523,7 @@ unicode: "eb55"
   };
 
   window.utPick = function (name) {
-    if (UT_TARGET) { UT_TARGET.value = name; window.utIconPrev(UT_TARGET); }
+    if (UT_TARGET) { UT_TARGET.value = name; window.utIconPrev(UT_TARGET); utDirty(UT_TARGET); }
     window.utClosePicker();
   };
 

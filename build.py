@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26.03",
+    "version": "2026.07.26.04",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26.04
+- Fix the Apply button staying greyed out on the Themer Icons page after picking
+  an icon from the grid or uploading an SVG: those set the field from script,
+  which fired no change event, so Unraid never armed Apply. It now enables on any
+  edit (pick, upload or typing).
+
 ## 2026.07.26.03
 - Fixed the broken grid glyph on the Themer Icons page title. It used a
   Font Awesome 4 name (picture-o) that no longer exists in Unraid 7, so the
