@@ -40,4 +40,8 @@
     var f = document.getElementById("ut-bg-src");
     if (f) openFileBrowser(f, "/mnt/", "/mnt/", "", false, true, true);
   };
+  window.utBrowseLogo = function () {
+    var f = document.getElementById("ut-logo-src");
+    if (f) openFileBrowser(f, "/mnt/", "/mnt/", "", false, true, true);
+  };
 })();

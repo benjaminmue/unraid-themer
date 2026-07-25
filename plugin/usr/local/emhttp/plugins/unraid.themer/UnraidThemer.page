@@ -50,9 +50,9 @@ $switch_base = "";   // set to a theme name if we need to pair the Dynamix base
 // rewrite the cfg; without a merge they would silently drop BGIMAGE/ICONSET/etc.
 function themer_cfg_write($path, $over) {
     $cur  = @parse_ini_file($path) ?: [];
-    $keys = ['SERVICE', 'PRESET', 'ICONSET', 'BGIMAGE', 'BGSRC', 'BGDIM'];
+    $keys = ['SERVICE', 'PRESET', 'ICONSET', 'BGIMAGE', 'BGSRC', 'BGDIM', 'LOGO', 'LOGOSRC'];
     $def  = ['SERVICE' => 'disabled', 'PRESET' => 'bebamu', 'ICONSET' => 'default',
-             'BGIMAGE' => '', 'BGSRC' => '', 'BGDIM' => '0'];
+             'BGIMAGE' => '', 'BGSRC' => '', 'BGDIM' => '0', 'LOGO' => '', 'LOGOSRC' => ''];
     @mkdir(dirname($path), 0755, true);
     $out = '';
     foreach ($keys as $k) {
@@ -63,22 +63,23 @@ function themer_cfg_write($path, $over) {
     file_put_contents($path, $out);
 }
 
-// Store the image bytes on flash + webroot and return the served URL.
-function themer_store_bg($data, $ext, $webroot, $flash, $weburl) {
-    @mkdir("$flash/bg", 0755, true);
-    @mkdir("$webroot/bg", 0755, true);
-    foreach (glob("$flash/bg/*") as $f) @unlink($f);      // one active background
-    foreach (glob("$webroot/bg/*") as $f) @unlink($f);
-    $rel = "bg/background.$ext";
+// Store the image bytes for asset kind $dir ('bg' | 'logo') on flash + webroot and
+// return the served URL. Each kind keeps a single active file.
+function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
+    @mkdir("$flash/$dir", 0755, true);
+    @mkdir("$webroot/$dir", 0755, true);
+    foreach (glob("$flash/$dir/*") as $f) @unlink($f);
+    foreach (glob("$webroot/$dir/*") as $f) @unlink($f);
+    $rel = "$dir/$dir.$ext";
     if (file_put_contents("$flash/$rel", $data) === false) return ['', 'could not save the image'];
     @copy("$flash/$rel", "$webroot/$rel");
     return ["$weburl/$rel", ''];
 }
 
-// Resolve a background source (https URL or a file on this server) to a locally
-// served URL. URLs are downloaded and cached so the browser never fetches a
-// cross-origin image (CSP-safe) and it works offline. Returns [servedUrl, error].
-function themer_resolve_bg($src, $webroot, $flash, $weburl) {
+// Resolve an image source (https URL or a file on this server) to a locally served
+// URL for asset kind $dir. URLs are downloaded and cached so the browser never
+// fetches a cross-origin image (CSP-safe) and it works offline. [servedUrl, error].
+function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
     $src  = trim($src);
     if ($src === '') return ['', ''];
     $exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp'];
@@ -90,7 +91,7 @@ function themer_resolve_bg($src, $webroot, $flash, $weburl) {
         if (filesize($src) > 15 * 1024 * 1024) return ['', 'image too large (>15 MB)'];
         $data = @file_get_contents($src);
         if ($data === false) return ['', 'could not read that file'];
-        return themer_store_bg($data, $ext === 'jpeg' ? 'jpg' : $ext, $webroot, $flash, $weburl);
+        return themer_store_asset($data, $ext === 'jpeg' ? 'jpg' : $ext, $dir, $webroot, $flash, $weburl);
     }
     // an https URL — fetch and cache locally
     if (preg_match('#^https?://[^\s\'"<>]+$#i', $src)) {
@@ -103,7 +104,7 @@ function themer_resolve_bg($src, $webroot, $flash, $weburl) {
                 'image/gif' => 'gif', 'image/svg+xml' => 'svg', 'image/avif' => 'avif',
                 'image/x-ms-bmp' => 'bmp', 'image/bmp' => 'bmp'];
         if (!isset($map[$mime])) return ['', 'that URL is not an image'];
-        return themer_store_bg($raw, $map[$mime], $webroot, $flash, $weburl);
+        return themer_store_asset($raw, $map[$mime], $dir, $webroot, $flash, $weburl);
     }
     return ['', 'enter an http(s) URL or a file path on this server'];
 }
@@ -281,18 +282,30 @@ if ($_POST && isset($_POST['SAVE_CONFIG'])) {
     if ($iconset === '') $iconset = 'default';
     @mkdir($flash, 0755, true);
 
-    // background image: URL (cached locally) or a file picked from the server
-    $bg_src = trim($_POST['bg_src'] ?? '');
-    $bg_dim = (string) max(0, min(90, (int) ($_POST['bg_dim'] ?? 0)));
-    $over   = ['SERVICE' => $service, 'PRESET' => $preset, 'ICONSET' => $iconset, 'BGDIM' => $bg_dim];
+    // background image + custom logo: URL (cached locally) or a file on the server
+    $bg_src  = trim($_POST['bg_src'] ?? '');
+    $bg_dim  = (string) max(0, min(90, (int) ($_POST['bg_dim'] ?? 0)));
+    $logo_src = trim($_POST['logo_src'] ?? '');
+    $over    = ['SERVICE' => $service, 'PRESET' => $preset, 'ICONSET' => $iconset, 'BGDIM' => $bg_dim];
+
     if ($bg_src === '') {
         $over['BGIMAGE'] = ''; $over['BGSRC'] = '';
         foreach (glob("$flash/bg/*") as $f) @unlink($f);
         foreach (glob("$webroot/bg/*") as $f) @unlink($f);
     } else {
-        [$bg_url, $bg_err] = themer_resolve_bg($bg_src, $webroot, $flash, $weburl);
-        if ($bg_err) { $msg = "Background image: $bg_err. "; }        // keep the existing one
+        [$bg_url, $bg_err] = themer_resolve_asset($bg_src, 'bg', $webroot, $flash, $weburl);
+        if ($bg_err) { $msg .= "Background image: $bg_err. "; }        // keep the existing one
         else { $over['BGIMAGE'] = $bg_url; $over['BGSRC'] = $bg_src; }
+    }
+
+    if ($logo_src === '') {
+        $over['LOGO'] = ''; $over['LOGOSRC'] = '';
+        foreach (glob("$flash/logo/*") as $f) @unlink($f);
+        foreach (glob("$webroot/logo/*") as $f) @unlink($f);
+    } else {
+        [$logo_url, $logo_err] = themer_resolve_asset($logo_src, 'logo', $webroot, $flash, $weburl);
+        if ($logo_err) { $msg .= "Logo: $logo_err. "; }               // keep the existing one
+        else { $over['LOGO'] = $logo_url; $over['LOGOSRC'] = $logo_src; }
     }
     themer_cfg_write($cfg_path, $over);
 
@@ -378,6 +391,7 @@ $preset_sel  = $settings['PRESET']  ?? "bebamu";
 $iconset_sel = $settings['ICONSET'] ?? "default";
 $bg_src_val  = $settings['BGSRC'] ?? "";
 $bg_dim_val  = (int) ($settings['BGDIM'] ?? 0);
+$logo_src_val = $settings['LOGOSRC'] ?? "";
 $custom_css  = file_exists($custom_flash) ? file_get_contents($custom_flash) : "";
 
 // available icon sets (default + any bundled icons/*.css)
@@ -514,6 +528,10 @@ Background image:
   <link type="text/css" rel="stylesheet" href="/webGui/styles/jquery.filetree.css">
   <script src="/webGui/javascript/jquery.filetree.js" charset="utf-8"></script>
   <script defer src="/plugins/unraid.themer/js/themer-branding.js?v=<?= @filemtime("$webroot/js/themer-branding.js") ?>"></script>
+
+Logo:
+: <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="logo_src" id="ut-logo-src" value="<?= htmlspecialchars($logo_src_val) ?>" spellcheck="false" placeholder="https://…/logo.png / .svg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseLogo()"></span>
+  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or a file on the server. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
 
 <?php
 $cp = [

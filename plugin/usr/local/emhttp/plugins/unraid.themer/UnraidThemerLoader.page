@@ -86,6 +86,18 @@ Link="nav-user"
            . "</style>\n";
     }
 
+    // 4c) custom logo — the top-left Unraid wordmark is a light-DOM <img>, so
+    //     plain CSS `content:url()` swaps it (no JS / shadow DOM needed)
+    $logo = trim($cfg['LOGO'] ?? '');
+    if ($logo !== '') {
+        $lq = htmlspecialchars($logo, ENT_QUOTES);
+        echo "<style id=\"ut-logo\">"
+           . "img[src*=\"UN-logotype\"],img[alt=\"Unraid Logo\"]{"
+           . "content:url('$lq')!important;height:2.6rem!important;width:auto!important;"
+           . "max-width:16rem;object-fit:contain!important}"
+           . "</style>\n";
+    }
+
     // 3) runtime JS (shadow-DOM tweaks, update badges) — deferred, same-origin (CSP-safe)
     $js = "$webroot/js/themer.js";
     if (file_exists($js)) {

@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26.06",
+    "version": "2026.07.26.07",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26.07
+- New: replace the Unraid wordmark (top-left) with your own logo, by URL (cached
+  locally) or a file on the server via Unraid's file browser. Survives reboots;
+  clear the field and Apply to restore the Unraid logo.
+
 ## 2026.07.26.06
 - New: set a background image behind the whole UI. Add it by URL (downloaded and
   cached locally, so it is CSP-safe and works offline) or pick a file on the
@@ -330,8 +335,8 @@ def collect_files():
 INSTALL = f"""
 # --- Unraid Themer: prepare directories ---
 rm -rf {WEBROOT}
-mkdir -p {WEBROOT}/presets {WEBROOT}/js {WEBROOT}/defaults {WEBROOT}/overrides {WEBROOT}/bg
-mkdir -p {FLASH}/presets {FLASH}/overrides {FLASH}/bg
+mkdir -p {WEBROOT}/presets {WEBROOT}/js {WEBROOT}/defaults {WEBROOT}/overrides {WEBROOT}/bg {WEBROOT}/logo
+mkdir -p {FLASH}/presets {FLASH}/overrides {FLASH}/bg {FLASH}/logo
 exit 0
 """.strip()
 
@@ -362,9 +367,10 @@ mkdir -p {WEBROOT}/overrides
 cp -f {FLASH}/overrides/*.svg {WEBROOT}/overrides/ 2>/dev/null
 cp -f {FLASH}/overrides.css {WEBROOT}/overrides.css 2>/dev/null
 
-# Background image (URL cached or a file the user picked) lives on flash; restore it.
-mkdir -p {WEBROOT}/bg
+# Background image + custom logo (URL cached or a picked file) live on flash; restore.
+mkdir -p {WEBROOT}/bg {WEBROOT}/logo
 cp -f {FLASH}/bg/* {WEBROOT}/bg/ 2>/dev/null
+cp -f {FLASH}/logo/* {WEBROOT}/logo/ 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."
