@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26.04",
+    "version": "2026.07.26.05",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26.05
+- Fix the Themer Icons Apply hanging forever and saving nothing: the form used
+  multipart/form-data (for SVG upload), which Unraid's AJAX form submit cannot
+  send, so the request stalled. The form is now a normal POST; uploading an SVG
+  reads it in the browser and drops its markup into the field (the server already
+  accepts pasted <svg>). Picking, typing and uploading now all save correctly.
+
 ## 2026.07.26.04
 - Fix the Apply button staying greyed out on the Themer Icons page after picking
   an icon from the grid or uploading an SVG: those set the field from script,

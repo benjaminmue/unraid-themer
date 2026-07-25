@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.26.04">
+  <!ENTITY version   "2026.07.26.05">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,13 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.26.05
+- Fix the Themer Icons Apply hanging forever and saving nothing: the form used
+  multipart/form-data (for SVG upload), which Unraid's AJAX form submit cannot
+  send, so the request stalled. The form is now a normal POST; uploading an SVG
+  reads it in the browser and drops its markup into the field (the server already
+  accepts pasted &lt;svg&gt;). Picking, typing and uploading now all save correctly.
+
 ## 2026.07.26.04
 - Fix the Apply button staying greyed out on the Themer Icons page after picking
   an icon from the grid or uploading an SVG: those set the field from script,
@@ -1222,7 +1229,7 @@ pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handle
 and tinted with the theme color, so single-color line icons work best.
 </div>
 
-<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off" enctype="multipart/form-data">
+<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off">
 <datalist id="ut-bundled">
   <?php foreach ($all_values as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
 </datalist>
@@ -1452,7 +1459,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.07.26.04
+<![CDATA[2026.07.26.05
 ]]>
 </INLINE>
 </FILE>
@@ -19488,24 +19495,31 @@ unicode: "eb55"
     }
   };
 
+  // Read the SVG client-side and put its markup into the slot's text field, so the
+  // form stays a normal urlencoded POST (no multipart — Unraid's AJAX form submit
+  // cannot send files and would hang). The server sanitizes pasted <svg> markup.
   window.utUploadPrev = function (inp, key) {
     var f = inp.files && inp.files[0];
     if (!f) return;
     var rd = new FileReader();
     rd.onload = function () {
+      var svg = String(rd.result || "");
+      if (svg.toLowerCase().indexOf("<svg") < 0) { alert("That doesn't look like an SVG file."); inp.value = ""; return; }
+      var t = document.querySelector('input[data-key="' + key + '"]');
+      if (t) { t.value = svg; utDirty(t); }
       var cell = document.querySelector('.ut-own[data-key="' + key + '"]');
       if (cell) {
         var s = cell.querySelector("span");
         if (s) {
-          s.style.webkitMask = 'url("' + rd.result + '") center/contain no-repeat';
-          s.style.mask = 'url("' + rd.result + '") center/contain no-repeat';
+          var uri = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+          s.style.webkitMask = 'url("' + uri + '") center/contain no-repeat';
+          s.style.mask = 'url("' + uri + '") center/contain no-repeat';
           s.style.backgroundColor = "currentColor"; s.style.opacity = "1"; s.innerHTML = "";
         }
       }
-      var t = document.querySelector('input[data-key="' + key + '"]');
-      if (t) { t.value = "upload"; utDirty(t); }   // staged; the uploaded file wins on Apply
+      inp.value = "";   // reset the file input; the markup now lives in the text field
     };
-    rd.readAsDataURL(f);
+    rd.readAsText(f);
   };
 
   window.utOpenPicker = function (key) {

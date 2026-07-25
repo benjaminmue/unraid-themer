@@ -412,7 +412,7 @@ pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handle
 and tinted with the theme color, so single-color line icons work best.
 </div>
 
-<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off" enctype="multipart/form-data">
+<form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off">
 <datalist id="ut-bundled">
   <?php foreach ($all_values as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
 </datalist>

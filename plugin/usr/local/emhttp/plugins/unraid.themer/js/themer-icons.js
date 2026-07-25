@@ -45,24 +45,31 @@
     }
   };
 
+  // Read the SVG client-side and put its markup into the slot's text field, so the
+  // form stays a normal urlencoded POST (no multipart — Unraid's AJAX form submit
+  // cannot send files and would hang). The server sanitizes pasted <svg> markup.
   window.utUploadPrev = function (inp, key) {
     var f = inp.files && inp.files[0];
     if (!f) return;
     var rd = new FileReader();
     rd.onload = function () {
+      var svg = String(rd.result || "");
+      if (svg.toLowerCase().indexOf("<svg") < 0) { alert("That doesn't look like an SVG file."); inp.value = ""; return; }
+      var t = document.querySelector('input[data-key="' + key + '"]');
+      if (t) { t.value = svg; utDirty(t); }
       var cell = document.querySelector('.ut-own[data-key="' + key + '"]');
       if (cell) {
         var s = cell.querySelector("span");
         if (s) {
-          s.style.webkitMask = 'url("' + rd.result + '") center/contain no-repeat';
-          s.style.mask = 'url("' + rd.result + '") center/contain no-repeat';
+          var uri = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+          s.style.webkitMask = 'url("' + uri + '") center/contain no-repeat';
+          s.style.mask = 'url("' + uri + '") center/contain no-repeat';
           s.style.backgroundColor = "currentColor"; s.style.opacity = "1"; s.innerHTML = "";
         }
       }
-      var t = document.querySelector('input[data-key="' + key + '"]');
-      if (t) { t.value = "upload"; utDirty(t); }   // staged; the uploaded file wins on Apply
+      inp.value = "";   // reset the file input; the markup now lives in the text field
     };
-    rd.readAsDataURL(f);
+    rd.readAsText(f);
   };
 
   window.utOpenPicker = function (key) {
