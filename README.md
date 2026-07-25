@@ -13,6 +13,8 @@ in a theme + icon system instead of a raw CSS textarea.
 > [@benjaminmue](https://github.com/benjaminmue). It runs on his own Unraid 7.3
 > server. Read the code before trusting it on yours — issues and PRs welcome.
 
+![Unraid Themer — a themed Unraid 7.3 dashboard](docs/screenshots/01-dashboard.png)
+
 ## Features
 
 - **Themes** — bundled presets plus a built-in **theme store** you can browse and
@@ -51,6 +53,20 @@ Azure) so the Vue components and Community Apps render in the right mode.
 [`themes/_template.css`](themes/_template.css). It's mostly 8 colors. Submit one with
 a PR to [`themes/`](themes/) — a GitHub Action validates every theme before it can be
 listed in the store.
+
+## Screenshots
+
+The **Unraid Themer** settings page — enable it, pick a preset, build your own from
+8 colors, or browse the built-in theme store:
+
+![Unraid Themer settings page](docs/screenshots/02-settings.png)
+
+The **Themer Icons** page overrides any individual glyph, and the grid picker pulls
+from every bundled icon set at once:
+
+![Themer Icons page](docs/screenshots/03-themer-icons.png)
+
+![Icon grid picker across all bundled sets](docs/screenshots/04-icon-picker.png)
 
 ## Icons
 
