@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.26.02">
+  <!ENTITY version   "2026.07.26.03">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,11 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.26.03
+- Fixed the broken grid glyph on the Themer Icons page title. It used a
+  Font Awesome 4 name (picture-o) that no longer exists in Unraid 7, so the
+  font drew a placeholder. Now uses a valid icon that also tints with the set.
+
 ## 2026.07.26.02
 - Themer Icons page now exposes every icon the sets cover: 149 slots (was ~47)
   across Navigation, System, Settings pages, Toolbar (new UI, icon-u-*) and
@@ -799,7 +804,7 @@ if ($ut_ver === '' && is_file("/boot/config/plugins/$name.plg")
 <INLINE>
 <![CDATA[Menu="Utilities"
 Title="Themer Icons"
-Icon="picture-o"
+Icon="icon-apps"
 ---
 <?php
 /* Unraid Themer — per-icon overrides (Settings → Utilities → Unraid Themer → Custom Icons).
@@ -1441,7 +1446,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.07.26.02
+<![CDATA[2026.07.26.03
 ]]>
 </INLINE>
 </FILE>

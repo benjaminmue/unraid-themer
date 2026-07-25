@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26.02",
+    "version": "2026.07.26.03",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,11 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26.03
+- Fixed the broken grid glyph on the Themer Icons page title. It used a
+  Font Awesome 4 name (picture-o) that no longer exists in Unraid 7, so the
+  font drew a placeholder. Now uses a valid icon that also tints with the set.
+
 ## 2026.07.26.02
 - Themer Icons page now exposes every icon the sets cover: 149 slots (was ~47)
   across Navigation, System, Settings pages, Toolbar (new UI, icon-u-*) and

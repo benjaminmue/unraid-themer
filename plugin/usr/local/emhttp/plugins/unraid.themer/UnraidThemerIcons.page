@@ -1,6 +1,6 @@
 Menu="Utilities"
 Title="Themer Icons"
-Icon="picture-o"
+Icon="icon-apps"
 ---
 <?php
 /* Unraid Themer — per-icon overrides (Settings → Utilities → Unraid Themer → Custom Icons).
