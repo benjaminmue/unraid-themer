@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.07.26.05">
+  <!ENTITY version   "2026.07.26.06">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,12 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.07.26.06
+- New: set a background image behind the whole UI. Add it by URL (downloaded and
+  cached locally, so it is CSP-safe and works offline) or pick a file on the
+  server with Unraid's file browser. A Dim slider keeps text readable, and it
+  survives reboots. Clear the field and Apply to remove it.
+
 ## 2026.07.26.05
 - Fix the Themer Icons Apply hanging forever and saving nothing: the form used
   multipart/form-data (for SVG upload), which Unraid's AJAX form submit cannot
@@ -286,8 +292,8 @@
 <INLINE>
 # --- Unraid Themer: prepare directories ---
 rm -rf /usr/local/emhttp/plugins/unraid.themer
-mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js /usr/local/emhttp/plugins/unraid.themer/defaults /usr/local/emhttp/plugins/unraid.themer/overrides
-mkdir -p /boot/config/plugins/unraid.themer/presets /boot/config/plugins/unraid.themer/overrides
+mkdir -p /usr/local/emhttp/plugins/unraid.themer/presets /usr/local/emhttp/plugins/unraid.themer/js /usr/local/emhttp/plugins/unraid.themer/defaults /usr/local/emhttp/plugins/unraid.themer/overrides /usr/local/emhttp/plugins/unraid.themer/bg
+mkdir -p /boot/config/plugins/unraid.themer/presets /boot/config/plugins/unraid.themer/overrides /boot/config/plugins/unraid.themer/bg
 exit 0
 </INLINE>
 </FILE>
@@ -358,8 +364,71 @@ $custom_web  = "$webroot/custom.css";
 // github.com/.../raw/ serves fresh content immediately; raw.githubusercontent
 // is CDN-cached (~5 min), so new store themes would appear late.
 $store_base  = "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/themes";
+$weburl      = "/plugins/$name";
 $msg = "";
 $switch_base = "";   // set to a theme name if we need to pair the Dynamix base
+
+// Write the plugin cfg while PRESERVING keys not being changed. Several handlers
+// rewrite the cfg; without a merge they would silently drop BGIMAGE/ICONSET/etc.
+function themer_cfg_write($path, $over) {
+    $cur  = @parse_ini_file($path) ?: [];
+    $keys = ['SERVICE', 'PRESET', 'ICONSET', 'BGIMAGE', 'BGSRC', 'BGDIM'];
+    $def  = ['SERVICE' => 'disabled', 'PRESET' => 'bebamu', 'ICONSET' => 'default',
+             'BGIMAGE' => '', 'BGSRC' => '', 'BGDIM' => '0'];
+    @mkdir(dirname($path), 0755, true);
+    $out = '';
+    foreach ($keys as $k) {
+        $v = array_key_exists($k, $over) ? $over[$k] : ($cur[$k] ?? $def[$k]);
+        $v = str_replace(["\n", "\r", '"'], '', (string) $v);  // keep the cfg line intact
+        $out .= "$k=\"$v\"\n";
+    }
+    file_put_contents($path, $out);
+}
+
+// Store the image bytes on flash + webroot and return the served URL.
+function themer_store_bg($data, $ext, $webroot, $flash, $weburl) {
+    @mkdir("$flash/bg", 0755, true);
+    @mkdir("$webroot/bg", 0755, true);
+    foreach (glob("$flash/bg/*") as $f) @unlink($f);      // one active background
+    foreach (glob("$webroot/bg/*") as $f) @unlink($f);
+    $rel = "bg/background.$ext";
+    if (file_put_contents("$flash/$rel", $data) === false) return ['', 'could not save the image'];
+    @copy("$flash/$rel", "$webroot/$rel");
+    return ["$weburl/$rel", ''];
+}
+
+// Resolve a background source (https URL or a file on this server) to a locally
+// served URL. URLs are downloaded and cached so the browser never fetches a
+// cross-origin image (CSP-safe) and it works offline. Returns [servedUrl, error].
+function themer_resolve_bg($src, $webroot, $flash, $weburl) {
+    $src  = trim($src);
+    if ($src === '') return ['', ''];
+    $exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp'];
+    // a file the user picked with the Unraid file browser
+    if ($src[0] === '/') {
+        if (!is_file($src)) return ['', 'file not found on the server'];
+        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
+        if (!in_array($ext, $exts)) return ['', "unsupported image type .$ext"];
+        if (filesize($src) > 15 * 1024 * 1024) return ['', 'image too large (>15 MB)'];
+        $data = @file_get_contents($src);
+        if ($data === false) return ['', 'could not read that file'];
+        return themer_store_bg($data, $ext === 'jpeg' ? 'jpg' : $ext, $webroot, $flash, $weburl);
+    }
+    // an https URL — fetch and cache locally
+    if (preg_match('#^https?://[^\s\'"<>]+$#i', $src)) {
+        $raw = shell_exec("curl -fsSL --max-time 25 --max-filesize 15728640 " . escapeshellarg($src) . " 2>/dev/null");
+        if (!$raw) return ['', 'could not download that URL'];
+        $fi = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_buffer($fi, $raw);
+        finfo_close($fi);
+        $map = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
+                'image/gif' => 'gif', 'image/svg+xml' => 'svg', 'image/avif' => 'avif',
+                'image/x-ms-bmp' => 'bmp', 'image/bmp' => 'bmp'];
+        if (!isset($map[$mime])) return ['', 'that URL is not an image'];
+        return themer_store_bg($raw, $map[$mime], $webroot, $flash, $weburl);
+    }
+    return ['', 'enter an http(s) URL or a file path on this server'];
+}
 
 // download + sanitise a theme into the presets folder; returns "" or an error
 function themer_fetch_theme($url, $flash, $webroot) {
@@ -515,9 +584,7 @@ if ($_POST && isset($_POST['BUILD_THEME'])) {
         @mkdir("$flash/presets", 0755, true);
         file_put_contents("$flash/presets/$stem.css", themer_build_theme_css($c, $base, $font));
         @copy("$flash/presets/$stem.css", "$webroot/presets/$stem.css");
-        $cur = parse_plugin_cfg($name);
-        $ico = $cur['ICONSET'] ?? 'default';
-        file_put_contents($cfg_path, "SERVICE=\"enabled\"\nPRESET=\"$stem\"\nICONSET=\"$ico\"\n");
+        themer_cfg_write($cfg_path, ['SERVICE' => 'enabled', 'PRESET' => $stem]);
         $mode    = ($base === 'white') ? 'light' : 'dark';
         $curbase = @parse_ini_file('/boot/config/plugins/dynamix/dynamix.cfg', true)['display']['theme'] ?? 'white';
         $sidebar = in_array($curbase, ['azure', 'gray']);
@@ -535,7 +602,21 @@ if ($_POST && isset($_POST['SAVE_CONFIG'])) {
     $iconset = preg_replace('/[^A-Za-z0-9._-]/', '', $_POST['ICONSET'] ?? 'default');
     if ($iconset === '') $iconset = 'default';
     @mkdir($flash, 0755, true);
-    file_put_contents($cfg_path, "SERVICE=\"$service\"\nPRESET=\"$preset\"\nICONSET=\"$iconset\"\n");
+
+    // background image: URL (cached locally) or a file picked from the server
+    $bg_src = trim($_POST['bg_src'] ?? '');
+    $bg_dim = (string) max(0, min(90, (int) ($_POST['bg_dim'] ?? 0)));
+    $over   = ['SERVICE' => $service, 'PRESET' => $preset, 'ICONSET' => $iconset, 'BGDIM' => $bg_dim];
+    if ($bg_src === '') {
+        $over['BGIMAGE'] = ''; $over['BGSRC'] = '';
+        foreach (glob("$flash/bg/*") as $f) @unlink($f);
+        foreach (glob("$webroot/bg/*") as $f) @unlink($f);
+    } else {
+        [$bg_url, $bg_err] = themer_resolve_bg($bg_src, $webroot, $flash, $weburl);
+        if ($bg_err) { $msg = "Background image: $bg_err. "; }        // keep the existing one
+        else { $over['BGIMAGE'] = $bg_url; $over['BGSRC'] = $bg_src; }
+    }
+    themer_cfg_write($cfg_path, $over);
 
     if (isset($_POST['custom_css'])) {
         // normalise newlines, store on flash, mirror to webroot
@@ -563,9 +644,9 @@ if ($_POST && isset($_POST['SAVE_CONFIG'])) {
         if ($target !== $cur) $switch_base = $target;
     }
 
-    $msg = $switch_base
+    $msg = $msg . ($switch_base
         ? "Settings saved. Switching the base theme to \"" . ucfirst($switch_base) . "\" and reloading…"
-        : "Settings saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.";
+        : "Settings saved. Reload the browser (Cmd/Ctrl+Shift+R) to see changes.");
 }
 
 // --- IMPORT A THEME FROM A URL (theme store, mode A) ---
@@ -601,9 +682,7 @@ if ($_POST && isset($_POST['remove_preset'])) {
         // if it was the active preset, fall back to bebamu
         $cur = parse_plugin_cfg($name);
         if (($cur['PRESET'] ?? '') === $r) {
-            $svc = $cur['SERVICE'] ?? 'disabled';
-            $ico = $cur['ICONSET'] ?? 'default';
-            file_put_contents($cfg_path, "SERVICE=\"$svc\"\nPRESET=\"bebamu\"\nICONSET=\"$ico\"\n");
+            themer_cfg_write($cfg_path, ['PRESET' => 'bebamu']);
         }
         $msg = "Removed \"$r\".";
     }
@@ -619,6 +698,8 @@ $settings    = parse_plugin_cfg($name);
 $service     = $settings['SERVICE'] ?? "disabled";
 $preset_sel  = $settings['PRESET']  ?? "bebamu";
 $iconset_sel = $settings['ICONSET'] ?? "default";
+$bg_src_val  = $settings['BGSRC'] ?? "";
+$bg_dim_val  = (int) ($settings['BGDIM'] ?? 0);
 $custom_css  = file_exists($custom_flash) ? file_get_contents($custom_flash) : "";
 
 // available icon sets (default + any bundled icons/*.css)
@@ -748,6 +829,13 @@ Icon set:
 Custom icons (per slot):
 : <input type="button" value="Open Themer Icons →" onclick="location.href='/Settings/UnraidThemerIcons'" style="font-weight:bold;">
   <span>Assign or upload a custom icon for any individual glyph — pick from all bundled sets or your own SVG.</span>
+
+Background image:
+: <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="bg_src" id="ut-bg-src" value="<?= htmlspecialchars($bg_src_val) ?>" spellcheck="false" placeholder="https://…/image.jpg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseBg()"></span><span style="display:flex; gap:10px; align-items:center; margin-top:8px;">Dim for legibility <input type="range" name="bg_dim" min="0" max="90" step="5" value="<?= $bg_dim_val ?>" oninput="document.getElementById('ut-bg-dimval').textContent=this.value+'%'" style="vertical-align:middle;"><span id="ut-bg-dimval"><?= $bg_dim_val ?>%</span></span>
+  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or a file on the server (<strong>Browse…</strong> opens Unraid's file picker). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
+  <link type="text/css" rel="stylesheet" href="/webGui/styles/jquery.filetree.css">
+  <script src="/webGui/javascript/jquery.filetree.js" charset="utf-8"></script>
+  <script defer src="/plugins/unraid.themer/js/themer-branding.js?v=<?= @filemtime("$webroot/js/themer-branding.js") ?>"></script>
 
 <?php
 $cp = [
@@ -1375,6 +1463,19 @@ Link="nav-user"
         echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/custom.css?v=$v\">\n";
     }
 
+    // 4b) background image (URL cached locally or a picked file) + dim scrim
+    $bg = trim($cfg['BGIMAGE'] ?? '');
+    if ($bg !== '') {
+        $dim = max(0, min(90, (int) ($cfg['BGDIM'] ?? 0))) / 100;
+        $bgq = htmlspecialchars($bg, ENT_QUOTES);
+        echo "<style id=\"ut-bg\">"
+           . "html{background-image:url('$bgq')!important;background-size:cover;background-position:center center;"
+           . "background-attachment:fixed;background-repeat:no-repeat}"
+           . "body{background-color:transparent!important}"
+           . "body::before{content:'';position:fixed;inset:0;background:rgba(0,0,0,$dim);z-index:-1;pointer-events:none}"
+           . "</style>\n";
+    }
+
     // 3) runtime JS (shadow-DOM tweaks, update badges) — deferred, same-origin (CSP-safe)
     $js = "$webroot/js/themer.js";
     if (file_exists($js)) {
@@ -1459,7 +1560,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.07.26.05
+<![CDATA[2026.07.26.06
 ]]>
 </INLINE>
 </FILE>
@@ -19353,6 +19454,55 @@ unicode: "eb55"
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/js/themer-branding.js">
+<INLINE>
+<![CDATA[/* Unraid Themer — branding (background image picker). External file on purpose:
+ * Unraid runs the .page body through its markdown processor, which mangles
+ * multi-line inline <script> blocks. */
+(function () {
+  "use strict";
+
+  // Unraid's file browser. The global page does not expose openFileBrowser (it is
+  // defined inline in the Docker/VM manager), so we ship our own copy. It fills the
+  // target field with the picked path and fires a change event (which also arms the
+  // settings Apply button). Depends on jQuery + jquery.filetree.js (loaded on the page).
+  function openFileBrowser(el, top, root, filter, on_folders, on_files, close_on_select) {
+    if (on_folders === undefined) on_folders = true;
+    if (on_files === undefined) on_files = true;
+    if (!filter && !on_files) filter = "HIDE_FILES_FILTER";
+    if (!root.trim()) { root = "/mnt/user/"; top = "/mnt/"; }
+    var p = $(el);
+    if (p.next().hasClass("fileTree")) return null;          // already open
+    var r = Math.floor((Math.random() * 10000) + 1);
+    p.after("<span id='fileTree" + r + "' class='textarea fileTree'></span>");
+    var ft = $("#fileTree" + r);
+    ft.fileTree(
+      { top: top, root: root, filter: filter, allowBrowsing: true },
+      function (file) {
+        if (on_files) { p.val(file); p.trigger("change"); if (close_on_select) ft.slideUp("fast", function () { ft.remove(); }); }
+      },
+      function (folder) {
+        if (on_folders) { p.val(folder.replace(/\/\/+/g, "/")); p.trigger("change"); if (close_on_select) ft.slideUp("fast", function () { ft.remove(); }); }
+      }
+    );
+    ft.css({ left: p.position().left, top: (p.position().top + p.outerHeight()), width: (p.width()) });
+    $(document).mouseup(function (e) {
+      if (!ft.is(e.target) && ft.has(e.target).length === 0) ft.slideUp("fast", function () { ft.remove(); });
+    });
+    p.bind("keydown", function () { ft.slideUp("fast", function () { ft.remove(); }); });
+    ft.slideDown("fast");
+  }
+
+  // Pick an image file from the server (files only, starting at /mnt).
+  window.utBrowseBg = function () {
+    var f = document.getElementById("ut-bg-src");
+    if (f) openFileBrowser(f, "/mnt/", "/mnt/", "", false, true, true);
+  };
+})();
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/js/themer-build.js">
 <INLINE>
 <![CDATA[/* Unraid Themer — theme builder (color picker) on the settings page.
@@ -20131,6 +20281,10 @@ cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins
 mkdir -p /usr/local/emhttp/plugins/unraid.themer/overrides
 cp -f /boot/config/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/overrides/ 2>/dev/null
 cp -f /boot/config/plugins/unraid.themer/overrides.css /usr/local/emhttp/plugins/unraid.themer/overrides.css 2>/dev/null
+
+# Background image (URL cached or a file the user picked) lives on flash; restore it.
+mkdir -p /usr/local/emhttp/plugins/unraid.themer/bg
+cp -f /boot/config/plugins/unraid.themer/bg/* /usr/local/emhttp/plugins/unraid.themer/bg/ 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

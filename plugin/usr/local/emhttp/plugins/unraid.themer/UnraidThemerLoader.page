@@ -73,6 +73,19 @@ Link="nav-user"
         echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$weburl/custom.css?v=$v\">\n";
     }
 
+    // 4b) background image (URL cached locally or a picked file) + dim scrim
+    $bg = trim($cfg['BGIMAGE'] ?? '');
+    if ($bg !== '') {
+        $dim = max(0, min(90, (int) ($cfg['BGDIM'] ?? 0))) / 100;
+        $bgq = htmlspecialchars($bg, ENT_QUOTES);
+        echo "<style id=\"ut-bg\">"
+           . "html{background-image:url('$bgq')!important;background-size:cover;background-position:center center;"
+           . "background-attachment:fixed;background-repeat:no-repeat}"
+           . "body{background-color:transparent!important}"
+           . "body::before{content:'';position:fixed;inset:0;background:rgba(0,0,0,$dim);z-index:-1;pointer-events:none}"
+           . "</style>\n";
+    }
+
     // 3) runtime JS (shadow-DOM tweaks, update badges) — deferred, same-origin (CSP-safe)
     $js = "$webroot/js/themer.js";
     if (file_exists($js)) {
