@@ -23,7 +23,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26.01",
+    "version": "2026.07.26.02",
     "launch": "Settings/UnraidThemer",
     "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
@@ -32,6 +32,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.07.26.02
+- Themer Icons page now exposes every icon the sets cover: 149 slots (was ~47)
+  across Navigation, System, Settings pages, Toolbar (new UI, icon-u-*) and
+  Actions. You can now override the Settings-page glyphs and the Vue header /
+  toolbar icons individually, not just the System and action icons.
+
 ## 2026.07.26.01
 - Added Comic Neue to the bundled fonts (a free, OFL-licensed Comic Sans-alike;
   the proprietary Comic Sans MS cannot be shipped). Pick it in the theme builder
