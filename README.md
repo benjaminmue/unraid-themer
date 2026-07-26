@@ -1,5 +1,9 @@
 # Unraid Themer
 
+> 🧪 **Beta.** This is a beta release — testing and contributing are very welcome.
+> Found a glitch or have an idea? Open an [issue](https://github.com/benjaminmue/unraid-themer/issues)
+> or start a [discussion](https://github.com/benjaminmue/unraid-themer/discussions). Thanks for helping shape it.
+
 A generic theming plugin for the **Unraid 7** webGUI. Pick a theme (or build your
 own), flip it on, and the whole interface restyles — the classic Dynamix pages
 **and** the new Vue web-components — through Unraid's own CSS custom properties.
