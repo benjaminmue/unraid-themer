@@ -1,8 +1,0 @@
-<CommunityApplications>
-  <!-- Required profile -->
-  <Profile>
-🧪 Beta - testing and contributing are very welcome.&lt;br&gt;&lt;br&gt;A generic theming plugin for the Unraid 7 webGUI: pick a bundled theme or build your own from 8 colors, browse a built-in theme store, swap the UI icons for 9 open-source icon sets (or override any single icon), and set your own background image and logo. Non-destructive - disable it and the webGUI is 100% stock.&lt;br&gt;&lt;br&gt;Source, issues and docs: https://github.com/benjaminmue/unraid-themer
-  </Profile>
-  <!-- Optional web page -->
-  <WebPage>https://github.com/benjaminmue/unraid-themer</WebPage>
-</CommunityApplications>
