@@ -27,6 +27,14 @@ in a theme + icon system instead of a raw CSS textarea.
   (Lucide, Tabler, Phosphor, Heroicons, Iconoir, Remix, Bootstrap, Carbon,
   Material Symbols) that tint with the theme. Or set **any individual icon** from
   a grid picker, an SVG URL, or your own uploaded SVG.
+- **Theme builder** — build your own theme from 8 colors (swatch or hex/rgb),
+  with an optional bundled webfont (Inter, Roboto, Source Sans 3, JetBrains Mono,
+  Nunito, Comic Neue), previewed live and saved as a preset.
+- **Background image** — set a background behind the whole UI, by URL (cached
+  locally, CSP-safe) or a file on the server (Unraid's file picker), with a dim
+  slider for legibility.
+- **Custom logo** — replace the Unraid wordmark in the header with your own logo,
+  by URL or a file on the server.
 - **Whole-UI coverage** — classic Dynamix pages, the Vue header (bell, menu,
   toolbar), Community Apps, tables, dashboard and the Settings icons.
 - **Sidebar layouts** — Azure / Gray are supported; the base pairing keeps you in
