@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.08.16.b01">
+  <!ENTITY version   "2026.08.16.b02">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,13 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.08.16.b02 (beta)
+- Store rows line up again: the three button states (Get / Uninstall /
+  Installed) have different label widths, which pushed every row's swatch and
+  name to a different position. The row is a fixed-column grid now.
+- Swatch chips get a hairline between them and a stronger outline, so a dark
+  theme's background and surface no longer merge into one block on a dark base.
+
 ## 2026.08.16.b01 (beta)
 - Theme store and preset dropdown now show each theme's palette as a colour
   strip, so you can see what a theme looks like before downloading it. Store
@@ -639,14 +646,19 @@ function themer_resolve_var($value, $vars, $depth) {
 function themer_swatch_html($colors, $w = 12, $h = 15) {
     if (!is_array($colors) || !$colors) return '';
     $chips = '';
+    $first = true;
     foreach (array_slice($colors, 0, 5) as $c) {
         if (!preg_match('/^#[0-9a-fA-F]{3,8}$/', (string) $c)) continue;
-        $chips .= "<i style='display:block; width:{$w}px; height:{$h}px; background:"
+        // hairline between chips: a dark theme's background and surface are
+        // nearly identical, and without a divider they merge into one block
+        $div = $first ? '' : 'border-left:1px solid rgba(128,128,128,0.55);';
+        $chips .= "<i style='display:block; width:{$w}px; height:{$h}px; $div background:"
             . htmlspecialchars($c) . ";'></i>";
+        $first = false;
     }
     if ($chips === '') return '';
     return "<span title='Theme palette' style='display:inline-flex; flex:0 0 auto; border:1px solid "
-        . "rgba(128,128,128,0.4); line-height:0; vertical-align:middle;'>$chips</span>";
+        . "rgba(128,128,128,0.7); line-height:0; vertical-align:middle;'>$chips</span>";
 }
 
 // --- BUILD A THEME FROM THE COLOR PICKER ---
@@ -824,6 +836,8 @@ if ($raw) $store_index = @json_decode($raw, true);
 // Build the "Added themes" and "Theme store" blocks as HTML strings, echoed
 // inline in the form so Unraid's markdown parser keeps them in the value column.
 $btn = 'display:inline-block; width:auto; padding:2px 12px; min-width:88px;';
+// store buttons sit in a fixed grid column, so they all get the same width
+$btnStore = 'display:block; width:112px; box-sizing:border-box; padding:2px 6px; margin:0; text-align:center;';
 
 // Palette preview for the preset dropdown: every installed preset gets a hidden
 // strip, and the page script shows the one matching the selection. Rendering all
@@ -851,16 +865,18 @@ if (!empty($store_index['themes'])) {
         $D = in_array($base, ['black', 'gray', 'any']) ? '1' : '0';
         $dn = htmlspecialchars(strtolower($t['name'] . ' ' . $t['description']));
         if (!$ins) {
-            $b = "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "' style='$btn'>Get</button>";
+            $b = "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "' style='$btnStore'>Get</button>";
         } elseif ($onflash) {
-            $b = "<button type='submit' name='remove_preset' value='$stem' onclick='return confirm(\"Uninstall $stem?\")' style='$btn'>Uninstall</button>";
+            $b = "<button type='submit' name='remove_preset' value='$stem' onclick='return confirm(\"Uninstall $stem?\")' style='$btnStore'>Uninstall</button>";
         } else {
-            $b = "<button type='button' disabled style='$btn'>Installed</button>";
+            $b = "<button type='button' disabled style='$btnStore'>Installed</button>";
         }
         // palette preview: from the registry, or parsed locally once installed
         $sw = $t['swatch'] ?? null;
         if (!$sw && $ins) $sw = themer_palette_from_css("$webroot/presets/$stem.css");
-        $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:flex; align-items:center; gap:10px; padding:6px 8px; border-top:1px solid rgba(128,128,128,0.18);'>"
+        // grid, not flex: the three button states have different label widths,
+        // and with flex every row started its swatch and name at a different x
+        $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:grid; grid-template-columns:112px 64px 1fr; align-items:center; column-gap:14px; padding:6px 10px; border-top:1px solid rgba(128,128,128,0.18);'>"
             . $b
             . themer_swatch_html($sw)
             . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em></span>"
@@ -1692,7 +1708,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.08.16.b01
+<![CDATA[2026.08.16.b02
 ]]>
 </INLINE>
 </FILE>

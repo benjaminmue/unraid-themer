@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.07.26.07",
-    "beta": "2026.08.16.b01",
+    "beta": "2026.08.16.b02",
 }
 
 
@@ -62,6 +62,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.08.16.b02 (beta)
+- Store rows line up again: the three button states (Get / Uninstall /
+  Installed) have different label widths, which pushed every row's swatch and
+  name to a different position. The row is a fixed-column grid now.
+- Swatch chips get a hairline between them and a stronger outline, so a dark
+  theme's background and surface no longer merge into one block on a dark base.
+
 ## 2026.08.16.b01 (beta)
 - Theme store and preset dropdown now show each theme's palette as a colour
   strip, so you can see what a theme looks like before downloading it. Store
