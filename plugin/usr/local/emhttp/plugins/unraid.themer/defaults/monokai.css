@@ -42,7 +42,7 @@
   --usage-bar-used-background-color: var(--monokai-accent);
   --usage-disk-background-color: rgba(255, 255, 255, 0.12);
 
-  --button-text-color: #ffffff;
+  --button-text-color: #000000;
   --button-background: var(--monokai-accent);
   --button-border: 1px solid var(--monokai-accent);
 
@@ -91,7 +91,7 @@
 input[type="button"], input[type="submit"], input[type="reset"], button,
 .button:not(.apps):not(.vms):not(.compose-stacks) {
   background: var(--monokai-accent) !important;
-  color: #ffffff !important;
+  color: #000000 !important;
   border: 1px solid var(--monokai-accent) !important;
   box-shadow: none !important;
 }

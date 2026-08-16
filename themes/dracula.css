@@ -42,7 +42,7 @@
   --usage-bar-used-background-color: var(--dracula-accent);
   --usage-disk-background-color: rgba(255, 255, 255, 0.12);
 
-  --button-text-color: #ffffff;
+  --button-text-color: #282a36;
   --button-background: var(--dracula-accent);
   --button-border: 1px solid var(--dracula-accent);
 
@@ -91,7 +91,7 @@
 input[type="button"], input[type="submit"], input[type="reset"], button,
 .button:not(.apps):not(.vms):not(.compose-stacks) {
   background: var(--dracula-accent) !important;
-  color: #ffffff !important;
+  color: #282a36 !important;
   border: 1px solid var(--dracula-accent) !important;
   box-shadow: none !important;
 }

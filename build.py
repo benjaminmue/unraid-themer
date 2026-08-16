@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.07.26.07",
-    "beta": "2026.08.16.b04",
+    "beta": "2026.08.16.b05",
 }
 
 
@@ -62,6 +62,17 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.08.16.b05 (beta)
+- Fixed unreadable buttons in 11 bundled themes. Filled buttons use the accent
+  as their background, but the label was hard-coded white — on Nord, Dracula,
+  Catppuccin Mocha, Tokyo Night, One Dark and Gruvbox that is a contrast ratio
+  around 2:1, far below the WCAG AA minimum of 4.5. Labels now use the theme's
+  own background while that clears AA, otherwise black or white, whichever the
+  accent tolerates. All 20 store themes pass, and CI keeps them passing.
+- The theme builder shows live WCAG contrast for the five pairs that carry text
+  (body, muted, links, text on surface, button label), and picks the button
+  label colour for you by the same rule instead of always writing white.
+
 ## 2026.08.16.b04 (beta)
 - Reset a SINGLE icon: every slot gets an eraser button that clears just that
   one back to the icon-set default. Until now the only way back was "Reset all",

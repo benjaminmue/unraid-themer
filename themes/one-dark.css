@@ -42,7 +42,7 @@
   --usage-bar-used-background-color: var(--t-accent);
   --usage-disk-background-color: rgba(255,255,255, 0.12);
 
-  --button-text-color: #ffffff;
+  --button-text-color: #282c34;
   --button-background: var(--t-accent);
   --button-border: 1px solid var(--t-accent);
 
@@ -88,7 +88,7 @@
 input[type="button"], input[type="submit"], input[type="reset"], button,
 .button:not(.apps):not(.vms):not(.compose-stacks) {
   background: var(--t-accent) !important;
-  color: #ffffff !important;
+  color: #282c34 !important;
   border: 1px solid var(--t-accent) !important;
   box-shadow: none !important;
 }

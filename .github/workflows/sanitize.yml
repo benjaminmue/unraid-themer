@@ -5,9 +5,9 @@ name: Sanitize themes
 # cannot be merged.
 on:
   push:
-    paths: ["themes/**", "scripts/sanitize_css.py", "scripts/gen_swatches.py"]
+    paths: ["themes/**", "plugin/**/*.css", "scripts/*.py"]
   pull_request:
-    paths: ["themes/**", "scripts/sanitize_css.py", "scripts/gen_swatches.py"]
+    paths: ["themes/**", "plugin/**/*.css", "scripts/*.py"]
 
 jobs:
   sanitize:
@@ -24,3 +24,7 @@ jobs:
       # a submitted theme without its colour preview.
       - name: Check swatches are present and current
         run: python3 scripts/gen_swatches.py --check
+
+      # A theme whose button labels sit below WCAG AA ships unreadable buttons.
+      - name: Check button label contrast
+        run: python3 scripts/check_contrast.py

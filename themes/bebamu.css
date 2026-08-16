@@ -62,7 +62,7 @@
   --usage-bar-used-background-color: var(--bb-ink);
   --usage-disk-background-color: rgba(0, 0, 0, 0.12);
 
-  --button-text-color: #ffffff;
+  --button-text-color: #000000;
   --button-background: var(--bb-signal);
   --button-background-size: auto;
   --button-border: 1px solid var(--bb-signal);
@@ -137,7 +137,7 @@ html.Theme--black {
 input[type="button"], input[type="submit"], input[type="reset"], button,
 .button:not(.apps):not(.vms):not(.compose-stacks) {
   background: var(--bb-signal) !important;
-  color: #ffffff !important;
+  color: #000000 !important;
   border: 1px solid var(--bb-signal) !important;
   box-shadow: none !important;
 }

@@ -42,7 +42,7 @@
   --usage-bar-used-background-color: var(--rpd-accent);
   --usage-disk-background-color: rgba(0, 0, 0, 0.12);
 
-  --button-text-color: #ffffff;
+  --button-text-color: #000000;
   --button-background: var(--rpd-accent);
   --button-background-size: auto;
   --button-border: 1px solid var(--rpd-accent);
@@ -88,7 +88,7 @@
 input[type="button"], input[type="submit"], input[type="reset"], button,
 .button:not(.apps):not(.vms):not(.compose-stacks) {
   background: var(--rpd-accent) !important;
-  color: #ffffff !important;
+  color: #000000 !important;
   border: 1px solid var(--rpd-accent) !important;
   box-shadow: none !important;
 }
