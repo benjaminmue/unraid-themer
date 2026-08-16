@@ -22,14 +22,18 @@ in a theme + icon system instead of a raw CSS textarea.
 ## Features
 
 - **Themes** — bundled presets plus a built-in **theme store** you can browse and
-  download from on demand. 19+ community themes and counting.
+  download from on demand. 19+ community themes and counting. Every theme shows
+  its **palette as a colour strip**, so you see what you are getting before you
+  download it.
 - **Icon sets** — swap Unraid's UI glyphs for **9 open-source line sets**
   (Lucide, Tabler, Phosphor, Heroicons, Iconoir, Remix, Bootstrap, Carbon,
   Material Symbols) that tint with the theme. Or set **any individual icon** from
   a grid picker, an SVG URL, or your own uploaded SVG.
 - **Theme builder** — build your own theme from 8 colors (swatch or hex/rgb),
   with an optional bundled webfont (Inter, Roboto, Source Sans 3, JetBrains Mono,
-  Nunito, Comic Neue), previewed live and saved as a preset.
+  Nunito, Comic Neue), previewed live and saved as a preset. A **live WCAG
+  contrast readout** covers the pairs that carry text, and the button label
+  colour is chosen for you so it stays readable on any accent.
 - **Background image** — set a background behind the whole UI, by URL (cached
   locally, CSP-safe) or a file on the server (Unraid's file picker), with a dim
   slider for legibility.
@@ -53,6 +57,20 @@ https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.p
 
 Then open **Settings → Utilities → Unraid Themer**, set *Enable* to **Yes**, pick a
 theme, **Apply**, and hard-reload the browser (Cmd/Ctrl+Shift+R).
+
+### Beta channel
+
+New features land on the `beta` branch first. The branch a `.plg` is built from is
+its update channel, so an installed beta keeps updating from beta and never crosses
+over to stable:
+
+```
+https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg
+```
+
+Install it the same way; it replaces the stable build in place. Your settings live
+on the flash drive and survive the switch in both directions — to go back, install
+the `main` URL above again. Beta versions carry a `bNN` suffix.
 
 ## Themes
 

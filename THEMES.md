@@ -82,6 +82,11 @@ scrollbar) so the overlays stay subtle on a light background. Use a dark
   colour strip so people see your theme before downloading it. CI checks that
   every entry has a current swatch.
 
+  CI also runs [`scripts/check_contrast.py`](scripts/check_contrast.py): filled
+  buttons paint your accent as their background, so the label must clear WCAG AA
+  (4.5:1) against it. A hard-coded white label on a light accent lands near 2:1 and
+  is unreadable — run the script with `--fix` and it picks a readable colour for you.
+
   A GitHub Action ([`scripts/sanitize_css.py`](scripts/sanitize_css.py)) validates
   every submitted theme (no scripts, `javascript:`, `@import` or external
   `url()`), so themes stay safe to download. Once merged it appears in everyone's
