@@ -7,140 +7,280 @@
       "file": "bebamu.css",
       "author": "benjaminmue",
       "base": "any",
-      "description": "Editorial: cream paper, black hairlines, red signal. Light + Dark pair."
+      "description": "Editorial: cream paper, black hairlines, red signal. Light + Dark pair.",
+      "swatch": [
+        "#f7f6f2",
+        "#ffffff",
+        "#0a0a0a",
+        "#e63312",
+        "#b71f08"
+      ]
     },
     {
       "name": "Nord",
       "file": "nord.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Arctic blue-grey with frost accents."
+      "description": "Arctic blue-grey with frost accents.",
+      "swatch": [
+        "#2e3440",
+        "#3b4252",
+        "#eceff4",
+        "#88c0d0",
+        "#5e81ac"
+      ]
     },
     {
       "name": "Dracula",
       "file": "dracula.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Dark with purple and pink accents."
+      "description": "Dark with purple and pink accents.",
+      "swatch": [
+        "#282a36",
+        "#343746",
+        "#f8f8f2",
+        "#bd93f9",
+        "#ff79c6"
+      ]
     },
     {
       "name": "Solarized Dark",
       "file": "solarized-dark.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Deep teal base, blue and cyan accents."
+      "description": "Deep teal base, blue and cyan accents.",
+      "swatch": [
+        "#002b36",
+        "#073642",
+        "#eee8d5",
+        "#268bd2",
+        "#2aa198"
+      ]
     },
     {
       "name": "Monokai",
       "file": "monokai.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Classic dark with magenta and green accents."
+      "description": "Classic dark with magenta and green accents.",
+      "swatch": [
+        "#272822",
+        "#2f312a",
+        "#f8f8f2",
+        "#f92672",
+        "#a6e22e"
+      ]
     },
     {
       "name": "Gruvbox Dark",
       "file": "gruvbox-dark.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Warm retro with orange and yellow accents."
+      "description": "Warm retro with orange and yellow accents.",
+      "swatch": [
+        "#282828",
+        "#32302f",
+        "#ebdbb2",
+        "#fe8019",
+        "#fabd2f"
+      ]
     },
     {
       "name": "Tokyo Night",
       "file": "tokyo-night.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Deep night blue with blue and purple accents."
+      "description": "Deep night blue with blue and purple accents.",
+      "swatch": [
+        "#1a1b26",
+        "#24283b",
+        "#c0caf5",
+        "#7aa2f7",
+        "#bb9af7"
+      ]
     },
     {
       "name": "Catppuccin Mocha",
       "file": "catppuccin-mocha.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Soft dark pastel with mauve and blue accents."
+      "description": "Soft dark pastel with mauve and blue accents.",
+      "swatch": [
+        "#1e1e2e",
+        "#313244",
+        "#cdd6f4",
+        "#cba6f7",
+        "#89b4fa"
+      ]
     },
     {
       "name": "Catppuccin Latte",
       "file": "catppuccin-latte.css",
       "author": "benjaminmue",
       "base": "white",
-      "description": "Soft light pastel with mauve and blue accents."
+      "description": "Soft light pastel with mauve and blue accents.",
+      "swatch": [
+        "#eff1f5",
+        "#e6e9ef",
+        "#4c4f69",
+        "#8839ef",
+        "#1e66f5"
+      ]
     },
     {
       "name": "Solarized Light",
       "file": "solarized-light.css",
       "author": "benjaminmue",
       "base": "white",
-      "description": "Warm paper base with blue and cyan accents."
+      "description": "Warm paper base with blue and cyan accents.",
+      "swatch": [
+        "#fdf6e3",
+        "#eee8d5",
+        "#073642",
+        "#268bd2",
+        "#2aa198"
+      ]
     },
     {
       "name": "Rose Pine Dawn",
       "file": "rose-pine-dawn.css",
       "author": "benjaminmue",
       "base": "white",
-      "description": "Soft rosy light with iris and rose accents."
+      "description": "Soft rosy light with iris and rose accents.",
+      "swatch": [
+        "#faf4ed",
+        "#fffaf3",
+        "#575279",
+        "#907aa9",
+        "#d7827e"
+      ]
     },
     {
       "name": "GitHub Light",
       "file": "github-light.css",
       "author": "benjaminmue",
       "base": "white",
-      "description": "Clean white with blue and green accents."
+      "description": "Clean white with blue and green accents.",
+      "swatch": [
+        "#ffffff",
+        "#f6f8fa",
+        "#1f2328",
+        "#0969da",
+        "#1a7f37"
+      ]
     },
     {
       "name": "Everforest",
       "file": "everforest.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Warm forest green with soft retro contrast."
+      "description": "Warm forest green with soft retro contrast.",
+      "swatch": [
+        "#2b3339",
+        "#3a454a",
+        "#d3c6aa",
+        "#a7c080",
+        "#e67e80"
+      ]
     },
     {
       "name": "Kanagawa",
       "file": "kanagawa.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Muted ink-wash blues inspired by Hokusai."
+      "description": "Muted ink-wash blues inspired by Hokusai.",
+      "swatch": [
+        "#1f1f28",
+        "#363646",
+        "#dcd7ba",
+        "#7e9cd8",
+        "#e46876"
+      ]
     },
     {
       "name": "One Dark",
       "file": "one-dark.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Atom's classic, balanced dark."
+      "description": "Atom's classic, balanced dark.",
+      "swatch": [
+        "#282c34",
+        "#3b4048",
+        "#abb2bf",
+        "#61afef",
+        "#c678dd"
+      ]
     },
     {
       "name": "Ayu Mirage",
       "file": "ayu-mirage.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Soft mirage blues with a warm amber accent."
+      "description": "Soft mirage blues with a warm amber accent.",
+      "swatch": [
+        "#1f2430",
+        "#2d3441",
+        "#cbccc6",
+        "#ffcc66",
+        "#73d0ff"
+      ]
     },
     {
       "name": "Synthwave 84",
       "file": "synthwave-84.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Neon '84 sunset: hot pink and electric cyan."
+      "description": "Neon '84 sunset: hot pink and electric cyan.",
+      "swatch": [
+        "#241b2f",
+        "#34294f",
+        "#f8f8f2",
+        "#ff7edb",
+        "#36f9f6"
+      ]
     },
     {
       "name": "Matrix",
       "file": "matrix.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Green-on-black terminal. Wake up."
+      "description": "Green-on-black terminal. Wake up.",
+      "swatch": [
+        "#0b0f0b",
+        "#122012",
+        "#63f763",
+        "#00ff41",
+        "#b6ff00"
+      ]
     },
     {
       "name": "Unraid Appreciation",
       "file": "unraid-appreciation.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "A love letter to Lime Tech — Unraid orange to red on coal."
+      "description": "A love letter to Lime Tech — Unraid orange to red on coal.",
+      "swatch": [
+        "#1a1a1a",
+        "#2a2a2a",
+        "#f0f0f0",
+        "#ff8c2f",
+        "#e32929"
+      ]
     },
     {
       "name": "Amberloom",
       "file": "amberloom.css",
       "author": "benjaminmue",
       "base": "black",
-      "description": "Warm slate with amber & teal"
+      "description": "Warm slate with amber & teal",
+      "swatch": [
+        "#16181d",
+        "#262a34",
+        "#ece7de",
+        "#e0a458",
+        "#4fb3a9"
+      ]
     }
   ]
 }

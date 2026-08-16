@@ -8,10 +8,18 @@ as a CDATA <FILE> block. Unraid re-runs the .plg on every boot, which recreates
 these files in the RAM webroot. User data (config + custom.css) lives on the
 flash and is restored to the webroot by the boot script.
 
-Usage:  python3 build.py
+Release channels: the branch a .plg is built from becomes its channel. The
+pluginURL and the theme-store registry URL both point at that branch, so an
+installed beta keeps updating from beta and never crosses over to stable.
+Versions must increase LEXICOGRAPHICALLY (Unraid compares them as strings);
+beta builds use a "bNN" suffix, which sorts after every digit suffix of the
+same date, so a stable release needs a newer date to supersede a beta.
+
+Usage:  python3 build.py [--channel main|beta]
 Output: ./unraid-themer.plg
 """
 import os
+import subprocess
 import sys
 
 REPO = os.path.dirname(os.path.abspath(__file__))
@@ -20,18 +28,48 @@ SRC = os.path.join(REPO, "plugin", "usr", "local", "emhttp", "plugins", NAME)
 WEBROOT = f"/usr/local/emhttp/plugins/{NAME}"
 FLASH = f"/boot/config/plugins/{NAME}"
 
+# version per channel — a beta build must never claim a stable version number
+VERSIONS = {
+    "main": "2026.07.26.07",
+    "beta": "2026.08.16.b01",
+}
+
+
+def current_channel():
+    """--channel wins, otherwise the checked-out git branch, otherwise main."""
+    if "--channel" in sys.argv:
+        return sys.argv[sys.argv.index("--channel") + 1]
+    try:
+        branch = subprocess.run(["git", "-C", REPO, "rev-parse", "--abbrev-ref", "HEAD"],
+                                capture_output=True, text=True, check=True).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "main"
+    return branch if branch in VERSIONS else "main"
+
+
+CHANNEL = current_channel()
+BASE_URL = f"https://github.com/benjaminmue/unraid-themer/raw/refs/heads/{CHANNEL}"
+
 META = {
     "name": NAME,
     "author": "benjaminmue",
-    "version": "2026.07.26.07",
+    "version": VERSIONS[CHANNEL],
     "launch": "Settings/UnraidThemer",
-    "pluginURL": "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg",
+    "pluginURL": f"{BASE_URL}/unraid-themer.plg",
     "support": "https://github.com/benjaminmue/unraid-themer",
     "min": "7.0.0",
     "icon": "paint-brush",
 }
 
 CHANGES = """## Unraid Themer
+## 2026.08.16.b01 (beta)
+- Theme store and preset dropdown now show each theme's palette as a colour
+  strip, so you can see what a theme looks like before downloading it. Store
+  entries carry their swatch in the registry; locally installed presets are
+  parsed on the fly, which also covers themes you imported yourself.
+- Beta channel: this build updates from the beta branch and reads the beta
+  theme registry. The stable plugin in Community Applications is unaffected.
+
 ## 2026.07.26.07
 - New: replace the Unraid wordmark (top-left) with your own logo, by URL (cached
   locally) or a file on the server via Unraid's file browser. Survives reboots;
@@ -328,6 +366,8 @@ def collect_files():
             rel = os.path.relpath(full, SRC)
             with open(full, "r", encoding="utf-8") as fh:
                 content = fh.read()
+            # the source tree is channel-agnostic; stamp the branch at build time
+            content = content.replace("@CHANNEL@", CHANNEL)
             files.append((rel.replace(os.sep, "/"), content))
     return files
 

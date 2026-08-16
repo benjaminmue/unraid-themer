@@ -5,9 +5,9 @@ name: Sanitize themes
 # cannot be merged.
 on:
   push:
-    paths: ["themes/**", "scripts/sanitize_css.py"]
+    paths: ["themes/**", "scripts/sanitize_css.py", "scripts/gen_swatches.py"]
   pull_request:
-    paths: ["themes/**", "scripts/sanitize_css.py"]
+    paths: ["themes/**", "scripts/sanitize_css.py", "scripts/gen_swatches.py"]
 
 jobs:
   sanitize:
@@ -19,3 +19,8 @@ jobs:
           python-version: "3.x"
       - name: Validate theme CSS + index
         run: python3 scripts/sanitize_css.py
+
+      # Every registry entry needs a palette swatch, otherwise the store shows
+      # a submitted theme without its colour preview.
+      - name: Check swatches are present and current
+        run: python3 scripts/gen_swatches.py --check

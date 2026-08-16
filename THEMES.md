@@ -72,8 +72,15 @@ scrollbar) so the overlays stay subtle on a light background. Use a dark
 
   ```json
   { "name": "My Theme", "file": "my-theme.css", "author": "you",
-    "base": "black", "description": "Short one-liner." }
+    "base": "black", "description": "Short one-liner.",
+    "swatch": ["#1a1b26", "#24283b", "#c0caf5", "#7aa2f7", "#bb9af7"] }
   ```
+
+  You do not have to write `swatch` by hand — run
+  `python3 scripts/gen_swatches.py` and it reads the palette straight out of your
+  CSS (background, surface, text, accent, accent 2). The store shows it as a
+  colour strip so people see your theme before downloading it. CI checks that
+  every entry has a current swatch.
 
   A GitHub Action ([`scripts/sanitize_css.py`](scripts/sanitize_css.py)) validates
   every submitted theme (no scripts, `javascript:`, `@import` or external
