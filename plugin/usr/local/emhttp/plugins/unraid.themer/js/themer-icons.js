@@ -111,4 +111,44 @@
   };
 
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.utClosePicker(); });
+
+  // --- slot list filter: search text, category, "only customised" ---
+  // 149 rows are unusable without one. A category heading hides itself once no
+  // row under it survives the filter, so the list never shows empty sections.
+  window.utIconsFilter = function () {
+    var search = document.getElementById("ut-icons-search");
+    var catSel = document.getElementById("ut-icons-cat");
+    var onlyBox = document.getElementById("ut-icons-only");
+    var counter = document.getElementById("ut-icons-count");
+    if (!search) return;
+
+    var q = (search.value || "").toLowerCase().trim();
+    var cat = catSel ? catSel.value : "";
+    var only = onlyBox ? onlyBox.checked : false;
+
+    var rows = document.querySelectorAll("#ut-icons tr.ut-row");
+    var withRows = {}, shown = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var rcat = r.getAttribute("data-cat") || "";
+      var field = r.querySelector('input[type="text"]');
+      var isSet = field && (field.value || "").trim() !== "";
+      var show = (!q || (r.getAttribute("data-search") || "").indexOf(q) >= 0)
+              && (!cat || rcat === cat)
+              && (!only || isSet);
+      r.style.display = show ? "" : "none";
+      if (show) { shown++; withRows[rcat] = true; }
+    }
+    var heads = document.querySelectorAll("#ut-icons tr.ut-cat");
+    for (var j = 0; j < heads.length; j++) {
+      heads[j].style.display = withRows[heads[j].getAttribute("data-cat")] ? "" : "none";
+    }
+    if (counter) {
+      counter.textContent = (shown === rows.length)
+        ? rows.length + " slots"
+        : shown + " of " + rows.length + " slots";
+    }
+  };
+
+  window.utIconsFilter();   // fill the counter on load
 })();

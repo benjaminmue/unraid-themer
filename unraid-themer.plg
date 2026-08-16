@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.08.16.b02">
+  <!ENTITY version   "2026.08.16.b03">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,14 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.08.16.b03 (beta)
+- Themer Icons is usable again with 149 slots: a sticky filter bar with a search
+  box (matches the label, the slot key and the set's default icon name), a
+  category filter and an "Only customised" toggle, plus a counter. Category
+  headings hide themselves when nothing under them matches, and the table head
+  stays put while you scroll. The bar sits outside the form on purpose, so
+  searching does not arm the Apply button.
+
 ## 2026.08.16.b02 (beta)
 - Store rows line up again: the three button states (Get / Uninstall /
   Installed) have different label widths, which pushed every row's swatch and
@@ -1400,9 +1408,20 @@ function themer_prev($url, $title = '') {
 ?>
 
 <style>
+  /* filter bar sticks to the top, the table head right below it, so you never
+     lose the column meaning or the search box in a 149-row list */
+  #ut-icons-bar { position: sticky; top: 0; z-index: 3; display: flex; gap: 10px; align-items: center;
+    flex-wrap: wrap; max-width: 900px; padding: 8px 0 10px;
+    background: var(--background-color, #1c1f26); }
+  #ut-icons-bar input[type=text] { flex: 1 1 220px; min-width: 160px; }
+  #ut-icons-bar select { width: auto; }
+  #ut-icons-bar #ut-icons-onlylbl { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  #ut-icons-bar #ut-icons-only { width: auto; margin: 0; }
+  #ut-icons-count { opacity: .65; font-size: 12px; white-space: nowrap; }
   #ut-icons { border-collapse: collapse; width: 100%; max-width: 900px; }
   #ut-icons th, #ut-icons td { padding: 6px 10px; border-top: 1px solid rgba(128,128,128,0.18); text-align: left; vertical-align: middle; }
-  #ut-icons th { border-top: none; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
+  #ut-icons th { border-top: none; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .7;
+    position: sticky; top: 46px; z-index: 2; background: var(--background-color, #1c1f26); }
   #ut-icons tr.ut-cat td { padding-top: 16px; font-weight: 700; opacity: .85; border-top: none; }
   #ut-icons input[type=text] { width: 100%; min-width: 200px; }
   #ut-icons .ut-desc { white-space: nowrap; }
@@ -1453,6 +1472,20 @@ pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handle
 and tinted with the theme color, so single-color line icons work best.
 </div>
 
+<!-- Filter bar. Deliberately OUTSIDE the form: an input event inside it arms
+     Unraid's Apply button, and searching is not an edit. -->
+<div id="ut-icons-bar">
+  <input type="text" id="ut-icons-search" placeholder="Search slots…" autocomplete="off" spellcheck="false" oninput="utIconsFilter()">
+  <select id="ut-icons-cat" onchange="utIconsFilter()">
+    <option value="">All categories</option>
+    <?php foreach (array_keys($REG) as $cat): ?>
+    <option value="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?> (<?= count($REG[$cat]) ?>)</option>
+    <?php endforeach; ?>
+  </select>
+  <label id="ut-icons-onlylbl"><input type="checkbox" id="ut-icons-only" onchange="utIconsFilter()"> Only customised</label>
+  <span id="ut-icons-count"></span>
+</div>
+
 <form method="POST" action="/Settings/UnraidThemerIcons" autocomplete="off">
 <datalist id="ut-bundled">
   <?php foreach ($all_values as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
@@ -1464,14 +1497,16 @@ and tinted with the theme color, so single-color line icons work best.
   </thead>
   <tbody>
   <?php foreach ($REG as $cat => $slots): ?>
-    <tr class="ut-cat"><td colspan="4"><?= htmlspecialchars($cat) ?></td></tr>
+    <tr class="ut-cat" data-cat="<?= htmlspecialchars($cat) ?>"><td colspan="4"><?= htmlspecialchars($cat) ?></td></tr>
     <?php foreach ($slots as $key => $e):
         [$label, $sel, $def] = $e;
         $ref_url = isset($have_bundled[$def]) ? "$weburl/icons/svg/$def.svg" : "";
         $src = $map[$key] ?? '';
         [$own_url] = $src !== '' ? themer_resolve_icon($key, $src, $ctx) : ['', ''];
+        // searchable haystack: visible label, slot key and the set's default name
+        $hay = strtolower("$label $key $def " . implode(' ', $sel));
     ?>
-    <tr>
+    <tr class="ut-row" data-cat="<?= htmlspecialchars($cat) ?>" data-search="<?= htmlspecialchars($hay) ?>">
       <td class="ut-desc"><?= htmlspecialchars($label) ?></td>
       <td><?= themer_prev($ref_url, $def) ?></td>
       <td class="ut-own" data-key="<?= htmlspecialchars($key) ?>"><?= themer_prev($own_url, $src) ?></td>
@@ -1708,7 +1743,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.08.16.b02
+<![CDATA[2026.08.16.b03
 ]]>
 </INLINE>
 </FILE>
@@ -19863,6 +19898,46 @@ unicode: "eb55"
   };
 
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.utClosePicker(); });
+
+  // --- slot list filter: search text, category, "only customised" ---
+  // 149 rows are unusable without one. A category heading hides itself once no
+  // row under it survives the filter, so the list never shows empty sections.
+  window.utIconsFilter = function () {
+    var search = document.getElementById("ut-icons-search");
+    var catSel = document.getElementById("ut-icons-cat");
+    var onlyBox = document.getElementById("ut-icons-only");
+    var counter = document.getElementById("ut-icons-count");
+    if (!search) return;
+
+    var q = (search.value || "").toLowerCase().trim();
+    var cat = catSel ? catSel.value : "";
+    var only = onlyBox ? onlyBox.checked : false;
+
+    var rows = document.querySelectorAll("#ut-icons tr.ut-row");
+    var withRows = {}, shown = 0;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var rcat = r.getAttribute("data-cat") || "";
+      var field = r.querySelector('input[type="text"]');
+      var isSet = field && (field.value || "").trim() !== "";
+      var show = (!q || (r.getAttribute("data-search") || "").indexOf(q) >= 0)
+              && (!cat || rcat === cat)
+              && (!only || isSet);
+      r.style.display = show ? "" : "none";
+      if (show) { shown++; withRows[rcat] = true; }
+    }
+    var heads = document.querySelectorAll("#ut-icons tr.ut-cat");
+    for (var j = 0; j < heads.length; j++) {
+      heads[j].style.display = withRows[heads[j].getAttribute("data-cat")] ? "" : "none";
+    }
+    if (counter) {
+      counter.textContent = (shown === rows.length)
+        ? rows.length + " slots"
+        : shown + " of " + rows.length + " slots";
+    }
+  };
+
+  window.utIconsFilter();   // fill the counter on load
 })();
 ]]>
 </INLINE>

@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.07.26.07",
-    "beta": "2026.08.16.b02",
+    "beta": "2026.08.16.b03",
 }
 
 
@@ -62,6 +62,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.08.16.b03 (beta)
+- Themer Icons is usable again with 149 slots: a sticky filter bar with a search
+  box (matches the label, the slot key and the set's default icon name), a
+  category filter and an "Only customised" toggle, plus a counter. Category
+  headings hide themselves when nothing under them matches, and the table head
+  stays put while you scroll. The bar sits outside the form on purpose, so
+  searching does not arm the Apply button.
+
 ## 2026.08.16.b02 (beta)
 - Store rows line up again: the three button states (Get / Uninstall /
   Installed) have different label widths, which pushed every row's swatch and
