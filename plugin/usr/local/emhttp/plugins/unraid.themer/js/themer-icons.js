@@ -112,6 +112,27 @@
 
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.utClosePicker(); });
 
+  // Clear ONE slot back to the icon-set default. Applying with an empty field
+  // drops the override server-side, so this needs no separate endpoint — but
+  // without the button the only way back was "Reset all", which is destructive.
+  window.utClearSlot = function (key) {
+    var field = document.querySelector('input[data-key="' + key + '"]');
+    if (!field) return;
+    if ((field.value || "").trim() === "") return;   // already default
+    field.value = "";
+    var cell = document.querySelector('.ut-own[data-key="' + key + '"]');
+    var span = cell && cell.querySelector("span");
+    if (span) {                                      // back to the em-dash placeholder
+      span.style.webkitMask = ""; span.style.mask = "";
+      span.style.backgroundColor = ""; span.style.opacity = ".35";
+      span.innerHTML = "&mdash;";
+    }
+    utDirty(field);
+    if (document.getElementById("ut-icons-only") && document.getElementById("ut-icons-only").checked) {
+      window.utIconsFilter();                        // row no longer qualifies
+    }
+  };
+
   // --- slot list filter: search text, category, "only customised" ---
   // 149 rows are unusable without one. A category heading hides itself once no
   // row under it survives the filter, so the list never shows empty sections.
@@ -148,6 +169,8 @@
         ? rows.length + " slots"
         : shown + " of " + rows.length + " slots";
     }
+    var empty = document.getElementById("ut-icons-empty");
+    if (empty) empty.style.display = shown ? "none" : "";   // never a blank table
   };
 
   window.utIconsFilter();   // fill the counter on load

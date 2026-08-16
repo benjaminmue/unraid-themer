@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.08.16.b03">
+  <!ENTITY version   "2026.08.16.b04">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,15 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.08.16.b04 (beta)
+- Reset a SINGLE icon: every slot gets an eraser button that clears just that
+  one back to the icon-set default. Until now the only way back was "Reset all",
+  which wiped every override.
+- The slot table scrolls in its own box, so the column headers actually stay
+  visible. A page-level sticky head did nothing because Unraid scrolls a
+  container the plugin does not control.
+- An empty filter result now says so instead of showing a blank table.
+
 ## 2026.08.16.b03 (beta)
 - Themer Icons is usable again with 149 slots: a sticky filter bar with a search
   box (matches the label, the slot key and the set's default icon name), a
@@ -1410,7 +1419,13 @@ function themer_prev($url, $title = '') {
 <style>
   /* filter bar sticks to the top, the table head right below it, so you never
      lose the column meaning or the search box in a 149-row list */
-  #ut-icons-bar { position: sticky; top: 0; z-index: 3; display: flex; gap: 10px; align-items: center;
+  /* The table scrolls inside its own box rather than with the page. Unraid's
+     layout puts the scroll on a container we do not control, so a page-level
+     sticky head silently does nothing; inside our own scroller it always works
+     — the same pattern the theme store already uses. */
+  #ut-icons-wrap { max-height: 62vh; overflow-y: auto; max-width: 900px;
+    border: 1px solid rgba(128,128,128,0.25); }
+  #ut-icons-bar { display: flex; gap: 10px; align-items: center;
     flex-wrap: wrap; max-width: 900px; padding: 8px 0 10px;
     background: var(--background-color, #1c1f26); }
   #ut-icons-bar input[type=text] { flex: 1 1 220px; min-width: 160px; }
@@ -1421,7 +1436,7 @@ function themer_prev($url, $title = '') {
   #ut-icons { border-collapse: collapse; width: 100%; max-width: 900px; }
   #ut-icons th, #ut-icons td { padding: 6px 10px; border-top: 1px solid rgba(128,128,128,0.18); text-align: left; vertical-align: middle; }
   #ut-icons th { border-top: none; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .7;
-    position: sticky; top: 46px; z-index: 2; background: var(--background-color, #1c1f26); }
+    position: sticky; top: 0; z-index: 2; background: var(--background-color, #1c1f26); }
   #ut-icons tr.ut-cat td { padding-top: 16px; font-weight: 700; opacity: .85; border-top: none; }
   #ut-icons input[type=text] { width: 100%; min-width: 200px; }
   #ut-icons .ut-desc { white-space: nowrap; }
@@ -1434,6 +1449,8 @@ function themer_prev($url, $title = '') {
   #ut-icons .ut-pick span { width: 16px; height: 16px; display: inline-block; background-color: currentColor;
     -webkit-mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; mask: url('<?= $weburl ?>/icons/svg/list.svg') center/contain no-repeat; }
   #ut-icons .ut-up span { -webkit-mask-image: url('<?= $weburl ?>/icons/svg/upload.svg'); mask-image: url('<?= $weburl ?>/icons/svg/upload.svg'); }
+  #ut-icons .ut-clr span { -webkit-mask-image: url('<?= $weburl ?>/icons/svg/eraser.svg'); mask-image: url('<?= $weburl ?>/icons/svg/eraser.svg'); }
+  #ut-icons-empty td { padding: 18px 10px; opacity: .6; }
 
   /* visual icon picker (modal grid) */
   #ut-picker-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9998; }
@@ -1466,7 +1483,8 @@ function themer_prev($url, $title = '') {
 Assign a custom icon to any slot below. Leave a field empty to keep the icon-set default.
 Use the **grid button** to pick from all bundled sets (Lucide, Tabler, Phosphor, Heroicons,
 Iconoir, Remix, Bootstrap, Carbon, Material Symbols), the **upload button** to upload your own
-**SVG file**, or type into the field: a **bundled name** (e.g. `cpu` or `tabler/cpu`), a raw **https SVG URL**
+**SVG file**, the **eraser button** to reset that single slot back to the set default,
+or type into the field: a **bundled name** (e.g. `cpu` or `tabler/cpu`), a raw **https SVG URL**
 (e.g. from [lucide.dev](https://lucide.dev) or [tabler.io/icons](https://tabler.io/icons)), or
 pasted **`<svg>…</svg>`** markup. Custom SVGs are validated (no scripts/handlers/external refs)
 and tinted with the theme color, so single-color line icons work best.
@@ -1491,6 +1509,7 @@ and tinted with the theme color, so single-color line icons work best.
   <?php foreach ($all_values as $b): ?><option value="<?= htmlspecialchars($b) ?>"><?php endforeach; ?>
 </datalist>
 
+<div id="ut-icons-wrap">
 <table id="ut-icons">
   <thead>
     <tr><th>Icon</th><th>Set&nbsp;icon</th><th>Yours</th><th>Custom (name, https URL or &lt;svg&gt;)</th></tr>
@@ -1513,6 +1532,7 @@ and tinted with the theme color, so single-color line icons work best.
       <td><div class="ut-cell">
         <button type="button" class="ut-pick" title="Pick from the icon grid" onclick="utOpenPicker('<?= htmlspecialchars($key) ?>')"><span></span></button>
         <button type="button" class="ut-pick ut-up" title="Upload an SVG file" onclick="document.getElementById('up_<?= htmlspecialchars($key) ?>').click()"><span></span></button>
+        <button type="button" class="ut-pick ut-clr" title="Reset this slot to the icon-set default" onclick="utClearSlot('<?= htmlspecialchars($key) ?>')"><span></span></button>
         <input type="file" id="up_<?= htmlspecialchars($key) ?>" name="up_<?= htmlspecialchars($key) ?>" accept=".svg,image/svg+xml" style="display:none" onchange="utUploadPrev(this,'<?= htmlspecialchars($key) ?>')">
         <input type="text" name="ov_<?= htmlspecialchars($key) ?>" list="ut-bundled"
                value="<?= htmlspecialchars($src) ?>" spellcheck="false"
@@ -1522,8 +1542,10 @@ and tinted with the theme color, so single-color line icons work best.
     </tr>
     <?php endforeach; ?>
   <?php endforeach; ?>
+    <tr id="ut-icons-empty" style="display:none"><td colspan="4">No slot matches the current filter.</td></tr>
   </tbody>
 </table>
+</div>
 
 <p style="margin-top:16px;">
   <input type="submit" name="SAVE_ICONS" value="_(Apply)_">
@@ -1743,7 +1765,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.08.16.b03
+<![CDATA[2026.08.16.b04
 ]]>
 </INLINE>
 </FILE>
@@ -19899,6 +19921,27 @@ unicode: "eb55"
 
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.utClosePicker(); });
 
+  // Clear ONE slot back to the icon-set default. Applying with an empty field
+  // drops the override server-side, so this needs no separate endpoint — but
+  // without the button the only way back was "Reset all", which is destructive.
+  window.utClearSlot = function (key) {
+    var field = document.querySelector('input[data-key="' + key + '"]');
+    if (!field) return;
+    if ((field.value || "").trim() === "") return;   // already default
+    field.value = "";
+    var cell = document.querySelector('.ut-own[data-key="' + key + '"]');
+    var span = cell && cell.querySelector("span");
+    if (span) {                                      // back to the em-dash placeholder
+      span.style.webkitMask = ""; span.style.mask = "";
+      span.style.backgroundColor = ""; span.style.opacity = ".35";
+      span.innerHTML = "&mdash;";
+    }
+    utDirty(field);
+    if (document.getElementById("ut-icons-only") && document.getElementById("ut-icons-only").checked) {
+      window.utIconsFilter();                        // row no longer qualifies
+    }
+  };
+
   // --- slot list filter: search text, category, "only customised" ---
   // 149 rows are unusable without one. A category heading hides itself once no
   // row under it survives the filter, so the list never shows empty sections.
@@ -19935,6 +19978,8 @@ unicode: "eb55"
         ? rows.length + " slots"
         : shown + " of " + rows.length + " slots";
     }
+    var empty = document.getElementById("ut-icons-empty");
+    if (empty) empty.style.display = shown ? "none" : "";   // never a blank table
   };
 
   window.utIconsFilter();   // fill the counter on load

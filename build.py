@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.07.26.07",
-    "beta": "2026.08.16.b03",
+    "beta": "2026.08.16.b04",
 }
 
 
@@ -62,6 +62,15 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.08.16.b04 (beta)
+- Reset a SINGLE icon: every slot gets an eraser button that clears just that
+  one back to the icon-set default. Until now the only way back was "Reset all",
+  which wiped every override.
+- The slot table scrolls in its own box, so the column headers actually stay
+  visible. A page-level sticky head did nothing because Unraid scrolls a
+  container the plugin does not control.
+- An empty filter result now says so instead of showing a blank table.
+
 ## 2026.08.16.b03 (beta)
 - Themer Icons is usable again with 149 slots: a sticky filter bar with a search
   box (matches the label, the slot key and the set's default icon name), a
