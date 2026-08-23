@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.08.16.b05">
+  <!ENTITY version   "2026.08.23.b01">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,27 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.08.23
+- Themes now show their palette. Every entry in the theme store and the preset
+  dropdown carries a five-colour strip (background, surface, text, accent,
+  accent 2), so you can see what a theme looks like before downloading it.
+- Fixed unreadable button labels in eleven bundled themes. Filled buttons paint
+  the accent as their background while the label was hard-coded white, which on
+  Nord, Dracula, Catppuccin Mocha, Tokyo Night, One Dark and Gruvbox meant a
+  contrast ratio around 2:1 against the WCAG AA minimum of 4.5. Labels now take
+  the theme's own background while that clears AA, otherwise black or white.
+- The theme builder shows live WCAG contrast for the five pairs that carry text
+  and picks a readable button label for you instead of always writing white.
+- Themer Icons is navigable: a filter bar with search (label, slot key or the
+  set's default icon name), a category filter, an "Only customised" toggle and a
+  slot counter. The table scrolls in its own box so the column headers stay put.
+- Reset a SINGLE icon back to the set default with the eraser button on its row.
+  Previously the only way back was "Reset all", which wiped every override.
+- Store rows line up: the three button states have different label widths, which
+  used to push every row's swatch and name to a different position.
+- A beta channel now exists for testing new features ahead of a release, see the
+  README. Installing it is a normal plugin install and your settings carry over.
+
 ## 2026.08.16.b05 (beta)
 - Fixed unreadable buttons in 11 bundled themes. Filled buttons use the accent
   as their background, but the label was hard-coded white — on Nord, Dracula,
@@ -1801,7 +1822,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.08.16.b05
+<![CDATA[2026.08.23.b01
 ]]>
 </INLINE>
 </FILE>
