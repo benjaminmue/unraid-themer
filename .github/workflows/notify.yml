@@ -1,0 +1,136 @@
+# ntfy push notifications for this repo (self-contained; URL and token are secrets).
+name: notify
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: ["main"]
+  issues:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created]
+  # pull_request_target, not pull_request: a fork PR would get no secrets otherwise.
+  # Safe here because this job never checks out the PR head, it only reads metadata.
+  pull_request_target:
+    types: [opened, reopened]
+  workflow_run:
+    workflows: ["Sanitize themes", "Publish approved theme", "Theme submission check"]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: notify-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    # workflow_run only on failure; issues, PRs and comments only from other humans
+    # (our own activity and bot chatter like release-please are not worth a push).
+    if: >-
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure') &&
+      (github.event_name != 'issues' || (github.event.issue.user.login != github.repository_owner &&
+       github.event.issue.user.type != 'Bot')) &&
+      (github.event_name != 'issue_comment' || (github.event.comment.user.login != github.repository_owner &&
+       github.event.comment.user.type != 'Bot')) &&
+      (github.event_name != 'pull_request_target' || (github.event.pull_request.user.login != github.repository_owner &&
+       github.event.pull_request.user.type != 'Bot'))
+    steps:
+      - name: Build and send ntfy push
+        env:
+          NTFY_URL: ${{ secrets.NTFY_URL }}
+          NTFY_TOKEN: ${{ secrets.NTFY_TOKEN }}
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          REPO: ${{ github.event.repository.name }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_NAME: ${{ github.event.release.name }}
+          RELEASE_URL: ${{ github.event.release.html_url }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          COMMIT_AUTHOR: ${{ github.event.head_commit.author.name }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          COMPARE_URL: ${{ github.event.compare }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_IS_PR: ${{ github.event.issue.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD: ${{ github.event.pull_request.head.label }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          WR_NAME: ${{ github.event.workflow_run.name }}
+          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WR_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WR_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          set -euo pipefail
+          TAGS=""; PRIORITY="default"; CLICK=""; TITLE=""; BODY=""
+          # First lines of a free-text field, truncated to 280 characters.
+          excerpt() {
+            printf '%s' "$1" | tr -d '\r' | head -c 280
+            [ "$(printf '%s' "$1" | wc -c)" -gt 280 ] && printf ' [...]' || true
+          }
+          case "$EVENT" in
+            release)
+              TITLE="$REPO: Release $RELEASE_TAG"
+              BODY=$(printf '**%s**\n%s' "${RELEASE_NAME:-$RELEASE_TAG}" "$RELEASE_URL")
+              TAGS="rocket"; PRIORITY="high"; CLICK="$RELEASE_URL" ;;
+            push)
+              [ -n "$COMMIT_MSG" ] || exit 0
+              TITLE="$REPO: Push to main"
+              BODY=$(printf '%s\n-- %s\n%s' "$COMMIT_MSG" "$COMMIT_AUTHOR" "$COMPARE_URL")
+              TAGS="arrow_up"; PRIORITY="low"; CLICK="$COMMIT_URL" ;;
+            issues)
+              if [ "$ACTION" = "reopened" ]; then
+                TITLE="$REPO: Issue #$ISSUE_NUMBER reopened"
+              else
+                TITLE="$REPO: New issue #$ISSUE_NUMBER"
+              fi
+              BODY=$(printf '**%s**\nby %s\n\n%s\n\n%s' \
+                "$ISSUE_TITLE" "$ISSUE_USER" "$(excerpt "$ISSUE_BODY")" "$ISSUE_URL")
+              TAGS="beetle,speech_balloon"; PRIORITY="high"; CLICK="$ISSUE_URL" ;;
+            issue_comment)
+              if [ -n "$ISSUE_IS_PR" ]; then
+                TITLE="$REPO: Comment on PR #$ISSUE_NUMBER"
+              else
+                TITLE="$REPO: Comment on issue #$ISSUE_NUMBER"
+              fi
+              BODY=$(printf '**%s**\nby %s\n\n%s\n\n%s' \
+                "$ISSUE_TITLE" "$COMMENT_USER" "$(excerpt "$COMMENT_BODY")" "$COMMENT_URL")
+              TAGS="speech_balloon"; PRIORITY="high"; CLICK="$COMMENT_URL" ;;
+            pull_request_target)
+              if [ "$ACTION" = "reopened" ]; then
+                TITLE="$REPO: Pull request #$PR_NUMBER reopened"
+              else
+                TITLE="$REPO: New pull request #$PR_NUMBER"
+              fi
+              BODY=$(printf '**%s**\nby %s (%s -> %s)\n\n%s\n\n%s' \
+                "$PR_TITLE" "$PR_USER" "$PR_HEAD" "$PR_BASE" "$(excerpt "$PR_BODY")" "$PR_URL")
+              TAGS="twisted_rightwards_arrows"; PRIORITY="high"; CLICK="$PR_URL" ;;
+            workflow_run)
+              [ "$WR_CONCLUSION" = "failure" ] || exit 0
+              TITLE="$REPO: Workflow failed"
+              BODY=$(printf '**%s** failed (branch %s).\n%s' "$WR_NAME" "$WR_BRANCH" "$WR_URL")
+              TAGS="rotating_light"; PRIORITY="max"; CLICK="$WR_URL" ;;
+            *) exit 0 ;;
+          esac
+          curl -sS --fail-with-body \
+            -H "Authorization: Bearer ${NTFY_TOKEN}" \
+            -H "Title: ${TITLE}" \
+            -H "Priority: ${PRIORITY}" \
+            -H "Tags: ${TAGS}" \
+            -H "Click: ${CLICK}" \
+            -H "Markdown: yes" \
+            -d "$BODY" \
+            "${NTFY_URL}"
