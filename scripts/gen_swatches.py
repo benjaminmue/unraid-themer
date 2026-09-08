@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-gen_swatches.py — extract a 5-colour swatch from every theme in themes/ and
-write it into themes/index.json as a "swatch" array, so the store can preview
-a theme's palette before it is downloaded.
+gen_swatches.py - keep themes/index.json in step with the theme files: a
+5-colour swatch so the store can preview a palette before downloading, and a
+sha256 of each file so an installed theme knows when a newer version exists.
+
+The hash is taken over the raw file as the registry serves it, NOT over what
+ends up on the server: the plugin sanitises a theme before saving it, so those
+two differ. Comparing raw against raw is what makes "is my copy current?"
+answerable at all.
 
 Themes declare their palette in different ways: the generated ones use the
 compact --t-* variables, the hand-written ones only set Dynamix core variables.
@@ -12,6 +17,8 @@ html.Theme--black are ignored, so a dual-mode theme reports its light palette.
 
 Run from anywhere:  python3 scripts/gen_swatches.py [--check]
 """
+import glob
+import hashlib
 import json
 import os
 import re
@@ -117,7 +124,26 @@ def main():
         if theme.get("swatch") != colors:
             theme["swatch"] = colors
             changed += 1
+        with open(css_path, "rb") as fh:
+            digest = hashlib.sha256(fh.read()).hexdigest()
+        if theme.get("sha256") != digest:
+            theme["sha256"] = digest
+            changed += 1
         print(f"{theme['name']:24} {' '.join(colors)}")
+
+    # A bundled copy that drifts from its registry file would make the store
+    # cry "update available" forever: boot records the package hash, the store
+    # compares it with index.json, and the two must describe the same bytes.
+    bundled = os.path.join(REPO, "plugin", "usr", "local", "emhttp", "plugins",
+                           "unraid.themer", "defaults")
+    for path in sorted(glob.glob(os.path.join(bundled, "*.css"))):
+        registry = os.path.join(THEMES, os.path.basename(path))
+        if not os.path.isfile(registry):
+            problems.append(f"defaults/{os.path.basename(path)}: no registry file")
+            continue
+        with open(path, "rb") as a, open(registry, "rb") as b:
+            if a.read() != b.read():
+                problems.append(f"defaults/{os.path.basename(path)}: differs from themes/")
 
     if problems:
         print("\nWARNUNG:", file=sys.stderr)
@@ -126,7 +152,7 @@ def main():
 
     if check_only:
         if changed:
-            print(f"\n{changed} theme(s) would change — run without --check.", file=sys.stderr)
+            print(f"\n{changed} entry field(s) would change. Run without --check.", file=sys.stderr)
         return 1 if (changed or problems) else 0
 
     if changed:
