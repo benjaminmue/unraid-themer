@@ -253,6 +253,20 @@ div.title { border-left: 3px solid var(--t-accent); }
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 {$fontblock}
 /*! themer-base: {$base} */
