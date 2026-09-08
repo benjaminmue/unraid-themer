@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.08.23.b01",
+    "beta": "2026.09.09.b01",
 }
 
 
@@ -62,6 +62,21 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.09.09.b01
+- Community Applications is readable again on every theme. CA takes both the
+  surfaces AND the text colours of its app-detail popup from the base Dynamix
+  theme, and themes remapped only the surfaces, so the description text and the
+  Actions / Support / Pin App / All Apps / Profile / Favourite / CLOSE buttons
+  kept the base theme's ink: black on a dark preset (2.1:1 on Nord), near-white
+  on a light one (1.1:1). Every one of the 20 store themes was affected. The
+  matching text variables now follow the palette, in the bundled themes and in
+  themes you build yourself.
+- Fixed the One Dark button label reverting to white (2.4:1) whenever the theme
+  files were regenerated: the earlier fix had only been applied to the generated
+  file, not to the palette table it comes from.
+- The contrast gate covers the Community Applications pair as well now, and it
+  reads a theme's dark variant too instead of measuring only its light half.
+
 ## 2026.08.23
 - Themes now show their palette. Every entry in the theme store and the preset
   dropdown carries a five-colour strip (background, surface, text, accent,

@@ -10,9 +10,18 @@ is the same one the theme builder uses: keep the theme's own background as the
 label colour while it clears AA, so the button stays part of the palette;
 otherwise fall back to whichever of black or white the accent tolerates better.
 
+The second check covers Community Applications. CA paints the app-detail popup
+from --support-popup-background / --sidebar-background and their matching text
+variables, all of which it takes from the BASE Dynamix theme rather than from
+the preset. The compat block in every theme remaps that pair onto
+--mild-background-color / --text-color, so those two have to clear AA against
+each other or the popup text goes unreadable again.
+
 Run from anywhere:
   python3 scripts/check_contrast.py          # report only, non-zero on failure
   python3 scripts/check_contrast.py --fix    # rewrite the offending themes
+                                             # (buttons only; the CA pair is a
+                                             #  palette choice, not a rewrite)
 """
 import glob
 import json
@@ -25,7 +34,7 @@ THEMES = os.path.join(REPO, "themes")
 AA = 4.5
 
 sys.path.insert(0, os.path.join(REPO, "scripts"))
-from gen_swatches import read_root_vars, resolve, swatch_for  # noqa: E402  (same palette rules)
+from gen_swatches import DECL, read_root_vars, resolve, swatch_for  # noqa: E402  (same palette rules)
 
 # The plugin ships its own copies (bebamu is built in, the rest are seeded to
 # flash on first install). They are NOT byte-identical to the registry files, so
@@ -36,6 +45,9 @@ BUNDLED = os.path.join(REPO, "plugin", "usr", "local", "emhttp", "plugins",
 BUTTON_BLOCK = re.compile(r'(input\[type="button"\][^{]*\{)([^}]*)(\})', re.S)
 COLOR_DECL = re.compile(r'(color\s*:\s*)([^;!]+?)(\s*!important)?(?=\s*;)')
 BTN_VAR = re.compile(r'(--button-text-color\s*:\s*)([^;]+)(;)')
+# bebamu keeps its dark values in html.Theme--black instead of a second :root,
+# so that variant needs checking on its own or half the theme goes unmeasured.
+DARK_BLOCK = re.compile(r"html\.Theme--black\s*\{(.*?)\}", re.S)
 
 
 def luminance(hex_color):
@@ -71,6 +83,41 @@ def current_label(css, variables):
     return resolve(decl.group(2).strip(), variables) if decl else None
 
 
+def variants(css):
+    """(label, variables) for every light/dark set a stylesheet declares."""
+    base = read_root_vars(css)
+    yield "", base
+    dark = {}
+    for block in DARK_BLOCK.findall(css):
+        for name, value in DECL.findall(block):
+            dark[name] = value.strip()
+    if dark:
+        merged = dict(base)
+        merged.update(dark)
+        yield " dark", merged
+
+
+def ca_popup(name, css):
+    """Text against the surface CA's app-detail popup gets from the compat block.
+
+    Returns the failure lines, empty when every variant clears AA."""
+    failures = []
+    for suffix, variables in variants(css):
+        surface = resolve(variables.get("--mild-background-color"), variables)
+        text = resolve(variables.get("--text-color"), variables)
+        label = f"{name}{suffix}"
+        if not surface or not text:
+            missing = "--mild-background-color" if not surface else "--text-color"
+            print(f"{label:26} {missing} unresolved, skipped")
+            continue
+        ratio = contrast(text, surface)
+        verdict = "ok" if round(ratio, 1) >= AA else "FAIL"
+        print(f"{label:26} {text} on {surface}  {ratio:5.1f}:1  {verdict}")
+        if verdict == "FAIL":
+            failures.append(f"{label}: CA popup text {ratio:.1f}:1 (needs {AA})")
+    return failures
+
+
 def targets():
     """Every stylesheet whose buttons a user can end up looking at."""
     with open(os.path.join(THEMES, "index.json"), encoding="utf-8") as fh:
@@ -86,6 +133,7 @@ def targets():
 def main():
     fix = "--fix" in sys.argv
     failures, fixed = [], 0
+    print("Filled button labels on the accent")
     for name, path in targets():
         with open(path, encoding="utf-8") as fh:
             css = fh.read()
@@ -131,12 +179,18 @@ def main():
 
     if fixed:
         print(f"\n{fixed} theme(s) rewritten.")
+
+    print("\nCommunity Applications popup text on the mild background")
+    for name, path in targets():
+        with open(path, encoding="utf-8") as fh:
+            failures += ca_popup(name, fh.read())
+
     if failures:
         print("\nFAILED:", file=sys.stderr)
         for failure in failures:
             print(f"  {failure}", file=sys.stderr)
         return 1
-    print(f"\nAll stylesheets pass the {AA}:1 button check.")
+    print(f"\nAll stylesheets pass both {AA}:1 checks.")
     return 0
 
 
