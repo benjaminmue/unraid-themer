@@ -44,7 +44,14 @@ def current_channel():
                                 capture_output=True, text=True, check=True).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "main"
-    return branch if branch in VERSIONS else "main"
+    if branch not in VERSIONS:
+        # Falling back to main here is how a feature branch quietly produces a
+        # stable-stamped .plg that then rides a merge into beta, pointing every
+        # install on that channel at the wrong branch. Say so instead.
+        sys.exit(f"On branch '{branch}', which is not a release channel "
+                 f"({', '.join(VERSIONS)}). Build from the channel branch, or "
+                 f"pass --channel explicitly if that is really what you want.")
+    return branch
 
 
 CHANNEL = current_channel()
