@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.09.09.b01",
+    "beta": "2026.09.09.b02",
 }
 
 
@@ -62,6 +62,17 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.09.09.b02
+- Installed themes now actually receive theme fixes. Until now a bundled theme
+  was copied to your flash drive once, at first install, and never touched
+  again, so a corrected theme sat in the release while every server kept the
+  broken copy. Bundled themes are refreshed on update, and the theme store
+  offers "Update installed" for the ones that only live in the registry.
+- Your own edits are safe: the plugin records what it wrote, and a theme file
+  that no longer matches that record is treated as yours and left alone. A
+  theme you uninstalled stays uninstalled; nothing is resurrected.
+- The store marks entries with "update available" and says how many are behind.
+
 ## 2026.09.09.b01
 - Community Applications is readable again on every theme. CA takes both the
   surfaces AND the text colours of its app-detail popup from the base Dynamix
@@ -464,6 +475,40 @@ if [ ! -f {FLASH}/presets/.seeded ]; then
     touch {FLASH}/presets/.seeded
 fi
 
+# Refresh the bundled themes that are still installed, so fixing a theme in a
+# release actually reaches servers that already run it. Three rules:
+#   - only files that ARE there get touched, so an uninstalled theme stays gone
+#   - a copy the user edited is theirs; .origin records what we last wrote, and
+#     anything that no longer matches is left alone
+#   - no record at all means the theme predates .origin: refresh it once and
+#     start recording, otherwise old installs would never pick a fix up
+ORIGIN={FLASH}/presets/.origin
+for src in {WEBROOT}/defaults/*.css; do
+    [ -f "$src" ] || continue
+    stem=$(basename "$src" .css)
+    dst={FLASH}/presets/$stem.css
+    [ -f "$dst" ] || continue
+    new=$(sha256sum "$src" | cut -d' ' -f1)
+    cur=$(sha256sum "$dst" | cut -d' ' -f1)
+    rec=$(grep "^$stem|" "$ORIGIN" 2>/dev/null | head -n1 | cut -d'|' -f3)
+    # NOTE: keep this script free of ampersands and angle brackets. These INLINE
+    # blocks are not CDATA, so one of them makes the .plg invalid XML; use an
+    # "if" where a shell and-list would be shorter. build.py refuses to write one.
+    if [ "$new" = "$cur" ]; then
+        # already current; record it once so the store stops guessing
+        if [ -n "$rec" ]; then continue; fi
+    else
+        if [ -n "$rec" ]; then
+            # a copy that no longer matches what we wrote is the user's edit
+            if [ "$rec" != "$cur" ]; then continue; fi
+        fi
+        cp -f "$src" "$dst"
+    fi
+    grep -v "^$stem|" "$ORIGIN" 2>/dev/null > "$ORIGIN.tmp"
+    printf '%s|%s|%s\\n' "$stem" "$new" "$new" >> "$ORIGIN.tmp"
+    mv -f "$ORIGIN.tmp" "$ORIGIN"
+done
+
 # User custom overrides live on flash; recreate the webroot copy nginx serves.
 if [ ! -f {FLASH}/custom.css ]; then
     echo '/* Your custom CSS overrides — loaded on top of the selected preset. */' > {FLASH}/custom.css
@@ -522,6 +567,16 @@ def build():
                    .replace("<", "&lt;").replace(">", "&gt;"))
     parts.append("<CHANGES>\n" + changes_xml + "\n</CHANGES>")
     parts.append("")
+
+    # The INLINE scripts go in raw, not as CDATA, so a bare &, < or > in them
+    # produces a .plg that no longer parses, and Unraid would only tell you
+    # that on the server. Catch it here instead.
+    for label, script in (("INSTALL", INSTALL), ("BOOT", BOOT), ("REMOVE", REMOVE)):
+        bad = sorted({c for c in ("&", "<") if c in script})
+        if bad:
+            sys.exit(f"{label} script contains XML metacharacters {bad}. Rewrite "
+                     f"it without them (an 'if' instead of '&&', a temp file "
+                     f"instead of a here-doc '<<').")
 
     # 1) prepare dirs
     parts.append('<FILE Run="/bin/bash">')

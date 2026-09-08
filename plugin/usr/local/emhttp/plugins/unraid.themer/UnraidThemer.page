@@ -112,6 +112,41 @@ function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
     return ['', 'enter an http(s) URL or a file path on this server'];
 }
 
+/* Provenance for installed themes: one line per preset,
+ *     stem|source sha256|installed sha256
+ * The source hash is the registry file as served, so it can be compared with
+ * index.json to answer "is a newer version out?". The installed hash is what
+ * actually sits on flash after sanitising, so an edited theme is recognisable
+ * and never silently overwritten. Boot reads the same file (see build.py). */
+function themer_origin_read($flash) {
+    $rows = [];
+    foreach (@file("$flash/presets/.origin", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $parts = explode("|", $line);
+        if (count($parts) === 3) $rows[$parts[0]] = ['source' => $parts[1], 'installed' => $parts[2]];
+    }
+    return $rows;
+}
+function themer_origin_set($flash, $stem, $source, $installed) {
+    $rows = themer_origin_read($flash);
+    $rows[$stem] = ['source' => $source, 'installed' => $installed];
+    $out = "";
+    foreach ($rows as $k => $v) $out .= "$k|{$v['source']}|{$v['installed']}\n";
+    @file_put_contents("$flash/presets/.origin", $out);
+}
+function themer_origin_drop($flash, $stem) {
+    $rows = themer_origin_read($flash);
+    unset($rows[$stem]);
+    $out = "";
+    foreach ($rows as $k => $v) $out .= "$k|{$v['source']}|{$v['installed']}\n";
+    @file_put_contents("$flash/presets/.origin", $out);
+}
+
+// the community registry index (best-effort, short timeout); null when offline
+function themer_store_index($store_base) {
+    $raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
+    return $raw ? (@json_decode($raw, true) ?: null) : null;
+}
+
 // download + sanitise a theme into the presets folder; returns "" or an error
 function themer_fetch_theme($url, $flash, $webroot) {
     $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 524288 " . escapeshellarg($url) . " 2>/dev/null");
@@ -122,6 +157,7 @@ function themer_fetch_theme($url, $flash, $webroot) {
     @mkdir("$flash/presets", 0755, true);
     file_put_contents("$flash/presets/$stem.css", $clean);
     @copy("$flash/presets/$stem.css", "$webroot/presets/$stem.css");
+    themer_origin_set($flash, $stem, hash('sha256', (string) $raw), hash('sha256', $clean));
     return "";  // success
 }
 
@@ -476,6 +512,33 @@ if ($_POST && isset($_POST['store_get'])) {
     }
 }
 
+// --- REFRESH INSTALLED STORE THEMES ---
+// A theme fix in the registry is worthless while every server keeps its old
+// copy. Bundled themes are refreshed on boot straight from the package (see
+// build.py); the ones that only exist in the registry are pulled here.
+if ($_POST && isset($_POST['store_update'])) {
+    $idx    = themer_store_index($store_base);
+    $origin = themer_origin_read($flash);
+    $done = $failed = $edited = [];
+    foreach ($idx['themes'] ?? [] as $t) {
+        $stem = pathinfo($t['file'], PATHINFO_FILENAME);
+        $local = "$flash/presets/$stem.css";
+        if (!is_file($local) || empty($t['sha256'])) continue;              // not installed / no hash
+        $known = $origin[$stem] ?? null;
+        if ($known && $known['source'] === $t['sha256']) continue;          // already current
+        // an edited copy is the user's, not ours: leave it and say so
+        if ($known && $known['installed'] !== hash_file('sha256', $local)) { $edited[] = $stem; continue; }
+        $err = themer_fetch_theme("$store_base/{$t['file']}", $flash, $webroot);
+        if ($err) $failed[] = $stem; else $done[] = $stem;
+    }
+    $parts = [];
+    if ($done)   $parts[] = "Updated " . implode(", ", $done) . ".";
+    if ($edited) $parts[] = "Kept your edited copy of " . implode(", ", $edited) . ".";
+    if ($failed) $parts[] = "Failed for " . implode(", ", $failed) . ".";
+    $msg = $parts ? implode(" ", $parts) . " Reload the browser (Ctrl+Shift+R) to see the change."
+                  : "All installed store themes are already current.";
+}
+
 // --- REMOVE A USER-ADDED THEME ---
 if ($_POST && isset($_POST['remove_preset'])) {
     $r = preg_replace('/[^A-Za-z0-9_-]/', '', $_POST['remove_preset']);
@@ -484,6 +547,7 @@ if ($_POST && isset($_POST['remove_preset'])) {
     if ($r !== '' && is_file("$flash/presets/$r.css")) {
         @unlink("$flash/presets/$r.css");
         @unlink("$webroot/presets/$r.css");
+        themer_origin_drop($flash, $r);
         // if it was the active preset, fall back to bebamu
         $cur = parse_plugin_cfg($name);
         if (($cur['PRESET'] ?? '') === $r) {
@@ -524,9 +588,8 @@ foreach (glob("$flash/presets/*.css") as $p) $user_presets[] = basename($p, '.cs
 sort($user_presets);
 
 // fetch the community theme store index (best-effort, short timeout)
-$store_index = null;
-$raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
-if ($raw) $store_index = @json_decode($raw, true);
+$store_index  = themer_store_index($store_base);
+$origin_rows  = themer_origin_read($flash);
 
 // Build the "Added themes" and "Theme store" blocks as HTML strings, echoed
 // inline in the form so Unraid's markdown parser keeps them in the value column.
@@ -548,6 +611,7 @@ foreach ($presets as $p) {
 
 // theme store rows — three button states: Get / Uninstall (user-added) / Installed (built-in)
 $store_stems = [];
+$stale_stems = [];
 if (!empty($store_index['themes'])) {
     $rows = "";
     foreach ($store_index['themes'] as $t) {
@@ -559,6 +623,15 @@ if (!empty($store_index['themes'])) {
         $L = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
         $D = in_array($base, ['black', 'gray', 'any']) ? '1' : '0';
         $dn = htmlspecialchars(strtolower($t['name'] . ' ' . $t['description']));
+        // newer version in the registry than the copy on flash? An entry the
+        // .origin file has never seen (installed before this was introduced)
+        // counts as unknown, and unknown is offered rather than hidden.
+        $stale = false;
+        if ($onflash && !empty($t['sha256'])) {
+            $known = $origin_rows[$stem] ?? null;
+            $stale = !$known || $known['source'] !== $t['sha256'];
+        }
+        if ($stale) $stale_stems[$stem] = 1;
         if (!$ins) {
             $b = "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "' style='$btnStore'>Get</button>";
         } elseif ($onflash) {
@@ -574,14 +647,20 @@ if (!empty($store_index['themes'])) {
         $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:grid; grid-template-columns:112px 64px 1fr; align-items:center; column-gap:14px; padding:6px 10px; border-top:1px solid rgba(128,128,128,0.18);'>"
             . $b
             . themer_swatch_html($sw)
-            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em></span>"
+            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em>"
+            . ($stale ? " <strong style='color:var(--link-text-color,#e68321);'>&middot; update available</strong>" : "")
+            . "</span>"
             . "</div>";
     }
     $n = count($store_index['themes']);
     $storeHtml = "<div style='max-width:820px;'>"
         . "<div style='display:flex; gap:8px; margin-bottom:8px; align-items:center;'><input type='text' id='ut-store-search' placeholder='Search themes…' autocomplete='off' onkeyup='utStoreFilter()' style='flex:1; min-width:0;'><select id='ut-store-filter' onchange='utStoreFilter()' style='width:auto;'><option value='all'>All</option><option value='light'>Light</option><option value='dark'>Dark</option></select></div>"
         . "<div id='ut-store-list' style='max-height:320px; overflow-y:auto; border:1px solid rgba(128,128,128,0.25);'>$rows</div>"
-        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/$channel/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving.</span>"
+        . ($stale_stems
+            ? "<div style='margin-top:8px;'><button type='submit' name='store_update' value='1' style='$btn'>Update installed</button> "
+              . "<span>" . count($stale_stems) . " installed theme(s) have a newer version in the registry. Your own edits to a theme are kept.</span></div>"
+            : "")
+        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/$channel/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving. Bundled themes refresh themselves when the plugin updates.</span>"
         . "</div>"
         . "<script>function utStoreFilter(){var q=(document.getElementById('ut-store-search').value||'').toLowerCase().trim();var f=document.getElementById('ut-store-filter').value;var rows=document.querySelectorAll('#ut-store-list .ut-store-row');for(var i=0;i<rows.length;i++){var r=rows[i];var okq=!q||r.getAttribute('data-name').indexOf(q)>=0;var okf=f=='all'||(f=='light'&&r.getAttribute('data-light')=='1')||(f=='dark'&&r.getAttribute('data-dark')=='1');r.style.display=(okq&&okf)?'':'none';}}</script>";
 } else {

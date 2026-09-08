@@ -28,3 +28,13 @@ jobs:
       # A theme whose button labels sit below WCAG AA ships unreadable buttons.
       - name: Check button label contrast
         run: python3 scripts/check_contrast.py
+
+      # The boot script decides whether an installed theme gets refreshed or
+      # left alone; getting that wrong either strands a fix or eats an edit.
+      - name: Check the theme refresh logic
+        run: python3 test/test_boot_refresh.py
+
+      # The INLINE boot scripts are embedded raw, so a stray & or < in one of
+      # them ships a .plg that Unraid cannot parse.
+      - name: Check the plugin file is valid XML
+        run: python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('unraid-themer.plg')"
