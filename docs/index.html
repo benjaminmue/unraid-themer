@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unraid Themer - themes and icon sets for the Unraid 7 webGUI</title>
+<meta name="description" content="Unraid Themer is a theming plugin for the Unraid 7 webGUI: 20 themes in a built-in store, a theme builder, nine open-source icon sets. Beta, MIT licensed.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://themer.bebamu.ch/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Unraid Themer">
+<meta property="og:title" content="Unraid Themer - themes and icon sets for the Unraid 7 webGUI">
+<meta property="og:description" content="Pick a theme or build your own, and the whole Unraid 7 webGUI restyles. Swap the UI icons for open-source icon sets.">
+<meta property="og:url" content="https://themer.bebamu.ch/">
+<meta property="og:image" content="https://themer.bebamu.ch/assets/dashboard-1512.webp">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top__inner">
+    <a class="brand" href="#top" aria-label="Unraid Themer, back to top">
+      <img src="assets/icon.svg" width="22" height="22" alt="">
+      <span>Unraid Themer</span>
+    </a>
+    <nav class="top__nav" aria-label="Sections">
+      <a href="#themes">Themes</a>
+      <a href="#builder">Builder</a>
+      <a href="#icons">Icons</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/benjaminmue/unraid-themer">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero wrap">
+    <p class="label"><span class="pill">Beta</span> Plugin for Unraid 7</p>
+    <h1>Restyle the Unraid&nbsp;7 webGUI.</h1>
+    <p class="lede">Pick a theme or build your own, flip it on, and the whole interface restyles: the classic Dynamix pages and the new Vue web components. Swap the UI icons for open-source icon sets, or override single icons.</p>
+    <p class="actions">
+      <a class="btn" href="#install">Install</a>
+      <a class="btn btn--ghost" href="https://github.com/benjaminmue/unraid-themer">Source on GitHub</a>
+    </p>
+    <p class="meta">Unraid 7.0.0 or later · Listed in Community Applications · MIT</p>
+  </section>
+
+  <figure class="shot shot--hero wrap">
+    <picture>
+      <source media="(max-width: 600px)" srcset="assets/dashboard-crop-760.webp" width="760" height="950">
+      <img src="assets/dashboard-1512.webp" srcset="assets/dashboard-960.webp 960w, assets/dashboard-1512.webp 1512w" sizes="(max-width: 1180px) 100vw, 1120px" width="1512" height="950" fetchpriority="high"
+        alt="The Unraid 7.3 dashboard restyled with the Nord theme and the Lucide icon set">
+    </picture>
+    <figcaption>Unraid 7.3 dashboard with the Nord theme and the Lucide icon set.</figcaption>
+  </figure>
+
+  <section id="themes" class="section wrap">
+    <div class="head">
+      <p class="label">Themes</p>
+      <h2>Twenty themes in the store. Or your own.</h2>
+      <p>Bundled presets plus a built-in theme store you browse and download from on demand, with search and a light/dark filter. Every theme is validated before it is saved. On <strong>Apply</strong> the plugin pairs the Dynamix base: dark themes switch to Black or Gray, light themes to White or Azure, so the Vue components and Community Apps render in the right mode.</p>
+    </div>
+
+    <div class="filter" role="group" aria-label="Filter themes" hidden>
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="dark" aria-pressed="false">Dark</button>
+      <button type="button" data-filter="light" aria-pressed="false">Light</button>
+    </div>
+
+    <ul class="themes" id="theme-list">
+      <li class="theme" data-mode="dark light">
+        <div class="theme__preview" style="--t-bg:#f7f6f2;--t-sf:#ffffff;--t-tx:#0a0a0a;--t-ac:#e63312;--t-a2:#b71f08" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#f7f6f2" title="#f7f6f2"></i><i style="background:#ffffff" title="#ffffff"></i><i style="background:#0a0a0a" title="#0a0a0a"></i><i style="background:#e63312" title="#e63312"></i><i style="background:#b71f08" title="#b71f08"></i></div>
+        <p class="theme__name">bebamu <span class="theme__tag">Light + Dark</span></p>
+        <p class="theme__desc">Editorial: cream paper, black hairlines, red signal. Light + Dark pair.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#2e3440;--t-sf:#3b4252;--t-tx:#eceff4;--t-ac:#88c0d0;--t-a2:#5e81ac" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#2e3440" title="#2e3440"></i><i style="background:#3b4252" title="#3b4252"></i><i style="background:#eceff4" title="#eceff4"></i><i style="background:#88c0d0" title="#88c0d0"></i><i style="background:#5e81ac" title="#5e81ac"></i></div>
+        <p class="theme__name">Nord <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Arctic blue-grey with frost accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#282a36;--t-sf:#343746;--t-tx:#f8f8f2;--t-ac:#bd93f9;--t-a2:#ff79c6" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#282a36" title="#282a36"></i><i style="background:#343746" title="#343746"></i><i style="background:#f8f8f2" title="#f8f8f2"></i><i style="background:#bd93f9" title="#bd93f9"></i><i style="background:#ff79c6" title="#ff79c6"></i></div>
+        <p class="theme__name">Dracula <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Dark with purple and pink accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#002b36;--t-sf:#073642;--t-tx:#eee8d5;--t-ac:#268bd2;--t-a2:#2aa198" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#002b36" title="#002b36"></i><i style="background:#073642" title="#073642"></i><i style="background:#eee8d5" title="#eee8d5"></i><i style="background:#268bd2" title="#268bd2"></i><i style="background:#2aa198" title="#2aa198"></i></div>
+        <p class="theme__name">Solarized Dark <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Deep teal base, blue and cyan accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#272822;--t-sf:#2f312a;--t-tx:#f8f8f2;--t-ac:#f92672;--t-a2:#a6e22e" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#272822" title="#272822"></i><i style="background:#2f312a" title="#2f312a"></i><i style="background:#f8f8f2" title="#f8f8f2"></i><i style="background:#f92672" title="#f92672"></i><i style="background:#a6e22e" title="#a6e22e"></i></div>
+        <p class="theme__name">Monokai <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Classic dark with magenta and green accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#282828;--t-sf:#32302f;--t-tx:#ebdbb2;--t-ac:#fe8019;--t-a2:#fabd2f" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#282828" title="#282828"></i><i style="background:#32302f" title="#32302f"></i><i style="background:#ebdbb2" title="#ebdbb2"></i><i style="background:#fe8019" title="#fe8019"></i><i style="background:#fabd2f" title="#fabd2f"></i></div>
+        <p class="theme__name">Gruvbox Dark <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Warm retro with orange and yellow accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#1a1b26;--t-sf:#24283b;--t-tx:#c0caf5;--t-ac:#7aa2f7;--t-a2:#bb9af7" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#1a1b26" title="#1a1b26"></i><i style="background:#24283b" title="#24283b"></i><i style="background:#c0caf5" title="#c0caf5"></i><i style="background:#7aa2f7" title="#7aa2f7"></i><i style="background:#bb9af7" title="#bb9af7"></i></div>
+        <p class="theme__name">Tokyo Night <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Deep night blue with blue and purple accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#1e1e2e;--t-sf:#313244;--t-tx:#cdd6f4;--t-ac:#cba6f7;--t-a2:#89b4fa" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#1e1e2e" title="#1e1e2e"></i><i style="background:#313244" title="#313244"></i><i style="background:#cdd6f4" title="#cdd6f4"></i><i style="background:#cba6f7" title="#cba6f7"></i><i style="background:#89b4fa" title="#89b4fa"></i></div>
+        <p class="theme__name">Catppuccin Mocha <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Soft dark pastel with mauve and blue accents.</p>
+      </li>
+      <li class="theme" data-mode="light">
+        <div class="theme__preview" style="--t-bg:#eff1f5;--t-sf:#e6e9ef;--t-tx:#4c4f69;--t-ac:#8839ef;--t-a2:#1e66f5" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#eff1f5" title="#eff1f5"></i><i style="background:#e6e9ef" title="#e6e9ef"></i><i style="background:#4c4f69" title="#4c4f69"></i><i style="background:#8839ef" title="#8839ef"></i><i style="background:#1e66f5" title="#1e66f5"></i></div>
+        <p class="theme__name">Catppuccin Latte <span class="theme__tag">Light</span></p>
+        <p class="theme__desc">Soft light pastel with mauve and blue accents.</p>
+      </li>
+      <li class="theme" data-mode="light">
+        <div class="theme__preview" style="--t-bg:#fdf6e3;--t-sf:#eee8d5;--t-tx:#073642;--t-ac:#268bd2;--t-a2:#2aa198" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#fdf6e3" title="#fdf6e3"></i><i style="background:#eee8d5" title="#eee8d5"></i><i style="background:#073642" title="#073642"></i><i style="background:#268bd2" title="#268bd2"></i><i style="background:#2aa198" title="#2aa198"></i></div>
+        <p class="theme__name">Solarized Light <span class="theme__tag">Light</span></p>
+        <p class="theme__desc">Warm paper base with blue and cyan accents.</p>
+      </li>
+      <li class="theme" data-mode="light">
+        <div class="theme__preview" style="--t-bg:#faf4ed;--t-sf:#fffaf3;--t-tx:#575279;--t-ac:#907aa9;--t-a2:#d7827e" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#faf4ed" title="#faf4ed"></i><i style="background:#fffaf3" title="#fffaf3"></i><i style="background:#575279" title="#575279"></i><i style="background:#907aa9" title="#907aa9"></i><i style="background:#d7827e" title="#d7827e"></i></div>
+        <p class="theme__name">Rose Pine Dawn <span class="theme__tag">Light</span></p>
+        <p class="theme__desc">Soft rosy light with iris and rose accents.</p>
+      </li>
+      <li class="theme" data-mode="light">
+        <div class="theme__preview" style="--t-bg:#ffffff;--t-sf:#f6f8fa;--t-tx:#1f2328;--t-ac:#0969da;--t-a2:#1a7f37" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#ffffff" title="#ffffff"></i><i style="background:#f6f8fa" title="#f6f8fa"></i><i style="background:#1f2328" title="#1f2328"></i><i style="background:#0969da" title="#0969da"></i><i style="background:#1a7f37" title="#1a7f37"></i></div>
+        <p class="theme__name">GitHub Light <span class="theme__tag">Light</span></p>
+        <p class="theme__desc">Clean white with blue and green accents.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#2b3339;--t-sf:#3a454a;--t-tx:#d3c6aa;--t-ac:#a7c080;--t-a2:#e67e80" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#2b3339" title="#2b3339"></i><i style="background:#3a454a" title="#3a454a"></i><i style="background:#d3c6aa" title="#d3c6aa"></i><i style="background:#a7c080" title="#a7c080"></i><i style="background:#e67e80" title="#e67e80"></i></div>
+        <p class="theme__name">Everforest <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Warm forest green with soft retro contrast.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#1f1f28;--t-sf:#363646;--t-tx:#dcd7ba;--t-ac:#7e9cd8;--t-a2:#e46876" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#1f1f28" title="#1f1f28"></i><i style="background:#363646" title="#363646"></i><i style="background:#dcd7ba" title="#dcd7ba"></i><i style="background:#7e9cd8" title="#7e9cd8"></i><i style="background:#e46876" title="#e46876"></i></div>
+        <p class="theme__name">Kanagawa <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Muted ink-wash blues inspired by Hokusai.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#282c34;--t-sf:#3b4048;--t-tx:#abb2bf;--t-ac:#61afef;--t-a2:#c678dd" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#282c34" title="#282c34"></i><i style="background:#3b4048" title="#3b4048"></i><i style="background:#abb2bf" title="#abb2bf"></i><i style="background:#61afef" title="#61afef"></i><i style="background:#c678dd" title="#c678dd"></i></div>
+        <p class="theme__name">One Dark <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Atom's classic, balanced dark.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#1f2430;--t-sf:#2d3441;--t-tx:#cbccc6;--t-ac:#ffcc66;--t-a2:#73d0ff" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#1f2430" title="#1f2430"></i><i style="background:#2d3441" title="#2d3441"></i><i style="background:#cbccc6" title="#cbccc6"></i><i style="background:#ffcc66" title="#ffcc66"></i><i style="background:#73d0ff" title="#73d0ff"></i></div>
+        <p class="theme__name">Ayu Mirage <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Soft mirage blues with a warm amber accent.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#241b2f;--t-sf:#34294f;--t-tx:#f8f8f2;--t-ac:#ff7edb;--t-a2:#36f9f6" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#241b2f" title="#241b2f"></i><i style="background:#34294f" title="#34294f"></i><i style="background:#f8f8f2" title="#f8f8f2"></i><i style="background:#ff7edb" title="#ff7edb"></i><i style="background:#36f9f6" title="#36f9f6"></i></div>
+        <p class="theme__name">Synthwave 84 <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Neon '84 sunset: hot pink and electric cyan.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#0b0f0b;--t-sf:#122012;--t-tx:#63f763;--t-ac:#00ff41;--t-a2:#b6ff00" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#0b0f0b" title="#0b0f0b"></i><i style="background:#122012" title="#122012"></i><i style="background:#63f763" title="#63f763"></i><i style="background:#00ff41" title="#00ff41"></i><i style="background:#b6ff00" title="#b6ff00"></i></div>
+        <p class="theme__name">Matrix <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Green-on-black terminal. Wake up.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#1a1a1a;--t-sf:#2a2a2a;--t-tx:#f0f0f0;--t-ac:#ff8c2f;--t-a2:#e32929" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#1a1a1a" title="#1a1a1a"></i><i style="background:#2a2a2a" title="#2a2a2a"></i><i style="background:#f0f0f0" title="#f0f0f0"></i><i style="background:#ff8c2f" title="#ff8c2f"></i><i style="background:#e32929" title="#e32929"></i></div>
+        <p class="theme__name">Unraid Appreciation <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">A love letter to Lime Tech: Unraid orange to red on coal.</p>
+      </li>
+      <li class="theme" data-mode="dark">
+        <div class="theme__preview" style="--t-bg:#16181d;--t-sf:#262a34;--t-tx:#ece7de;--t-ac:#e0a458;--t-a2:#4fb3a9" aria-hidden="true">
+          <span class="theme__bar"><b>Aa</b><span class="theme__line"></span><span class="theme__btn"></span></span>
+          <span class="theme__dots"><span></span><span></span></span>
+        </div>
+        <div class="theme__strip" aria-hidden="true"><i style="background:#16181d" title="#16181d"></i><i style="background:#262a34" title="#262a34"></i><i style="background:#ece7de" title="#ece7de"></i><i style="background:#e0a458" title="#e0a458"></i><i style="background:#4fb3a9" title="#4fb3a9"></i></div>
+        <p class="theme__name">Amberloom <span class="theme__tag">Dark</span></p>
+        <p class="theme__desc">Warm slate with amber and teal.</p>
+      </li>
+    </ul>
+    <p class="note">Palettes as listed in the theme registry, <a href="https://github.com/benjaminmue/unraid-themer/blob/main/themes/index.json"><code>themes/index.json</code></a>: background, surface, text, accent, accent 2. The plugin shows the same strip next to every theme in the store and the preset dropdown.</p>
+
+    <figure class="shot shot--native">
+      <div class="scroller" tabindex="0" role="region" aria-label="Screenshot, scrolls sideways on small screens"><img src="assets/settings-store.webp" width="925" height="380" loading="lazy"
+        alt="The theme store on the Unraid Themer settings page, listing bebamu, Nord, Dracula, Solarized Dark, Monokai and Gruvbox Dark with Get and Uninstall buttons"></div>
+      <figcaption>The theme store inside the plugin: search, light/dark filter, get and uninstall.</figcaption>
+    </figure>
+  </section>
+
+  <section id="builder" class="section wrap">
+    <div class="head">
+      <p class="label">Theme builder</p>
+      <h2>Eight colors and an optional font.</h2>
+      <p>Build a theme from eight colors, by swatch or as hex/rgb, previewed live and saved as a preset. A live WCAG contrast readout covers the pairs that carry text, and the button label color is chosen for you so it stays readable on any accent. Optional bundled webfonts, served locally: Inter, Roboto, Source Sans 3, JetBrains Mono, Nunito, Comic Neue.</p>
+    </div>
+    <figure class="shot shot--native">
+      <div class="scroller" tabindex="0" role="region" aria-label="Screenshot, scrolls sideways on small screens"><img src="assets/settings-builder.webp" width="910" height="185" loading="lazy"
+        alt="The theme builder: eight color fields for background, surface, header, text, muted text, border, accent and accent 2, plus mode, font, name and a Build and Apply button"></div>
+      <figcaption>The builder starts from the current theme, here Nord.</figcaption>
+    </figure>
+    <p class="note">Want it in the store? See <a href="https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md">THEMES.md</a> and the annotated <a href="https://github.com/benjaminmue/unraid-themer/blob/main/themes/_template.css"><code>themes/_template.css</code></a>, then open a pull request. A GitHub Action validates every theme before it can be listed.</p>
+  </section>
+
+  <section id="icons" class="section wrap">
+    <div class="head">
+      <p class="label">Icons</p>
+      <h2>Nine open-source icon sets.</h2>
+      <p>One switch swaps every UI glyph for a line set that tints with the theme. For finer control, the <strong>Themer Icons</strong> page lists every slot with a live preview: pick from a searchable grid of all bundled sets, paste an SVG URL, or upload your own SVG. Everything is validated, and a single icon resets to the set default with one click.</p>
+    </div>
+
+    <div class="matrix" role="table" aria-label="The same eight glyphs in each bundled icon set">
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Lucide</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#lucide-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#lucide-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#lucide-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#lucide-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#lucide-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#lucide-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#lucide-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#lucide-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Tabler</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#tabler-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#tabler-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#tabler-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#tabler-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#tabler-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#tabler-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#tabler-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#tabler-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Phosphor</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#phosphor-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#phosphor-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#phosphor-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#phosphor-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#phosphor-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#phosphor-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#phosphor-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#phosphor-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Heroicons</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#heroicons-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#heroicons-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#heroicons-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#heroicons-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#heroicons-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#heroicons-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#heroicons-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#heroicons-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Iconoir</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#iconoir-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#iconoir-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#iconoir-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#iconoir-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#iconoir-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#iconoir-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#iconoir-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#iconoir-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Remix</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#remix-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#remix-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#remix-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#remix-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#remix-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#remix-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#remix-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#remix-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Bootstrap</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#bootstrap-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#bootstrap-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#bootstrap-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#bootstrap-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#bootstrap-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#bootstrap-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#bootstrap-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#bootstrap-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Carbon</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#carbon-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#carbon-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#carbon-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#carbon-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#carbon-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#carbon-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#carbon-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#carbon-search"/></svg></span></div>
+      <div class="matrix__row" role="row"><span class="matrix__name" role="rowheader">Material Symbols</span><span role="cell"><svg width="22" height="22" aria-label="hard-drive" role="img"><use href="assets/icon-sets.svg#material-hard-drive"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="cpu" role="img"><use href="assets/icon-sets.svg#material-cpu"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="container" role="img"><use href="assets/icon-sets.svg#material-container"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="gauge" role="img"><use href="assets/icon-sets.svg#material-gauge"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="settings" role="img"><use href="assets/icon-sets.svg#material-settings"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="terminal" role="img"><use href="assets/icon-sets.svg#material-terminal"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="folder" role="img"><use href="assets/icon-sets.svg#material-folder"/></svg></span><span role="cell"><svg width="22" height="22" aria-label="search" role="img"><use href="assets/icon-sets.svg#material-search"/></svg></span></div>
+    </div>
+    <p class="note">Rendered from the SVG files that ship with the plugin. Lucide (ISC); Tabler, Phosphor, Heroicons, Iconoir, Bootstrap Icons (MIT); Remix Icon, Carbon, Material Symbols (Apache-2.0).</p>
+
+    <div class="pair">
+      <figure class="shot">
+        <img src="assets/themer-icons.webp" srcset="assets/themer-icons-960.webp 960w, assets/themer-icons.webp 1512w" sizes="(max-width: 860px) 100vw, 552px" width="1512" height="950" loading="lazy"
+          alt="The Themer Icons page: one row per icon slot with the current glyph, a grid picker button, an upload button and a text field">
+        <figcaption>Themer Icons: override any slot.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="assets/icon-picker.webp" srcset="assets/icon-picker-960.webp 960w, assets/icon-picker.webp 1512w" sizes="(max-width: 860px) 100vw, 552px" width="1512" height="950" loading="lazy"
+          alt="The icon grid picker searching for download, with matching glyphs grouped by Lucide, Bootstrap, Carbon, Heroicons, Iconoir and Material Symbols">
+        <figcaption>The grid picker searches every bundled set at once.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="head">
+      <p class="label">Also in the box</p>
+      <h2>The rest of the interface, too.</h2>
+    </div>
+    <dl class="facts">
+      <div><dt>Whole-UI coverage</dt><dd>Classic Dynamix pages, the Vue header (bell, menu, toolbar), Community Apps, tables, dashboard and the Settings icons.</dd></div>
+      <div><dt>Background image</dt><dd>By URL (cached locally, CSP-safe) or a file on the server through Unraid's file picker, with a dim slider for legibility.</dd></div>
+      <div><dt>Custom logo</dt><dd>Replace the Unraid wordmark in the header with your own logo, by URL or a file on the server.</dd></div>
+      <div><dt>Sidebar layouts</dt><dd>Azure and Gray are supported; the base pairing keeps you in your layout family.</dd></div>
+      <div><dt>Non-destructive</dt><dd>Disable it and the webGUI is 100% stock. Semantic status colors such as disk health and array state are deliberately left untouched.</dd></div>
+      <div><dt>Self-contained</dt><dd>One <code>.plg</code>, no external runtime dependencies. Config lives on the flash drive and survives reboots.</dd></div>
+    </dl>
+  </section>
+
+  <section id="install" class="section section--install wrap">
+    <div class="head">
+      <p class="label">Install</p>
+      <h2>Three steps, then a hard reload.</h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <h3>Community Applications</h3>
+        <p>Open the <strong>Apps</strong> tab on your server, search for <strong>Unraid Themer</strong> and install it.</p>
+      </li>
+      <li>
+        <h3>Or install by URL</h3>
+        <p><strong>Plugins → Install Plugin</strong>, paste:</p>
+        <pre class="copyable"><code>https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg</code></pre>
+      </li>
+      <li>
+        <h3>Turn it on</h3>
+        <p>Open <strong>Settings → Utilities → Unraid Themer</strong>, set <em>Enable</em> to <strong>Yes</strong>, pick a theme, <strong>Apply</strong>, then hard-reload the browser (Cmd/Ctrl+Shift+R).</p>
+      </li>
+    </ol>
+
+    <div class="channel">
+      <h3>Beta channel</h3>
+      <p>New features land on the <code>beta</code> branch first. The branch a <code>.plg</code> is built from is its update channel, so an installed beta keeps updating from beta and never crosses over to stable. Install it the same way; it replaces the stable build in place. Your settings live on the flash drive and survive the switch in both directions. Beta versions carry a <code>bNN</code> suffix.</p>
+      <pre class="copyable"><code>https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg</code></pre>
+    </div>
+
+    <div class="callout">
+      <p><strong>This is a beta.</strong> Testing and contributions are very welcome. Found a glitch or have an idea? Open an <a href="https://github.com/benjaminmue/unraid-themer/issues">issue</a> or start a <a href="https://github.com/benjaminmue/unraid-themer/discussions">discussion</a>.</p>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="colophon">
+      <div>
+        <p class="label">How it works</p>
+        <p>Unraid 7 has no global CSS hook, but a <code>.page</code> with <code>Menu="Buttons"</code> runs inside <code>&lt;head&gt;</code> on every page. Unraid Themer uses that to inject the active theme, icon set and your overrides, only when enabled. Themes restyle through <code>:root</code> custom-property overrides, which inherit through the open shadow DOM of the Vue web components, so the new UI recolors too.</p>
+      </div>
+      <div>
+        <p class="label">Built with AI</p>
+        <p>The plugin was written largely by an AI assistant (Claude Code by Anthropic), directed, reviewed and tested on real hardware by <a href="https://github.com/benjaminmue">@benjaminmue</a> on his own Unraid 7.3 server. Read the code before trusting it on yours; issues and pull requests are welcome.</p>
+        <p>Inspired by <a href="https://github.com/WuSiYu/unraid-custom-css">WuSiYu/unraid-custom-css</a> (the injection mechanism) and <a href="https://github.com/Skitals/unraid-theme-engine">Skitals/unraid-theme-engine</a> (the discontinued Theme Engine).</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <p>Unraid Themer · MIT licence · Built by Benjamin Müller. A community plugin, not an official Lime Technology product. Icon glyphs and fonts remain under their own licenses.</p>
+    <nav aria-label="Project links">
+      <a href="https://github.com/benjaminmue/unraid-themer">Source</a>
+      <a href="https://github.com/benjaminmue/unraid-themer/issues">Issues</a>
+      <a href="https://github.com/benjaminmue/unraid-themer/discussions">Discussions</a>
+      <a href="https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md">Theme guide</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>
