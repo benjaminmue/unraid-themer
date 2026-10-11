@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.11.b04",
+    "beta": "2026.10.12.b05",
 }
 
 
@@ -74,6 +74,13 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.12.b05
+- Security: a background or logo picked as a file on the server must now be a
+  real image under /mnt/. Symlinks and paths leading elsewhere are refused,
+  and the type is taken from the file content instead of its name. Before, a
+  symlink planted in a share could copy any file of the system into the
+  webGui when picked.
+
 ## 2026.10.11.b04
 - Security: SVG files you add as custom icons, logo or background image are now
   cleaned by parsing them and keeping only drawing elements and attributes.

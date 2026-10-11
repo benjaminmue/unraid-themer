@@ -10,6 +10,7 @@ Icon="paint-brush"
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
 require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
+require_once "$docroot/plugins/unraid.themer/include/asset.php"; // themer_read_server_image()
 
 // --- css-rules:begin (extracted by test/test_css_rules.py, keep self-contained)
 /* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
@@ -114,31 +115,21 @@ function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
 function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
     $src  = trim($src);
     if ($src === '') return ['', ''];
-    $exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp'];
     // a file the user picked with the Unraid file browser
     if ($src[0] === '/') {
-        if (!is_file($src)) return ['', 'file not found on the server'];
-        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
-        if (!in_array($ext, $exts)) return ['', "unsupported image type .$ext"];
-        if (filesize($src) > 15 * 1024 * 1024) return ['', 'image too large (>15 MB)'];
-        $data = @file_get_contents($src);
-        if ($data === false) return ['', 'could not read that file'];
-        return themer_store_asset($data, $ext === 'jpeg' ? 'jpg' : $ext, $dir, $webroot, $flash, $weburl);
+        [$data, $ext, $err] = themer_read_server_image($src);
+        if ($err) return ['', $err];
+        return themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl);
     }
     // an https URL — fetch and cache locally
     if (preg_match('#^https?://[^\s\'"<>]+$#i', $src)) {
         $raw = shell_exec("curl -fsSL --max-time 25 --max-filesize 15728640 " . escapeshellarg($src) . " 2>/dev/null");
         if (!$raw) return ['', 'could not download that URL'];
-        $fi = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_buffer($fi, $raw);
-        finfo_close($fi);
-        $map = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
-                'image/gif' => 'gif', 'image/svg+xml' => 'svg', 'image/avif' => 'avif',
-                'image/x-ms-bmp' => 'bmp', 'image/bmp' => 'bmp'];
-        if (!isset($map[$mime])) return ['', 'that URL is not an image'];
-        return themer_store_asset($raw, $map[$mime], $dir, $webroot, $flash, $weburl);
+        $ext = themer_image_type($raw);
+        if ($ext === '') return ['', 'that URL is not an image'];
+        return themer_store_asset($raw, $ext, $dir, $webroot, $flash, $weburl);
     }
-    return ['', 'enter an http(s) URL or a file path on this server'];
+    return ['', 'enter an http(s) URL or the path of an image file under /mnt/'];
 }
 
 /* Provenance for installed themes: one line per preset,
@@ -768,14 +759,14 @@ Custom icons (per slot):
 
 Background image:
 : <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="bg_src" id="ut-bg-src" value="<?= htmlspecialchars($bg_src_val) ?>" spellcheck="false" placeholder="https://…/image.jpg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseBg()"></span><span style="display:flex; gap:10px; align-items:center; margin-top:8px;">Dim for legibility <input type="range" name="bg_dim" min="0" max="90" step="5" value="<?= $bg_dim_val ?>" oninput="document.getElementById('ut-bg-dimval').textContent=this.value+'%'" style="vertical-align:middle;"><span id="ut-bg-dimval"><?= $bg_dim_val ?>%</span></span>
-  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or a file on the server (<strong>Browse…</strong> opens Unraid's file picker). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
+  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or an image file under <code>/mnt/</code> (<strong>Browse…</strong> opens Unraid's file picker; symlinks are not accepted). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
   <link type="text/css" rel="stylesheet" href="/webGui/styles/jquery.filetree.css">
   <script src="/webGui/javascript/jquery.filetree.js" charset="utf-8"></script>
   <script defer src="/plugins/unraid.themer/js/themer-branding.js?v=<?= @filemtime("$webroot/js/themer-branding.js") ?>"></script>
 
 Logo:
 : <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="logo_src" id="ut-logo-src" value="<?= htmlspecialchars($logo_src_val) ?>" spellcheck="false" placeholder="https://…/logo.png / .svg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseLogo()"></span>
-  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or a file on the server. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
+  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or an image file under <code>/mnt/</code>. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
 
 <?php
 $cp = [
