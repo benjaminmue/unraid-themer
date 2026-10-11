@@ -11,6 +11,7 @@ Icon="paint-brush"
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
 require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
 require_once "$docroot/plugins/unraid.themer/include/asset.php"; // themer_read_server_image()
+require_once "$docroot/plugins/unraid.themer/include/fetch.php"; // themer_fetch()
 
 // --- css-rules:begin (extracted by test/test_css_rules.py, keep self-contained)
 /* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
@@ -109,7 +110,7 @@ function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
     return ["$weburl/$rel", ''];
 }
 
-// Resolve an image source (https URL or a file on this server) to a locally served
+// Resolve an image source (https URL or a file under /mnt/) to a locally served
 // URL for asset kind $dir. URLs are downloaded and cached so the browser never
 // fetches a cross-origin image (CSP-safe) and it works offline. [servedUrl, error].
 function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
@@ -122,14 +123,14 @@ function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
         return themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl);
     }
     // an https URL — fetch and cache locally
-    if (preg_match('#^https?://[^\s\'"<>]+$#i', $src)) {
-        $raw = shell_exec("curl -fsSL --max-time 25 --max-filesize 15728640 " . escapeshellarg($src) . " 2>/dev/null");
-        if (!$raw) return ['', 'could not download that URL'];
+    if (preg_match('#^https?://#i', $src)) {
+        [$raw, $err] = themer_fetch($src, THEMER_IMAGE_MAX, 25);
+        if ($err) return ['', $err];
         $ext = themer_image_type($raw);
         if ($ext === '') return ['', 'that URL is not an image'];
         return themer_store_asset($raw, $ext, $dir, $webroot, $flash, $weburl);
     }
-    return ['', 'enter an http(s) URL or the path of an image file under /mnt/'];
+    return ['', 'enter an https:// URL or the path of an image file under /mnt/'];
 }
 
 /* Provenance for installed themes: one line per preset,
@@ -163,13 +164,14 @@ function themer_origin_drop($flash, $stem) {
 
 // the community registry index (best-effort, short timeout); null when offline
 function themer_store_index($store_base) {
-    $raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
-    return $raw ? (@json_decode($raw, true) ?: null) : null;
+    [$raw, $err] = themer_fetch("$store_base/index.json", 1024 * 1024, 8);
+    return $err ? null : (@json_decode($raw, true) ?: null);
 }
 
 // download + sanitise a theme into the presets folder; returns "" or an error
 function themer_fetch_theme($url, $flash, $webroot) {
-    $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 524288 " . escapeshellarg($url) . " 2>/dev/null");
+    [$raw, $err] = themer_fetch($url, 512 * 1024);
+    if ($err) return $err;
     [$clean, $err] = themer_sanitize_css($raw);
     if ($err) return $err;
     $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower(pathinfo((string) parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME)));

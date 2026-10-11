@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.12.b05",
+    "beta": "2026.10.12.b06",
 }
 
 
@@ -74,6 +74,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.12.b06
+- Security: every download the plugin makes (theme import and store, icons,
+  background and logo by URL) now only reaches public https hosts on port 443.
+  Addresses of the server itself, the LAN, Tailscale, link-local and metadata
+  ranges are refused in every spelling, also when a host name resolves to one
+  or a redirect leads to one. Before, a URL could make the server fetch from
+  your own network. Background and logo URLs must now be https.
+
 ## 2026.10.12.b05
 - Security: a background or logo picked as a file on the server must now be a
   real image under /mnt/. Symlinks and paths leading elsewhere are refused,
