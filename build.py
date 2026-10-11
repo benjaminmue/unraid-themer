@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.09.09.b02",
+    "beta": "2026.10.11.b01",
 }
 
 
@@ -69,6 +69,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.11.b01
+- Fix the custom logo being ignored on Unraid 7.3.3 (and on 7.3.2 once the
+  Unraid Connect / API plugin is updated): the newer header draws the Unraid
+  wordmark as an inline SVG instead of an image, which the logo swap did not
+  reach. Both header variants are now covered.
+
 ## 2026.09.09.b02
 - Installed themes now actually receive theme fixes. Until now a bundled theme
   was copied to your flash drive once, at first install, and never touched
