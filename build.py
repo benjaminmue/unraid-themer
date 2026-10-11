@@ -80,7 +80,11 @@ CHANGES = """## Unraid Themer
   The old check could be tricked with namespace prefixes and encoded values,
   and a logo or background SVG was not checked at all, so a hostile SVG could
   run script when opened directly. Inline SVG copied from a web page without
-  an xmlns is accepted and gets the namespace added.
+  an xmlns is accepted and gets the namespace added; safe declarations in a
+  style attribute are kept as plain attributes.
+- SVGs stored by earlier versions are cleaned the same way on update and at
+  boot. One that cannot be cleaned moves to quarantine/ in the plugin folder
+  on the flash drive instead of being served.
 
 ## 2026.10.11.b03
 - Security: theme imports and store downloads are checked against much stricter
@@ -581,6 +585,17 @@ cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
+
+# Every stored SVG goes through the current sanitiser before it is served again:
+# older versions stored some unchecked. A refused file moves to quarantine/ on
+# flash. The webroot copies are dropped first, so after an update without a
+# reboot no stale copy of a quarantined file stays reachable.
+rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/*.svg {WEBROOT}/logo/*.svg
+if [ -x /usr/bin/php ]; then
+    if [ -f {WEBROOT}/include/migrate-svg.php ]; then
+        /usr/bin/php {WEBROOT}/include/migrate-svg.php {FLASH}
+    fi
+fi
 
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p {WEBROOT}/overrides

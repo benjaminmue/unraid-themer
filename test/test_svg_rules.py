@@ -45,6 +45,7 @@ DANGER = re.compile(r"script|\son\w+\s*=|href|javascript|foreignObject|<\w*:?ani
 # must be accepted with every drawing element kept, besides the bundled icons
 HARMLESS = {
     "inline icon without xmlns": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z"/><circle cx="12" cy="12" r="3"/></svg>',
+    "outline icon via style":    f'<svg {SVG} viewBox="0 0 24 24"><path style="fill:none;stroke:currentColor;stroke-width:2" d="M2 2H22V22H2Z"/></svg>',
     "gradient by reference":     f'<svg {SVG} viewBox="0 0 10 10"><defs><linearGradient id="g"><stop offset="0" stop-color="#e32929"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>',
 }
 
@@ -66,6 +67,49 @@ def run_php(cases, php_cmd):
         cmd = shlex.split(php_cmd) + [os.path.join(tmp, "run.php"), os.path.join(tmp, "cases.json")]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(res.stdout)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def migration_checks(php_cmd):
+    """Boot migration (include/migrate-svg.php) on a fake flash directory."""
+    tmp = tempfile.mkdtemp(prefix="themer-svgmig-")
+    try:
+        flash = os.path.join(tmp, "flash")
+        for d in ("overrides", "bg", "logo"):
+            os.makedirs(os.path.join(flash, d))
+        files = {
+            "overrides/cpu.svg": ATTACKS["inner prefixed script"],     # cleanable
+            "overrides/ok.svg":  open(sorted(glob.glob(os.path.join(PLUGIN, "icons/svg/*.svg")))[0]).read(),
+            "logo/logo.svg":     ATTACKS["onload"],                    # cleanable
+            "bg/bg.svg":         ATTACKS["doctype entity"],            # refused
+            "bg/photo.png":      "not an svg, not touched",
+        }
+        for rel, body in files.items():
+            with open(os.path.join(flash, rel), "w", encoding="utf-8") as f:
+                f.write(body)
+        plug = os.path.join(tmp, "plugin", "include")
+        os.makedirs(plug)
+        for f in ("svg.php", "migrate-svg.php"):
+            shutil.copy(os.path.join(PLUGIN, "include", f), plug)
+        run = lambda: subprocess.run(shlex.split(php_cmd) + [os.path.join(plug, "migrate-svg.php"), flash],
+                                     capture_output=True, text=True, check=True)
+        run()
+        read = lambda rel: open(os.path.join(flash, rel), encoding="utf-8").read()
+        first = {rel: read(rel) for rel in ("overrides/cpu.svg", "overrides/ok.svg", "logo/logo.svg")}
+        run()
+        second = {rel: read(rel) for rel in first}
+        return [
+            ("migration: hostile icon cleaned", not DANGER.search(first["overrides/cpu.svg"]), first["overrides/cpu.svg"][:80]),
+            ("migration: hostile logo cleaned", not DANGER.search(first["logo/logo.svg"]), first["logo/logo.svg"][:80]),
+            ("migration: refused background quarantined",
+             not os.path.exists(os.path.join(flash, "bg/bg.svg"))
+             and os.path.exists(os.path.join(flash, "quarantine/bg-bg.svg")), ""),
+            ("migration: harmless icon keeps its drawing",
+             len(DRAWING.findall(first["overrides/ok.svg"])) == len(DRAWING.findall(files["overrides/ok.svg"])), ""),
+            ("migration: non-SVG untouched", read("bg/photo.png") == files["bg/photo.png"], ""),
+            ("migration: second run changes nothing", first == second, ""),
+        ]
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -97,6 +141,11 @@ def main():
                    not lost, "; ".join(lost[:5])))
     grad = res["gradient by reference"][0]
     checks.append(("url(#id) reference survives", 'fill="url(#g)"' in grad, grad[:120]))
+    styled = res["outline icon via style"][0]
+    checks.append(("style declarations become attributes",
+                   all(a in styled for a in ('fill="none"', 'stroke="currentColor"', 'stroke-width="2"'))
+                   and "style" not in styled, styled[:160]))
+    checks += migration_checks(php_cmd)
 
     bad = 0
     for label, ok, detail in checks:

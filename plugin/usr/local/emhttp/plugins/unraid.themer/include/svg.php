@@ -8,7 +8,10 @@
  * values (jav&#x61;script:). This parses the document instead and rebuilds it
  * from an allowlist: only SVG-namespace drawing elements, only un-namespaced
  * presentation attributes, url() only as a reference to an id in the same
- * document, no style, no href, no text content outside <title>/<desc>.
+ * document, no href, no text content outside <title>/<desc>. A style
+ * attribute is not kept as CSS: each declaration that names an allowed
+ * presentation attribute with a safe value becomes that attribute, the rest
+ * is dropped, so `style="fill:none;stroke:currentColor"` still draws.
  * Anything else is dropped, and the result is serialised fresh, so what gets
  * stored is only what passed the allowlist.
  *
@@ -54,6 +57,35 @@ function themer_svg_parse($xml) {
     return ($ok && $doc->documentElement) ? $doc : null;
 }
 
+// Turn a style attribute into plain presentation attributes. CSS gives the
+// style declaration precedence over an attribute of the same name, so it wins.
+function themer_svg_style_to_attrs(DOMElement $el, $style, $attrs) {
+    foreach (explode(';', $style) as $decl) {
+        $parts = explode(':', $decl, 2);
+        if (count($parts) !== 2) continue;
+        $prop = strtolower(trim($parts[0]));
+        $val  = trim(preg_replace('/\s*!important\s*$/i', '', $parts[1]));
+        if ($prop === 'id' || !isset($attrs[$prop]) || $val === '' || !themer_svg_value_ok($val)) continue;
+        $el->setAttribute($prop, $val);
+    }
+}
+
+// Clean the attributes of one element in place.
+function themer_svg_clean_attrs(DOMElement $el, $attrs) {
+    foreach (iterator_to_array($el->attributes) as $a) {
+        if ($a->namespaceURI === null && $a->localName === 'style') {
+            $el->removeAttributeNode($a);
+            themer_svg_style_to_attrs($el, $a->value, $attrs);
+        }
+    }
+    foreach (iterator_to_array($el->attributes) as $a) {
+        // a namespaced attribute (xlink:href, xml:base, foreign prefixes)
+        // is never needed for drawing
+        if ($a->namespaceURI !== null || !isset($attrs[$a->localName]) || !themer_svg_value_ok($a->value))
+            $el->removeAttributeNode($a);
+    }
+}
+
 function themer_sanitize_svg($svg, $max = 65536) {
     $svg = (string) $svg;
     if (trim($svg) === '')  return ["", "empty or download failed"];
@@ -87,14 +119,7 @@ function themer_sanitize_svg($svg, $max = 65536) {
                     $drop[] = $child;
                     continue;
                 }
-                foreach (iterator_to_array($child->attributes) as $a) {
-                    // a namespaced attribute (xlink:href, xml:base, foreign prefixes)
-                    // is never needed for drawing
-                    if ($a->namespaceURI !== null || !isset($attrs[$a->localName])
-                        || !themer_svg_value_ok($a->value)) {
-                        $child->removeAttributeNode($a);
-                    }
-                }
+                themer_svg_clean_attrs($child, $attrs);
                 $walk($child);
             } elseif ($child instanceof DOMText && !($child instanceof DOMCdataSection)) {
                 if (!isset($text_ok[$node->localName ?? ''])) $drop[] = $child;
@@ -104,10 +129,7 @@ function themer_sanitize_svg($svg, $max = 65536) {
             }
         }
     };
-    foreach (iterator_to_array($root->attributes) as $a) {
-        if ($a->namespaceURI !== null || !isset($attrs[$a->localName]) || !themer_svg_value_ok($a->value))
-            $root->removeAttributeNode($a);
-    }
+    themer_svg_clean_attrs($root, $attrs);
     $walk($root);
     foreach ($drop as $n) {
         if ($n->parentNode) $n->parentNode->removeChild($n);
