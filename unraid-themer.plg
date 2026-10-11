@@ -20057,6 +20057,9 @@ function themer_image_type($data) {
 // open: the path must still resolve to itself below $root, and the file there
 // must be the one that was opened (same device and inode). /mnt holds other
 // file systems than / and /boot, so no hard link can make a system file pass.
+// Left open on purpose: a file swapped for a FIFO in that window makes fopen()
+// wait for a writer. That stalls only the admin's own Apply request, leaks
+// nothing, and plain PHP has no O_NONBLOCK open to prevent it.
 function themer_read_server_image($path, $root = '/mnt/') {
     if (is_link($path)) return ['', '', 'symlinks are not accepted, pick the file itself'];
     $real = realpath($path);
