@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.11.b02",
+    "beta": "2026.10.11.b03",
 }
 
 
@@ -74,6 +74,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.11.b03
+- Security: theme imports and store downloads are checked against much stricter
+  rules. The old check could be bypassed with CSS escapes and with image-set(),
+  so a theme could load content from other servers and, through Unraid's hidden
+  CSRF token field, leak that token. Themes may no longer contain backslashes,
+  url(), image-set() or similar functions, or any at-rule except @media and
+  @supports. No theme in the store uses any of these.
+
 ## 2026.10.11.b02
 - A theme you updated from the store now stays updated after a reboot. When the
   registry fixed a theme that also ships with the plugin, the next boot put the

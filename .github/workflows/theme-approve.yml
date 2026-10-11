@@ -40,7 +40,9 @@ jobs:
           AUTHOR: ${{ github.event.issue.user.login }}
         run: |
           python3 - << 'PY'
-          import os, re, json, subprocess
+          import os, re, json, subprocess, sys
+          sys.path.insert(0, "scripts")
+          from css_rules import violations   # the rules the plugin enforces too
 
           body = os.environ.get("BODY", "") or ""
           repo, num = os.environ["REPO"], os.environ["NUMBER"]
@@ -68,22 +70,13 @@ jobs:
                   subprocess.run(["gh", "issue", "close", num, "--repo", repo], check=True)
 
           # re-validate before publishing (defence in depth)
-          BLOCKED = [
-              (r"<\s*script", "a <script> tag"), (r"javascript\s*:", "a javascript: URI"),
-              (r"expression\s*\(", "a CSS expression()"), (r"behaviou?r\s*:", "a CSS behavior:"),
-              (r"-moz-binding", "-moz-binding"), (r"@import", "@import"),
-              (r"url\s*\(\s*['\"]?\s*(https?:|//)", "an external url()"),
-              (r"<\s*/?\s*(iframe|object|embed|base)", "embedded HTML"),
-          ]
           errs = []
           if not css or (":root" not in css and "--background-color" not in css):
               errs.append("no valid CSS found")
           elif css.count("{") != css.count("}"):
               errs.append("unbalanced braces")
           else:
-              for rx, why in BLOCKED:
-                  if re.search(rx, css, re.I):
-                      errs.append("contains " + why)
+              errs += violations(css)
           if not name:
               errs.append("no theme name")
           if errs:

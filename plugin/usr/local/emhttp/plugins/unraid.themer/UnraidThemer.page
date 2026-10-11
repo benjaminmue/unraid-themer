@@ -10,28 +10,49 @@ Icon="paint-brush"
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
 
-/* Validate imported CSS before we ever write it to disk. Returns [clean, error].
- * This is the security core of the theme store: reject anything that could run
- * code or phone home. Same ruleset the future publish-bot will use. */
+// --- css-rules:begin (extracted by test/test_css_rules.py, keep self-contained)
+/* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
+ * held to the same corpus by test/test_css_rules.py. A theme only sets colours,
+ * sizes and fonts, so everything that can make the browser fetch is refused:
+ * any backslash (CSS escapes turn `\68ttps` into `https` and `@\69mport` into
+ * `@import`), resource functions like url() and image-set(), and every at-rule
+ * except @media and @supports. A fetch is what makes a theme dangerous: an
+ * attribute selector on Unraid's hidden csrf_token input could leak the token
+ * one character per request. Returns the first broken rule, "" when acceptable. */
+function themer_css_violation($css) {
+    if (strlen($css) > 512 * 1024)   return "file too large (>512 KB)";
+    if (strpos($css, '\\') !== false) return "contains a backslash (CSS escapes are not allowed)";
+    if (strpos($css, '<') !== false)  return "contains markup (<)";
+    // a regex that fails (backtrack limit) returns false/null, which must count
+    // as a hit: "no match" would let the stylesheet through unchecked
+    $code  = preg_replace('~/\*.*?\*/~s', '', $css);
+    if ($code === null) return "could not be checked";
+    $fetch = '/(?<![\w-])(?:-[a-z]+-)?(?:url|image-set|image|cross-fade|element|src|attr|paint)\s*\(/i';
+    // both spellings: a comment can hide a name from one view but not the other
+    if (preg_match($fetch, $css) !== 0 || preg_match($fetch, $code) !== 0)
+        return "loads a resource (url(), image-set() or similar)";
+    if (preg_match('/@(?!(?:media|supports)\b)/i', $code) !== 0)
+        return "contains an at-rule other than @media or @supports";
+    $legacy = [
+        '/javascript\s*:/i'  => "contains a javascript: URI",
+        '/expression\s*\(/i' => "contains a CSS expression()",
+        '/behaviou?r\s*:/i'  => "contains a CSS behavior:",
+        '/-moz-binding/i'    => "contains -moz-binding",
+    ];
+    foreach ($legacy as $re => $why) {
+        if (preg_match($re, $css) !== 0) return $why;
+    }
+    return "";
+}
+
+/* Validate imported CSS before we ever write it to disk. Returns [clean, error]. */
 function themer_sanitize_css($css) {
     $css = (string) $css;
-    if (trim($css) === '')        return ["", "empty or download failed"];
-    if (strlen($css) > 512 * 1024) return ["", "file too large (>512 KB)"];
-    $blocked = [
-        '/<\s*script/i'                          => "contains a <script> tag",
-        '/<\s*\/?\s*(iframe|object|embed|base)/i' => "contains embedded HTML",
-        '/javascript\s*:/i'                      => "contains a javascript: URI",
-        '/expression\s*\(/i'                     => "contains a CSS expression()",
-        '/behaviou?r\s*:/i'                      => "contains a CSS behavior:",
-        '/-moz-binding/i'                        => "contains -moz-binding",
-        '/@import/i'                             => "contains @import",
-        '/url\s*\(\s*[\'"]?\s*(https?:|\/\/)/i'  => "loads an external url()",
-    ];
-    foreach ($blocked as $re => $why) {
-        if (preg_match($re, $css)) return ["", $why];
-    }
-    return [$css, ""];
+    if (trim($css) === '') return ["", "empty or download failed"];
+    $why = themer_css_violation($css);
+    return $why === "" ? [$css, ""] : ["", $why];
 }
+// --- css-rules:end
 
 $name        = "unraid.themer";
 $flash       = "/boot/config/plugins/$name";

@@ -16,6 +16,9 @@ jobs:
     if: contains(join(github.event.issue.labels.*.name, ','), 'theme-submission')
     runs-on: ubuntu-latest
     steps:
+      # the default branch's own code (scripts/css_rules.py), never the submitter's
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
       - name: Validate submitted CSS and comment
         env:
           GH_TOKEN: ${{ github.token }}
@@ -25,7 +28,9 @@ jobs:
           OWNER: ${{ github.repository_owner }}
         run: |
           python3 - << 'PY'
-          import os, re, json, subprocess
+          import os, re, json, subprocess, sys
+          sys.path.insert(0, "scripts")
+          from css_rules import violations   # the rules the plugin enforces too
 
           body = os.environ.get("BODY", "") or ""
 
@@ -45,31 +50,15 @@ jobs:
                           css = b
           css = css.strip()
 
-          BLOCKED = [
-              (re.compile(r"<\s*script", re.I),                          "a <script> tag"),
-              (re.compile(r"<\s*/?\s*(iframe|object|embed|base)", re.I),  "embedded HTML"),
-              (re.compile(r"javascript\s*:", re.I),                      "a javascript: URI"),
-              (re.compile(r"expression\s*\(", re.I),                     "a CSS expression()"),
-              (re.compile(r"behaviou?r\s*:", re.I),                      "a CSS behavior:"),
-              (re.compile(r"-moz-binding", re.I),                        "-moz-binding"),
-              (re.compile(r"@import", re.I),                             "@import"),
-              (re.compile(r"url\s*\(\s*['\"]?\s*(https?:|//)", re.I),     "an external url()"),
-          ]
-
           if not css:
               body_md = ("⚠️ I couldn't find any CSS. Please paste the **full contents** of your "
                          "`<name>.css` in the **Theme CSS** field and the check will re-run.")
           else:
-              errs = []
-              if len(css.encode("utf-8")) > 512 * 1024:
-                  errs.append("file too large (>512 KB)")
+              errs = violations(css)
               if css.count("{") != css.count("}"):
                   errs.append("unbalanced `{` / `}` braces")
               if "--background-color" not in css and ":root" not in css:
                   errs.append("doesn't look like a theme (no `:root` / CSS variables)")
-              for rx, why in BLOCKED:
-                  if rx.search(css):
-                      errs.append(f"contains {why}")
               n = len(css.encode("utf-8"))
               if errs:
                   body_md = ("❌ **Automated check found issues** — please fix and edit this issue "
@@ -79,8 +68,8 @@ jobs:
                   owner = os.environ.get("OWNER", "")
                   ping = f"\n\ncc @{owner} — to publish, add the **`approved`** label and it's " \
                          f"committed to the store automatically (credited to the submitter)." if owner else ""
-                  body_md = (f"✅ **Automated check passed** — no scripts, `@import` or external "
-                             f"`url()`; {n} bytes, balanced braces.{ping}\n\nThanks for contributing!")
+                  body_md = (f"✅ **Automated check passed**: no escapes, `url()`, `image-set()` or "
+                             f"at-rules besides `@media`/`@supports`; {n} bytes, balanced braces.{ping}\n\nThanks for contributing!")
 
           marker = "<!-- themer-bot -->"
           full = marker + "\n" + body_md
