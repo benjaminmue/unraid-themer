@@ -43,10 +43,14 @@ ATTACKS = {
     "@charset":                 '@charset "utf-8"; :root{--x:1}',
     "@layer":                   ":root{--x:1} @layer x{body{color:red}}",
     "closing style tag":        ":root{--x:1}</style><script>alert(1)</script>",
+    "html comment open":        ":root{--x:1} <!-- x -->",
+    "tag without slash":        ":root{--x:1} <img src=x onerror=alert(1)>",
     "javascript: uri":          ":root{--x:javascript:alert(1)}",
     "expression()":             ":root{--x:1} body{width:expression(alert(1))}",
     "behavior:":                ":root{--x:1} body{behavior:foo}",
     "-moz-binding":             ":root{--x:1} body{-moz-binding:x}",
+    # deliberately refused: an @ in a string looks like an at-rule without a tokenizer
+    "@ inside a string":        ':root{--x:1} a::after{content:"support@example.com"}',
     "oversize":                 ":root{--x:1}" + "/*" + "a" * (512 * 1024) + "*/",
 }
 
@@ -60,6 +64,8 @@ HARMLESS = {
     "background-image property": ":root{--x:1} body{background-image:none;background-image:linear-gradient(red,blue)}",
     "comment with url text":     "/* inspired by https://example.com and @someone */ :root{--x:1}",
     "child combinator":  ":root{--x:1} ul > li{color:red}",
+    "media range":       ":root{--x:1} @media (width < 800px){body{font-size:14px}}",
+    "media range both sides": ":root{--x:1} @media (400px <= width <= 800px){body{font-size:14px}}",
 }
 
 

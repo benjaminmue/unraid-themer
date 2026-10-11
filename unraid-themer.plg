@@ -459,7 +459,8 @@ require_once "$docroot/plugins/dynamix/include/Wrappers.php";
 function themer_css_violation($css) {
     if (strlen($css) > 512 * 1024)   return "file too large (>512 KB)";
     if (strpos($css, '\\') !== false) return "contains a backslash (CSS escapes are not allowed)";
-    if (strpos($css, '<') !== false)  return "contains markup (<)";
+    // only what can start an HTML tag; a bare < is a media range (`width < 800px`)
+    if (preg_match('/<[a-zA-Z\/!?]/', $css) !== 0) return "contains markup (<tag)";
     // a regex that fails (backtrack limit) returns false/null, which must count
     // as a hit: "no match" would let the stylesheet through unchecked
     $code  = preg_replace('~/\*.*?\*/~s', '', $css);

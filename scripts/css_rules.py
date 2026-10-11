@@ -12,7 +12,9 @@ CSS tokenizer accepts:
   - any backslash: CSS escapes turn `\\68ttps` into `https` and `@\\69mport`
     into `@import`, so with escapes allowed no name check can be trusted
   - resource functions: url(), image-set() and their relatives
-  - every at-rule except @media and @supports (@import, @font-face, ...)
+  - every at-rule except @media and @supports (@import, @font-face, ...),
+    which also refuses an @ inside a string; telling the two apart would
+    need a CSS tokenizer in two languages, for a case no theme has
 A fetch is the dangerous part: with an attribute selector on Unraid's hidden
 csrf_token input, a theme could leak the token one character per request.
 """
@@ -22,6 +24,8 @@ MAX_BYTES = 512 * 1024
 
 COMMENT = re.compile(r"/\*.*?\*/", re.S)
 FETCH = re.compile(r"(?<![\w-])(?:-[a-z]+-)?(?:url|image-set|image|cross-fade|element|src|attr|paint)\s*\(", re.I)
+# only what can start an HTML tag; a bare < is a media range (`width < 800px`)
+MARKUP = re.compile(r"<[a-zA-Z/!?]")
 AT_RULE = re.compile(r"@(?!(?:media|supports)\b)", re.I)
 LEGACY = [
     (re.compile(r"javascript\s*:", re.I), "contains a javascript: URI"),
@@ -38,8 +42,8 @@ def violations(css):
         errs.append("file too large (>512 KB)")
     if "\\" in css:
         errs.append("contains a backslash (CSS escapes are not allowed)")
-    if "<" in css:
-        errs.append("contains markup (<)")
+    if MARKUP.search(css):
+        errs.append("contains markup (<tag)")
     code = COMMENT.sub("", css)
     # both spellings: a comment can hide a name from one view but not the other
     if FETCH.search(css) or FETCH.search(code):
