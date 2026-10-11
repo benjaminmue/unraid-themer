@@ -9,6 +9,7 @@ Icon="paint-brush"
  * mirrored to the RAM webroot so nginx can serve them.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
 
 // --- css-rules:begin (extracted by test/test_css_rules.py, keep self-contained)
 /* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
@@ -91,6 +92,12 @@ function themer_cfg_write($path, $over) {
 // Store the image bytes for asset kind $dir ('bg' | 'logo') on flash + webroot and
 // return the served URL. Each kind keeps a single active file.
 function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
+    // an SVG is a document, not a picture: served from this origin it could run
+    // script, so it goes through the same allowlist as icon overrides
+    if ($ext === 'svg') {
+        [$data, $err] = themer_sanitize_svg($data, 1024 * 1024);
+        if ($err) return ['', "SVG rejected: $err"];
+    }
     @mkdir("$flash/$dir", 0755, true);
     @mkdir("$webroot/$dir", 0755, true);
     foreach (glob("$flash/$dir/*") as $f) @unlink($f);

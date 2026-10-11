@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.10.11.b03">
+  <!ENTITY version   "2026.10.11.b04">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,20 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.10.11.b04
+- Security: SVG files you add as custom icons, logo or background image are now
+  cleaned by parsing them and keeping only drawing elements and attributes.
+  The old check could be tricked with namespace prefixes and encoded values,
+  and a logo or background SVG was not checked at all, so a hostile SVG could
+  run script when opened directly. Inline SVG copied from a web page without
+  an xmlns is accepted and gets the namespace added; safe declarations in a
+  style attribute are kept as plain attributes.
+- SVGs stored by earlier versions are served cleaned the same way after the
+  update and at every boot; your original file on the flash drive is kept as
+  it is. One that cannot be cleaned at all moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served. Text in SVG logos
+  (&lt;text&gt;) is supported.
+
 ## 2026.10.11.b03
 - Security: theme imports and store downloads are checked against much stricter
   rules. The old check could be bypassed with CSS escapes and with image-set(),
@@ -446,6 +460,7 @@ Icon="paint-brush"
  * mirrored to the RAM webroot so nginx can serve them.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
 
 // --- css-rules:begin (extracted by test/test_css_rules.py, keep self-contained)
 /* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
@@ -528,6 +543,12 @@ function themer_cfg_write($path, $over) {
 // Store the image bytes for asset kind $dir ('bg' | 'logo') on flash + webroot and
 // return the served URL. Each kind keeps a single active file.
 function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
+    // an SVG is a document, not a picture: served from this origin it could run
+    // script, so it goes through the same allowlist as icon overrides
+    if ($ext === 'svg') {
+        [$data, $err] = themer_sanitize_svg($data, 1024 * 1024);
+        if ($err) return ['', "SVG rejected: $err"];
+    }
     @mkdir("$flash/$dir", 0755, true);
     @mkdir("$webroot/$dir", 0755, true);
     foreach (glob("$flash/$dir/*") as $f) @unlink($f);
@@ -1286,6 +1307,7 @@ Icon="icon-apps"
  * loader injects AFTER the icon set — so a single swap wins even with set = Default.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
 
 $name    = "unraid.themer";
 $flash   = "/boot/config/plugins/$name";
@@ -1491,24 +1513,6 @@ foreach (glob("$webroot/icons/svg/*", GLOB_ONLYDIR) as $dirpath) {
 }
 $all_values = [];
 foreach ($picker_groups as $items) foreach ($items as $it) $all_values[] = $it[0];
-
-/* Validate an SVG before it is ever written to disk. Returns [clean, error]. */
-function themer_sanitize_svg($svg) {
-    $svg = (string) $svg;
-    if (trim($svg) === '')            return ["", "empty or download failed"];
-    if (strlen($svg) > 64 * 1024)     return ["", "too large (>64 KB)"];
-    if (!preg_match('/<svg[\s>]/i', $svg)) return ["", "not an <svg> document"];
-    $blocked = [
-        '/<\s*script/i'                                          => "a <script> tag",
-        '/<\s*(foreignObject|iframe|image|use|animate|set)\b/i'  => "an embedded/external element",
-        '/\son\w+\s*=/i'                                         => "an inline event handler",
-        '/javascript\s*:/i'                                      => "a javascript: URI",
-        '/(?:href|xlink:href)\s*=\s*[\'"]?\s*(?:https?:|\/\/|data:)/i' => "an external/data href",
-        '/<!ENTITY|<!DOCTYPE/i'                                  => "an XML entity/doctype",
-    ];
-    foreach ($blocked as $re => $why) if (preg_match($re, $svg)) return ["", "contains $why"];
-    return [$svg, ""];
-}
 
 /* Resolve one slot's raw input to a served icon URL, saving a custom SVG if needed.
  * Returns [targetUrl, error]. Empty input => ["", ""] (no override). */
@@ -1992,7 +1996,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.10.11.b03
+<![CDATA[2026.10.11.b04
 ]]>
 </INLINE>
 </FILE>
@@ -20012,6 +20016,225 @@ unicode: "eb55"
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/migrate-svg.php">
+<INLINE>
+<![CDATA[<?php
+/* Boot-time pass over every SVG the user stored on flash (icon overrides, logo,
+ * background): clean it with the current sanitiser and publish the cleaned
+ * bytes to the webroot. Earlier versions stored SVGs with a weaker check, or
+ * none for logo and background, so a fix to the sanitiser only protects anyone
+ * once those files are cleaned too.
+ *
+ * This is the only way an SVG reaches the webroot at boot; the boot script
+ * copies none itself. If PHP or this script fails, nothing is published,
+ * which costs a custom icon until the next boot but never serves an unchecked
+ * document. For each file:
+ *   - cleans: the cleaned bytes are published. The original on flash is never
+ *     rewritten: cleaning can drop parts the allowlist does not know, and the
+ *     user's file must survive that. It is cleaned again at every boot.
+ *   - refused: it moves to quarantine/ on flash under a name that never
+ *     replaces an earlier one, and is not published
+ * Running it again changes nothing. Exit status 1 if anything failed.
+ *
+ * Usage (from the .plg boot script): php migrate-svg.php <flash dir> <webroot dir> */
+if (PHP_SAPI !== 'cli') exit;   // never as a web request
+require __DIR__ . '/svg.php';
+
+$flash   = rtrim($argv[1] ?? '', '/');
+$webroot = rtrim($argv[2] ?? '', '/');
+if ($flash === '' || $webroot === '' || !is_dir($flash) || !is_dir($webroot)) exit(1);
+
+function themer_write_atomic($path, $data) {
+    $tmp = "$path.tmp";
+    if (file_put_contents($tmp, $data) !== strlen($data)) { @unlink($tmp); return false; }
+    if (!rename($tmp, $path)) { @unlink($tmp); return false; }
+    return true;
+}
+
+$failed = false;
+foreach (['overrides' => 65536, 'bg' => 1024 * 1024, 'logo' => 1024 * 1024] as $dir => $max) {
+    foreach (glob("$flash/$dir/*.svg") ?: [] as $file) {
+        $name = basename($file);
+        $raw = file_get_contents($file);
+        if ($raw === false) { $failed = true; echo "Unraid Themer: cannot read $dir/$name\n"; continue; }
+        [$clean, $err] = themer_sanitize_svg($raw, $max);
+        if ($err !== '') {
+            @mkdir("$flash/quarantine", 0700, true);
+            $dest = "$flash/quarantine/$dir-$name";
+            for ($i = 1; file_exists($dest); $i++) $dest = "$flash/quarantine/$dir-$i-$name";
+            if (rename($file, $dest)) {
+                echo "Unraid Themer: quarantined $dir/$name as " . basename($dest) . " ($err)\n";
+            } else {
+                $failed = true;   // stays on flash, but is not published
+                echo "Unraid Themer: could not quarantine $dir/$name ($err), not served\n";
+            }
+            continue;
+        }
+        @mkdir("$webroot/$dir", 0755, true);
+        if (!themer_write_atomic("$webroot/$dir/$name", $clean)) {
+            $failed = true;
+            echo "Unraid Themer: could not publish $dir/$name\n";
+        }
+    }
+}
+exit($failed ? 1 : 0);
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/svg.php">
+<INLINE>
+<![CDATA[<?php
+/* SVG sanitiser for everything a user can bring in as SVG: icon overrides
+ * (pasted, uploaded, by URL) and the logo and background image.
+ *
+ * These files are served from the webGui's own origin, so a script inside one
+ * runs with the admin's session when the file is opened directly. A blocklist
+ * of regexes was beaten by namespace prefixes (<s:script>) and entity-encoded
+ * values (jav&#x61;script:). This parses the document instead and rebuilds it
+ * from an allowlist: only SVG-namespace drawing elements, only un-namespaced
+ * presentation attributes, url() only as a reference to an id in the same
+ * document, no href, text content only in <text>, <tspan>, <title> and <desc>
+ * (it is escaped on output, so it can only ever be text). A style
+ * attribute is not kept as CSS: each declaration that names an allowed
+ * presentation attribute with a safe value becomes that attribute, the rest
+ * is dropped, so `style="fill:none;stroke:currentColor"` still draws.
+ * Anything else is dropped, and the result is serialised fresh, so what gets
+ * stored is only what passed the allowlist.
+ *
+ * Returns [clean, error]. test/test_svg_rules.py runs it against an attack
+ * corpus and every bundled icon. */
+
+const THEMER_SVG_NS = 'http://www.w3.org/2000/svg';
+
+function themer_svg_allowed_elements() {
+    return array_flip(['svg', 'g', 'path', 'circle', 'ellipse', 'line', 'polyline',
+        'polygon', 'rect', 'defs', 'title', 'desc', 'linearGradient', 'radialGradient',
+        'stop', 'clipPath', 'mask', 'symbol', 'text', 'tspan']);
+}
+
+function themer_svg_allowed_attributes() {
+    return array_flip(['id', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx',
+        'ry', 'fx', 'fy', 'width', 'height', 'viewBox', 'preserveAspectRatio', 'points',
+        'transform', 'fill', 'fill-rule', 'fill-opacity', 'stroke', 'stroke-width',
+        'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-dasharray',
+        'stroke-dashoffset', 'stroke-opacity', 'opacity', 'offset', 'stop-color',
+        'stop-opacity', 'gradientUnits', 'gradientTransform', 'spreadMethod',
+        'clip-path', 'clip-rule', 'clipPathUnits', 'mask', 'maskUnits',
+        'maskContentUnits', 'color', 'version', 'dx', 'dy', 'rotate', 'textLength',
+        'lengthAdjust', 'font-family', 'font-size', 'font-weight', 'font-style',
+        'font-variant', 'font-stretch', 'text-anchor', 'dominant-baseline',
+        'alignment-baseline', 'baseline-shift', 'letter-spacing', 'word-spacing',
+        'text-decoration', 'writing-mode']);
+}
+
+// An attribute value may reference another element of the same document
+// (fill="url(#grad)") but never load anything or carry a scheme.
+function themer_svg_value_ok($value) {
+    $v = strtolower(preg_replace('/\s+/', '', $value));
+    if (strpos($v, 'url(') !== false) {
+        return preg_match('/^url\(#[a-z0-9_.:-]+\)$/', $v) === 1;
+    }
+    return strpos($v, ':') === false && strpos($v, '\\') === false && strpos($v, '<') === false;
+}
+
+// LIBXML_NONET: never fetch anything; no LIBXML_NOENT, so entities stay unexpanded
+function themer_svg_parse($xml) {
+    $prev = libxml_use_internal_errors(true);
+    $doc = new DOMDocument();
+    $ok = $doc->loadXML($xml, LIBXML_NONET | LIBXML_COMPACT);
+    libxml_clear_errors();
+    libxml_use_internal_errors($prev);
+    return ($ok && $doc->documentElement) ? $doc : null;
+}
+
+// Turn a style attribute into plain presentation attributes. CSS gives the
+// style declaration precedence over an attribute of the same name, so it wins.
+function themer_svg_style_to_attrs(DOMElement $el, $style, $attrs) {
+    foreach (explode(';', $style) as $decl) {
+        $parts = explode(':', $decl, 2);
+        if (count($parts) !== 2) continue;
+        $prop = strtolower(trim($parts[0]));
+        $val  = trim(preg_replace('/\s*!important\s*$/i', '', $parts[1]));
+        if ($prop === 'id' || !isset($attrs[$prop]) || $val === '' || !themer_svg_value_ok($val)) continue;
+        $el->setAttribute($prop, $val);
+    }
+}
+
+// Clean the attributes of one element in place.
+function themer_svg_clean_attrs(DOMElement $el, $attrs) {
+    foreach (iterator_to_array($el->attributes) as $a) {
+        if ($a->namespaceURI === null && $a->localName === 'style') {
+            $el->removeAttributeNode($a);
+            themer_svg_style_to_attrs($el, $a->value, $attrs);
+        }
+    }
+    foreach (iterator_to_array($el->attributes) as $a) {
+        // a namespaced attribute (xlink:href, xml:base, foreign prefixes)
+        // is never needed for drawing
+        if ($a->namespaceURI !== null || !isset($attrs[$a->localName]) || !themer_svg_value_ok($a->value))
+            $el->removeAttributeNode($a);
+    }
+}
+
+function themer_sanitize_svg($svg, $max = 65536) {
+    $svg = (string) $svg;
+    if (trim($svg) === '')  return ["", "empty or download failed"];
+    if (strlen($svg) > $max) return ["", "too large (>" . intdiv($max, 1024) . " KB)"];
+    // entities are how XML smuggles content past a parser; no DTD at all
+    if (preg_match('/<!(DOCTYPE|ENTITY)/i', $svg)) return ["", "contains a DOCTYPE or entity"];
+
+    $doc = themer_svg_parse($svg);
+    if (!$doc) return ["", "not a well-formed SVG document"];
+    $root = $doc->documentElement;
+    // inline <svg> copied out of a web page has no xmlns; as a file it would not
+    // even render. Give it the SVG namespace and clean it like any other.
+    if ($root->namespaceURI === null && $root->localName === 'svg') {
+        $doc = themer_svg_parse(preg_replace('/<svg\b/i', '<svg xmlns="' . THEMER_SVG_NS . '"', $svg, 1));
+        if (!$doc) return ["", "not a well-formed SVG document"];
+        $root = $doc->documentElement;
+    }
+    if ($root->namespaceURI !== THEMER_SVG_NS || $root->localName !== 'svg')
+        return ["", "not an <svg> document"];
+
+    $elements = themer_svg_allowed_elements();
+    $attrs = themer_svg_allowed_attributes();
+    $text_ok = ['title' => 1, 'desc' => 1, 'text' => 1, 'tspan' => 1];
+
+    // collect first, then remove: removing while iterating a live list skips nodes
+    $drop = [];
+    $walk = function (DOMNode $node) use (&$walk, &$drop, $elements, $attrs, $text_ok) {
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            if ($child instanceof DOMElement) {
+                if ($child->namespaceURI !== THEMER_SVG_NS || !isset($elements[$child->localName])) {
+                    $drop[] = $child;
+                    continue;
+                }
+                themer_svg_clean_attrs($child, $attrs);
+                $walk($child);
+            } elseif ($child instanceof DOMText && !($child instanceof DOMCdataSection)) {
+                if (!isset($text_ok[$node->localName ?? ''])) $drop[] = $child;
+            } else {
+                // comments, processing instructions, CDATA, entity references
+                $drop[] = $child;
+            }
+        }
+    };
+    themer_svg_clean_attrs($root, $attrs);
+    $walk($root);
+    foreach ($drop as $n) {
+        if ($n->parentNode) $n->parentNode->removeChild($n);
+    }
+
+    // serialise fresh: only the root element, so no prolog or stray nodes survive
+    $clean = $doc->saveXML($root);
+    if ($clean === false || $clean === '') return ["", "could not be cleaned"];
+    return [$clean, ""];
+}
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/js/themer-branding.js">
 <INLINE>
 <![CDATA[/* Unraid Themer — branding (background image picker). External file on purpose:
@@ -21036,15 +21259,33 @@ cp -f /boot/config/plugins/unraid.themer/custom.css /usr/local/emhttp/plugins/un
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
 
+# Stored SVGs reach the webroot only through migrate-svg.php, which cleans each
+# with the current sanitiser and publishes the cleaned bytes (older versions
+# stored some unchecked; a refused one moves to quarantine/ on flash). The old
+# webroot copies go first, so nothing stale stays reachable after an update
+# without a reboot, and if PHP or the script fails no SVG is served at all.
+rm -f /usr/local/emhttp/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/bg/*.svg /usr/local/emhttp/plugins/unraid.themer/logo/*.svg
+if [ -x /usr/bin/php ]; then
+    if [ -f /usr/local/emhttp/plugins/unraid.themer/include/migrate-svg.php ]; then
+        /usr/bin/php /usr/local/emhttp/plugins/unraid.themer/include/migrate-svg.php /boot/config/plugins/unraid.themer /usr/local/emhttp/plugins/unraid.themer
+    fi
+fi
+
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p /usr/local/emhttp/plugins/unraid.themer/overrides
-cp -f /boot/config/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/overrides/ 2>/dev/null
 cp -f /boot/config/plugins/unraid.themer/overrides.css /usr/local/emhttp/plugins/unraid.themer/overrides.css 2>/dev/null
 
 # Background image + custom logo (URL cached or a picked file) live on flash; restore.
 mkdir -p /usr/local/emhttp/plugins/unraid.themer/bg /usr/local/emhttp/plugins/unraid.themer/logo
-cp -f /boot/config/plugins/unraid.themer/bg/* /usr/local/emhttp/plugins/unraid.themer/bg/ 2>/dev/null
-cp -f /boot/config/plugins/unraid.themer/logo/* /usr/local/emhttp/plugins/unraid.themer/logo/ 2>/dev/null
+# raster images only; SVGs were published (cleaned) above
+for f in /boot/config/plugins/unraid.themer/bg/* /boot/config/plugins/unraid.themer/logo/*; do
+    [ -f "$f" ] || continue
+    case "$f" in
+        *.svg) ;;
+        */bg/*) cp -f "$f" /usr/local/emhttp/plugins/unraid.themer/bg/ ;;
+        *) cp -f "$f" /usr/local/emhttp/plugins/unraid.themer/logo/ ;;
+    esac
+done
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

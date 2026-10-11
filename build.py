@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.11.b03",
+    "beta": "2026.10.11.b04",
 }
 
 
@@ -74,6 +74,20 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.11.b04
+- Security: SVG files you add as custom icons, logo or background image are now
+  cleaned by parsing them and keeping only drawing elements and attributes.
+  The old check could be tricked with namespace prefixes and encoded values,
+  and a logo or background SVG was not checked at all, so a hostile SVG could
+  run script when opened directly. Inline SVG copied from a web page without
+  an xmlns is accepted and gets the namespace added; safe declarations in a
+  style attribute are kept as plain attributes.
+- SVGs stored by earlier versions are served cleaned the same way after the
+  update and at every boot; your original file on the flash drive is kept as
+  it is. One that cannot be cleaned at all moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served. Text in SVG logos
+  (<text>) is supported.
+
 ## 2026.10.11.b03
 - Security: theme imports and store downloads are checked against much stricter
   rules. The old check could be bypassed with CSS escapes and with image-set(),
@@ -574,15 +588,33 @@ cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
 
+# Stored SVGs reach the webroot only through migrate-svg.php, which cleans each
+# with the current sanitiser and publishes the cleaned bytes (older versions
+# stored some unchecked; a refused one moves to quarantine/ on flash). The old
+# webroot copies go first, so nothing stale stays reachable after an update
+# without a reboot, and if PHP or the script fails no SVG is served at all.
+rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/*.svg {WEBROOT}/logo/*.svg
+if [ -x /usr/bin/php ]; then
+    if [ -f {WEBROOT}/include/migrate-svg.php ]; then
+        /usr/bin/php {WEBROOT}/include/migrate-svg.php {FLASH} {WEBROOT}
+    fi
+fi
+
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p {WEBROOT}/overrides
-cp -f {FLASH}/overrides/*.svg {WEBROOT}/overrides/ 2>/dev/null
 cp -f {FLASH}/overrides.css {WEBROOT}/overrides.css 2>/dev/null
 
 # Background image + custom logo (URL cached or a picked file) live on flash; restore.
 mkdir -p {WEBROOT}/bg {WEBROOT}/logo
-cp -f {FLASH}/bg/* {WEBROOT}/bg/ 2>/dev/null
-cp -f {FLASH}/logo/* {WEBROOT}/logo/ 2>/dev/null
+# raster images only; SVGs were published (cleaned) above
+for f in {FLASH}/bg/* {FLASH}/logo/*; do
+    [ -f "$f" ] || continue
+    case "$f" in
+        *.svg) ;;
+        */bg/*) cp -f "$f" {WEBROOT}/bg/ ;;
+        *) cp -f "$f" {WEBROOT}/logo/ ;;
+    esac
+done
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

@@ -27,6 +27,12 @@ jobs:
       - name: Check the CSS rules against the attack corpus
         run: php --version && python3 test/test_css_rules.py --require-php
 
+      # User SVGs (icon overrides, logo, background) are served from the webGui's
+      # origin; the sanitiser must strip every way to run script or load content
+      # and keep every bundled icon intact.
+      - name: Check the SVG sanitiser against the attack corpus
+        run: python3 test/test_svg_rules.py --require-php
+
       # Every registry entry needs a palette swatch, otherwise the store shows
       # a submitted theme without its colour preview.
       - name: Check swatches are present and current
