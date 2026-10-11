@@ -66,8 +66,8 @@ jobs:
                              + "\n".join(f"- {e}" for e in errs))
               else:
                   owner = os.environ.get("OWNER", "")
-                  ping = f"\n\ncc @{owner} — to publish, add the **`approved`** label and it's " \
-                         f"committed to the store automatically (credited to the submitter)." if owner else ""
+                  ping = f"\n\ncc @{owner}: adding the **`approved`** label stages it on a branch " \
+                         f"(credited to the submitter) and links the pull request to merge." if owner else ""
                   body_md = (f"✅ **Automated check passed**: no escapes, `url()`, `image-set()` or "
                              f"at-rules besides `@media`/`@supports`; {n} bytes, balanced braces.{ping}\n\nThanks for contributing!")
 
