@@ -33,6 +33,11 @@ jobs:
       - name: Check the SVG sanitiser against the attack corpus
         run: python3 test/test_svg_rules.py --require-php
 
+      # A logo or background picked on the server is copied into the webroot;
+      # a symlink or a path out of /mnt/ must not bring any other file along.
+      - name: Check the server image reader against planted links
+        run: python3 test/test_asset_rules.py --require-php
+
       # Every registry entry needs a palette swatch, otherwise the store shows
       # a submitted theme without its colour preview.
       - name: Check swatches are present and current
