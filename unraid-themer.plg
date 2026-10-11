@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.10.11.b03">
+  <!ENTITY version   "2026.10.11.b04">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,14 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.10.11.b04
+- Security: SVG files you add as custom icons, logo or background image are now
+  cleaned by parsing them and keeping only drawing elements and attributes.
+  The old check could be tricked with namespace prefixes and encoded values,
+  and a logo or background SVG was not checked at all, so a hostile SVG could
+  run script when opened directly. Inline SVG copied from a web page without
+  an xmlns is accepted and gets the namespace added.
+
 ## 2026.10.11.b03
 - Security: theme imports and store downloads are checked against much stricter
   rules. The old check could be bypassed with CSS escapes and with image-set(),
@@ -446,6 +454,7 @@ Icon="paint-brush"
  * mirrored to the RAM webroot so nginx can serve them.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
 
 // --- css-rules:begin (extracted by test/test_css_rules.py, keep self-contained)
 /* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
@@ -528,6 +537,12 @@ function themer_cfg_write($path, $over) {
 // Store the image bytes for asset kind $dir ('bg' | 'logo') on flash + webroot and
 // return the served URL. Each kind keeps a single active file.
 function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
+    // an SVG is a document, not a picture: served from this origin it could run
+    // script, so it goes through the same allowlist as icon overrides
+    if ($ext === 'svg') {
+        [$data, $err] = themer_sanitize_svg($data, 1024 * 1024);
+        if ($err) return ['', "SVG rejected: $err"];
+    }
     @mkdir("$flash/$dir", 0755, true);
     @mkdir("$webroot/$dir", 0755, true);
     foreach (glob("$flash/$dir/*") as $f) @unlink($f);
@@ -1286,6 +1301,7 @@ Icon="icon-apps"
  * loader injects AFTER the icon set — so a single swap wins even with set = Default.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
 
 $name    = "unraid.themer";
 $flash   = "/boot/config/plugins/$name";
@@ -1491,24 +1507,6 @@ foreach (glob("$webroot/icons/svg/*", GLOB_ONLYDIR) as $dirpath) {
 }
 $all_values = [];
 foreach ($picker_groups as $items) foreach ($items as $it) $all_values[] = $it[0];
-
-/* Validate an SVG before it is ever written to disk. Returns [clean, error]. */
-function themer_sanitize_svg($svg) {
-    $svg = (string) $svg;
-    if (trim($svg) === '')            return ["", "empty or download failed"];
-    if (strlen($svg) > 64 * 1024)     return ["", "too large (>64 KB)"];
-    if (!preg_match('/<svg[\s>]/i', $svg)) return ["", "not an <svg> document"];
-    $blocked = [
-        '/<\s*script/i'                                          => "a <script> tag",
-        '/<\s*(foreignObject|iframe|image|use|animate|set)\b/i'  => "an embedded/external element",
-        '/\son\w+\s*=/i'                                         => "an inline event handler",
-        '/javascript\s*:/i'                                      => "a javascript: URI",
-        '/(?:href|xlink:href)\s*=\s*[\'"]?\s*(?:https?:|\/\/|data:)/i' => "an external/data href",
-        '/<!ENTITY|<!DOCTYPE/i'                                  => "an XML entity/doctype",
-    ];
-    foreach ($blocked as $re => $why) if (preg_match($re, $svg)) return ["", "contains $why"];
-    return [$svg, ""];
-}
 
 /* Resolve one slot's raw input to a served icon URL, saving a custom SVG if needed.
  * Returns [targetUrl, error]. Empty input => ["", ""] (no override). */
@@ -1992,7 +1990,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.10.11.b03
+<![CDATA[2026.10.11.b04
 ]]>
 </INLINE>
 </FILE>
@@ -20008,6 +20006,132 @@ unicode: "eb55"
   <path d="M18 6l-12 12" />
   <path d="M6 6l12 12" />
 </svg>
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/svg.php">
+<INLINE>
+<![CDATA[<?php
+/* SVG sanitiser for everything a user can bring in as SVG: icon overrides
+ * (pasted, uploaded, by URL) and the logo and background image.
+ *
+ * These files are served from the webGui's own origin, so a script inside one
+ * runs with the admin's session when the file is opened directly. A blocklist
+ * of regexes was beaten by namespace prefixes (<s:script>) and entity-encoded
+ * values (jav&#x61;script:). This parses the document instead and rebuilds it
+ * from an allowlist: only SVG-namespace drawing elements, only un-namespaced
+ * presentation attributes, url() only as a reference to an id in the same
+ * document, no style, no href, no text content outside <title>/<desc>.
+ * Anything else is dropped, and the result is serialised fresh, so what gets
+ * stored is only what passed the allowlist.
+ *
+ * Returns [clean, error]. test/test_svg_rules.py runs it against an attack
+ * corpus and every bundled icon. */
+
+const THEMER_SVG_NS = 'http://www.w3.org/2000/svg';
+
+function themer_svg_allowed_elements() {
+    return array_flip(['svg', 'g', 'path', 'circle', 'ellipse', 'line', 'polyline',
+        'polygon', 'rect', 'defs', 'title', 'desc', 'linearGradient', 'radialGradient',
+        'stop', 'clipPath', 'mask', 'symbol']);
+}
+
+function themer_svg_allowed_attributes() {
+    return array_flip(['id', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx',
+        'ry', 'fx', 'fy', 'width', 'height', 'viewBox', 'preserveAspectRatio', 'points',
+        'transform', 'fill', 'fill-rule', 'fill-opacity', 'stroke', 'stroke-width',
+        'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-dasharray',
+        'stroke-dashoffset', 'stroke-opacity', 'opacity', 'offset', 'stop-color',
+        'stop-opacity', 'gradientUnits', 'gradientTransform', 'spreadMethod',
+        'clip-path', 'clip-rule', 'clipPathUnits', 'mask', 'maskUnits',
+        'maskContentUnits', 'color', 'version']);
+}
+
+// An attribute value may reference another element of the same document
+// (fill="url(#grad)") but never load anything or carry a scheme.
+function themer_svg_value_ok($value) {
+    $v = strtolower(preg_replace('/\s+/', '', $value));
+    if (strpos($v, 'url(') !== false) {
+        return preg_match('/^url\(#[a-z0-9_.:-]+\)$/', $v) === 1;
+    }
+    return strpos($v, ':') === false && strpos($v, '\\') === false && strpos($v, '<') === false;
+}
+
+// LIBXML_NONET: never fetch anything; no LIBXML_NOENT, so entities stay unexpanded
+function themer_svg_parse($xml) {
+    $prev = libxml_use_internal_errors(true);
+    $doc = new DOMDocument();
+    $ok = $doc->loadXML($xml, LIBXML_NONET | LIBXML_COMPACT);
+    libxml_clear_errors();
+    libxml_use_internal_errors($prev);
+    return ($ok && $doc->documentElement) ? $doc : null;
+}
+
+function themer_sanitize_svg($svg, $max = 65536) {
+    $svg = (string) $svg;
+    if (trim($svg) === '')  return ["", "empty or download failed"];
+    if (strlen($svg) > $max) return ["", "too large (>" . intdiv($max, 1024) . " KB)"];
+    // entities are how XML smuggles content past a parser; no DTD at all
+    if (preg_match('/<!(DOCTYPE|ENTITY)/i', $svg)) return ["", "contains a DOCTYPE or entity"];
+
+    $doc = themer_svg_parse($svg);
+    if (!$doc) return ["", "not a well-formed SVG document"];
+    $root = $doc->documentElement;
+    // inline <svg> copied out of a web page has no xmlns; as a file it would not
+    // even render. Give it the SVG namespace and clean it like any other.
+    if ($root->namespaceURI === null && $root->localName === 'svg') {
+        $doc = themer_svg_parse(preg_replace('/<svg\b/i', '<svg xmlns="' . THEMER_SVG_NS . '"', $svg, 1));
+        if (!$doc) return ["", "not a well-formed SVG document"];
+        $root = $doc->documentElement;
+    }
+    if ($root->namespaceURI !== THEMER_SVG_NS || $root->localName !== 'svg')
+        return ["", "not an <svg> document"];
+
+    $elements = themer_svg_allowed_elements();
+    $attrs = themer_svg_allowed_attributes();
+    $text_ok = ['title' => 1, 'desc' => 1];
+
+    // collect first, then remove: removing while iterating a live list skips nodes
+    $drop = [];
+    $walk = function (DOMNode $node) use (&$walk, &$drop, $elements, $attrs, $text_ok) {
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            if ($child instanceof DOMElement) {
+                if ($child->namespaceURI !== THEMER_SVG_NS || !isset($elements[$child->localName])) {
+                    $drop[] = $child;
+                    continue;
+                }
+                foreach (iterator_to_array($child->attributes) as $a) {
+                    // a namespaced attribute (xlink:href, xml:base, foreign prefixes)
+                    // is never needed for drawing
+                    if ($a->namespaceURI !== null || !isset($attrs[$a->localName])
+                        || !themer_svg_value_ok($a->value)) {
+                        $child->removeAttributeNode($a);
+                    }
+                }
+                $walk($child);
+            } elseif ($child instanceof DOMText && !($child instanceof DOMCdataSection)) {
+                if (!isset($text_ok[$node->localName ?? ''])) $drop[] = $child;
+            } else {
+                // comments, processing instructions, CDATA, entity references
+                $drop[] = $child;
+            }
+        }
+    };
+    foreach (iterator_to_array($root->attributes) as $a) {
+        if ($a->namespaceURI !== null || !isset($attrs[$a->localName]) || !themer_svg_value_ok($a->value))
+            $root->removeAttributeNode($a);
+    }
+    $walk($root);
+    foreach ($drop as $n) {
+        if ($n->parentNode) $n->parentNode->removeChild($n);
+    }
+
+    // serialise fresh: only the root element, so no prolog or stray nodes survive
+    $clean = $doc->saveXML($root);
+    if ($clean === false || $clean === '') return ["", "could not be cleaned"];
+    return [$clean, ""];
+}
 ]]>
 </INLINE>
 </FILE>

@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.11.b03",
+    "beta": "2026.10.11.b04",
 }
 
 
@@ -74,6 +74,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.11.b04
+- Security: SVG files you add as custom icons, logo or background image are now
+  cleaned by parsing them and keeping only drawing elements and attributes.
+  The old check could be tricked with namespace prefixes and encoded values,
+  and a logo or background SVG was not checked at all, so a hostile SVG could
+  run script when opened directly. Inline SVG copied from a web page without
+  an xmlns is accepted and gets the namespace added.
+
 ## 2026.10.11.b03
 - Security: theme imports and store downloads are checked against much stricter
   rules. The old check could be bypassed with CSS escapes and with image-set(),
