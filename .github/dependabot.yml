@@ -4,6 +4,8 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
+    # updates land on the beta channel first, like every other change
+    target-branch: beta
     schedule:
       interval: weekly
       day: monday
