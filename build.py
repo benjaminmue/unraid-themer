@@ -586,26 +586,33 @@ cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
 
-# Every stored SVG goes through the current sanitiser before it is served again:
-# older versions stored some unchecked. A refused file moves to quarantine/ on
-# flash. The webroot copies are dropped first, so after an update without a
-# reboot no stale copy of a quarantined file stays reachable.
+# Stored SVGs reach the webroot only through migrate-svg.php, which cleans each
+# with the current sanitiser and publishes the cleaned bytes (older versions
+# stored some unchecked; a refused one moves to quarantine/ on flash). The old
+# webroot copies go first, so nothing stale stays reachable after an update
+# without a reboot, and if PHP or the script fails no SVG is served at all.
 rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/*.svg {WEBROOT}/logo/*.svg
 if [ -x /usr/bin/php ]; then
     if [ -f {WEBROOT}/include/migrate-svg.php ]; then
-        /usr/bin/php {WEBROOT}/include/migrate-svg.php {FLASH}
+        /usr/bin/php {WEBROOT}/include/migrate-svg.php {FLASH} {WEBROOT}
     fi
 fi
 
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p {WEBROOT}/overrides
-cp -f {FLASH}/overrides/*.svg {WEBROOT}/overrides/ 2>/dev/null
 cp -f {FLASH}/overrides.css {WEBROOT}/overrides.css 2>/dev/null
 
 # Background image + custom logo (URL cached or a picked file) live on flash; restore.
 mkdir -p {WEBROOT}/bg {WEBROOT}/logo
-cp -f {FLASH}/bg/* {WEBROOT}/bg/ 2>/dev/null
-cp -f {FLASH}/logo/* {WEBROOT}/logo/ 2>/dev/null
+# raster images only; SVGs were published (cleaned) above
+for f in {FLASH}/bg/* {FLASH}/logo/*; do
+    [ -f "$f" ] || continue
+    case "$f" in
+        *.svg) ;;
+        */bg/*) cp -f "$f" {WEBROOT}/bg/ ;;
+        *) cp -f "$f" {WEBROOT}/logo/ ;;
+    esac
+done
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

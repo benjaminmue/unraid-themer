@@ -1,32 +1,64 @@
 <?php
 /* Boot-time pass over every SVG the user stored on flash (icon overrides, logo,
- * background) through the current sanitiser, before the boot script copies
- * them into the webroot. Earlier versions stored SVGs with a weaker check, or
- * none for logo and background, so a security fix to the sanitiser only
- * protects anyone once those files are cleaned too.
+ * background): clean it with the current sanitiser and publish the cleaned
+ * bytes to the webroot. Earlier versions stored SVGs with a weaker check, or
+ * none for logo and background, so a fix to the sanitiser only protects anyone
+ * once those files are cleaned too.
  *
- * A file that cleans is rewritten in place; one that is refused moves to
- * quarantine/ on flash, out of anything the webGui serves, so nothing is lost.
- * Running it again changes nothing.
+ * This is the only way an SVG reaches the webroot at boot; the boot script
+ * copies none itself. If PHP or this script fails, nothing is published,
+ * which costs a custom icon until the next boot but never serves an unchecked
+ * document. For each file:
+ *   - cleans: the cleaned bytes are published; flash is rewritten through a
+ *     temp file and a rename, so a full or interrupted write leaves the
+ *     original in place (it is simply cleaned again next boot)
+ *   - refused: it moves to quarantine/ on flash under a name that never
+ *     replaces an earlier one, and is not published
+ * Running it again changes nothing. Exit status 1 if anything failed.
  *
- * Usage (from the .plg boot script): php migrate-svg.php <flash dir> */
+ * Usage (from the .plg boot script): php migrate-svg.php <flash dir> <webroot dir> */
 if (PHP_SAPI !== 'cli') exit;   // never as a web request
 require __DIR__ . '/svg.php';
 
-$flash = rtrim($argv[1] ?? '', '/');
-if ($flash === '' || !is_dir($flash)) exit(1);
+$flash   = rtrim($argv[1] ?? '', '/');
+$webroot = rtrim($argv[2] ?? '', '/');
+if ($flash === '' || $webroot === '' || !is_dir($flash) || !is_dir($webroot)) exit(1);
 
+function themer_write_atomic($path, $data) {
+    $tmp = "$path.tmp";
+    if (file_put_contents($tmp, $data) !== strlen($data)) { @unlink($tmp); return false; }
+    if (!rename($tmp, $path)) { @unlink($tmp); return false; }
+    return true;
+}
+
+$failed = false;
 foreach (['overrides' => 65536, 'bg' => 1024 * 1024, 'logo' => 1024 * 1024] as $dir => $max) {
     foreach (glob("$flash/$dir/*.svg") ?: [] as $file) {
-        $raw = (string) file_get_contents($file);
+        $name = basename($file);
+        $raw = file_get_contents($file);
+        if ($raw === false) { $failed = true; echo "Unraid Themer: cannot read $dir/$name\n"; continue; }
         [$clean, $err] = themer_sanitize_svg($raw, $max);
         if ($err !== '') {
             @mkdir("$flash/quarantine", 0700, true);
-            rename($file, "$flash/quarantine/$dir-" . basename($file));
-            echo "Unraid Themer: quarantined $dir/" . basename($file) . " ($err)\n";
-        } elseif ($clean !== $raw) {
-            file_put_contents($file, $clean);
-            echo "Unraid Themer: cleaned $dir/" . basename($file) . "\n";
+            $dest = "$flash/quarantine/$dir-$name";
+            for ($i = 1; file_exists($dest); $i++) $dest = "$flash/quarantine/$dir-$i-$name";
+            if (rename($file, $dest)) {
+                echo "Unraid Themer: quarantined $dir/$name as " . basename($dest) . " ($err)\n";
+            } else {
+                $failed = true;   // stays on flash, but is not published
+                echo "Unraid Themer: could not quarantine $dir/$name ($err), not served\n";
+            }
+            continue;
+        }
+        if ($clean !== $raw && !themer_write_atomic($file, $clean)) {
+            $failed = true;       // original kept on flash; the cleaned copy is still published
+            echo "Unraid Themer: could not rewrite $dir/$name on flash, cleaned copy served\n";
+        }
+        @mkdir("$webroot/$dir", 0755, true);
+        if (!themer_write_atomic("$webroot/$dir/$name", $clean)) {
+            $failed = true;
+            echo "Unraid Themer: could not publish $dir/$name\n";
         }
     }
 }
+exit($failed ? 1 : 0);

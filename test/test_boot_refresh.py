@@ -5,7 +5,7 @@ Run:  python3 test/test_boot_refresh.py
 
 The block is taken verbatim from build.py and only has its two absolute paths
 rewritten, so what runs here is what runs on the server."""
-import hashlib, os, shutil, subprocess, sys, tempfile
+import glob, hashlib, os, shutil, subprocess, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build  # noqa: E402  (module constants only; main() is __main__-gated)
@@ -114,6 +114,21 @@ subprocess.run(["bash", path], check=True, capture_output=True,
 checks.append(("H failed copy leaves the theme", read(f"{FLASH}/presets/current.css") == V4))
 subprocess.run(["bash", path], check=True, capture_output=True)
 checks.append(("H next boot retries it",          read(f"{FLASH}/presets/current.css") == V5))
+
+# I: SVGs reach the webroot only through migrate-svg.php. Without it (as here:
+#    the sandbox has no plugin files), no stored SVG may be published at all,
+#    while raster images are still restored.
+for d in ("logo", "bg", "overrides"):
+    os.makedirs(f"{FLASH}/{d}", exist_ok=True)
+write(f"{FLASH}/logo/logo.svg", '<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>')
+write(f"{FLASH}/overrides/cpu.svg", '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>')
+write(f"{FLASH}/bg/bg.png", "png bytes")
+os.makedirs(f"{WEBROOT}/logo", exist_ok=True)
+write(f"{WEBROOT}/logo/logo.svg", "stale copy from before the update")
+subprocess.run(["bash", path], check=True, capture_output=True)
+checks.append(("I no SVG served without the migration",
+               not glob.glob(f"{WEBROOT}/**/*.svg", recursive=True)))
+checks.append(("I raster image still restored", os.path.exists(f"{WEBROOT}/bg/bg.png")))
 
 bad = 0
 for label, ok in checks:

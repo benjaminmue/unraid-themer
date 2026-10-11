@@ -75,9 +75,10 @@ def migration_checks(php_cmd):
     """Boot migration (include/migrate-svg.php) on a fake flash directory."""
     tmp = tempfile.mkdtemp(prefix="themer-svgmig-")
     try:
-        flash = os.path.join(tmp, "flash")
+        flash, web = os.path.join(tmp, "flash"), os.path.join(tmp, "web")
         for d in ("overrides", "bg", "logo"):
             os.makedirs(os.path.join(flash, d))
+        os.makedirs(web)
         files = {
             "overrides/cpu.svg": ATTACKS["inner prefixed script"],     # cleanable
             "overrides/ok.svg":  open(sorted(glob.glob(os.path.join(PLUGIN, "icons/svg/*.svg")))[0]).read(),
@@ -92,14 +93,25 @@ def migration_checks(php_cmd):
         os.makedirs(plug)
         for f in ("svg.php", "migrate-svg.php"):
             shutil.copy(os.path.join(PLUGIN, "include", f), plug)
-        run = lambda: subprocess.run(shlex.split(php_cmd) + [os.path.join(plug, "migrate-svg.php"), flash],
+        run = lambda: subprocess.run(shlex.split(php_cmd) + [os.path.join(plug, "migrate-svg.php"), flash, web],
                                      capture_output=True, text=True, check=True)
         run()
+        webfile = lambda rel: os.path.join(web, rel)
+        published = {rel: open(webfile(rel), encoding="utf-8").read()
+                     for rel in ("overrides/cpu.svg", "overrides/ok.svg", "logo/logo.svg") if os.path.exists(webfile(rel))}
         read = lambda rel: open(os.path.join(flash, rel), encoding="utf-8").read()
         first = {rel: read(rel) for rel in ("overrides/cpu.svg", "overrides/ok.svg", "logo/logo.svg")}
         run()
         second = {rel: read(rel) for rel in first}
+        # a second refused file of the same name must not replace the first one
+        with open(os.path.join(flash, "bg/bg.svg"), "w", encoding="utf-8") as f:
+            f.write(ATTACKS["html not svg"])
+        run()
+        quarantined = sorted(os.listdir(os.path.join(flash, "quarantine")))
         return [
+            ("migration: publishes exactly the cleaned bytes", published == first, ""),
+            ("migration: refused file is not published", not os.path.exists(webfile("bg/bg.svg")), ""),
+            ("migration: quarantine never overwrites", len(quarantined) == 2, " ".join(quarantined)),
             ("migration: hostile icon cleaned", not DANGER.search(first["overrides/cpu.svg"]), first["overrides/cpu.svg"][:80]),
             ("migration: hostile logo cleaned", not DANGER.search(first["logo/logo.svg"]), first["logo/logo.svg"][:80]),
             ("migration: refused background quarantined",
