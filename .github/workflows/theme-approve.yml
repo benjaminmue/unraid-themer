@@ -93,8 +93,10 @@ jobs:
               errs.append("unbalanced braces")
           else:
               errs += violations(css)
-          if not name or not slug:
-              errs.append("no usable theme name")
+          # plain text only: the name lands in bot comments, the PR title and the
+          # store, and markdown in it could plant a second "review" link
+          if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 .'+-]{0,39}", name) or not slug:
+              errs.append("the theme name may only use letters, digits, spaces and . ' + - (max 40)")
           elif os.path.exists(path) or any(t.get("file") == slug + ".css" for t in idx["themes"]):
               errs.append(f"a theme named `{slug}` already exists, please pick another name")
           if errs:
@@ -109,8 +111,15 @@ jobs:
           # palette preview + content hash for the store, same as for every theme
           subprocess.run([sys.executable, "scripts/gen_swatches.py"], check=True, stdout=subprocess.DEVNULL)
 
-          branch = f"theme/{slug}-{num}"
+          # one branch per approved snapshot, named after its content: approving
+          # again after an edit stages a new branch, it never rewrites one that
+          # is already under review
           digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
+          branch = f"theme/{slug}-{num}-{digest[:12]}"
+          if subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", branch],
+                            capture_output=True).returncode == 0:
+              comment(f"ℹ️ This exact version is already staged on `{branch}`; use the link above.")
+              raise SystemExit(0)
           subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(["git", "config", "user.email",
                           "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
@@ -118,8 +127,7 @@ jobs:
           subprocess.run(["git", "add", path, idx_path], check=True)
           subprocess.run(["git", "commit", "-m",
                           f"Add theme \"{name}\" by @{author} (from #{num})"], check=True)
-          # the branch is the bot's own; approving again restages it from scratch
-          subprocess.run(["git", "push", "--force", "origin", f"HEAD:refs/heads/{branch}"], check=True)
+          subprocess.run(["git", "push", "origin", f"HEAD:refs/heads/{branch}"], check=True)
 
           q = urllib.parse.urlencode({
               "quick_pull": "1",
