@@ -6,9 +6,9 @@ name: Sanitize themes
 # too, since the boot-refresh test and the XML check cover exactly those.
 on:
   push:
-    paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg"]
+    paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg", ".github/workflows/sanitize.yml"]
   pull_request:
-    paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg"]
+    paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg", ".github/workflows/sanitize.yml"]
 
 jobs:
   sanitize:
