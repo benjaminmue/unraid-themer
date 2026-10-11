@@ -69,7 +69,8 @@ REFUSED = [
     "https://tailnet.example.com/x.png",
     "https://mapped.example.com/x.png",
     "https://nat64.example.com/x.png",
-    "https://trailing.example.com./x.png",     # trailing dot
+    "https://trailing.example.com./x.png",     # trailing dot: not matched by curl's pin
+    "https://github.com./x.png",               # even for a public host
     "https://unknown.example.com/x.png",       # does not resolve
     "https://exa mple.com/x.png",
 ]

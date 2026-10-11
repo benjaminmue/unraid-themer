@@ -7,7 +7,8 @@
  * router, other LAN or Tailscale hosts, or a cloud metadata address. Every URL
  * is https on port 443, its host name must resolve only to public addresses,
  * and curl is pinned to the address that was checked (--resolve), so a DNS
- * answer that changes between check and connect does not matter. Redirects
+ * answer that changes between check and connect does not matter; the address
+ * curl actually connected to is compared afterwards as well. Redirects
  * are followed here, one hop at a time, with the same check on every hop.
  *
  * test/test_fetch_rules.py runs the checks against private ranges, encoded
@@ -71,7 +72,9 @@ function themer_url_target($url, $resolver = null) {
         return ['', '', 'not a valid https:// URL'];
     if (isset($p['user']) || isset($p['pass'])) return ['', '', 'URLs with a user name are not accepted'];
     if (isset($p['port']) && (int) $p['port'] !== 443) return ['', '', 'only the standard https port (443) can be used'];
-    $host = strtolower(rtrim($p['host'], '.'));
+    // a trailing dot names the same host but would not match curl's pin
+    if (substr($p['host'], -1) === '.') return ['', '', 'not a valid host name'];
+    $host = strtolower($p['host']);
     $literal = trim($host, '[]');
     if (filter_var($literal, FILTER_VALIDATE_IP)) {
         $ips = [$literal];
@@ -101,13 +104,19 @@ function themer_fetch($url, $max, $timeout = 20) {
         $cmd = 'curl -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
              . ' --connect-timeout 6 --max-time ' . (int) $timeout . ' --max-filesize ' . (int) $max
              . ' --resolve ' . escapeshellarg("$host:443:$pin")
-             . ' -o ' . escapeshellarg($tmp) . ' -w ' . escapeshellarg('%{http_code} %{redirect_url}')
+             . ' -o ' . escapeshellarg($tmp) . ' -w ' . escapeshellarg('%{http_code} %{remote_ip} %{redirect_url}')
              . ' ' . escapeshellarg($url) . ' 2>/dev/null';
-        $meta = trim((string) shell_exec($cmd));
+        $out = [];
+        exec($cmd, $out, $rc);
         $body = (string) @file_get_contents($tmp, false, null, 0, $max + 1);
         @unlink($tmp);
-        [$code, $next] = array_pad(explode(' ', $meta, 2), 2, '');
+        [$code, $peer, $next] = array_pad(explode(' ', trim(implode('', $out)), 3), 3, '');
         $code = (int) $code;
+        // a transfer that broke off after the headers is not a download
+        if ($rc !== 0) return ['', 'could not download that URL'];
+        // the pin must have held: connected to the checked address, nothing else
+        if (@inet_pton($peer) === false || inet_pton($peer) !== inet_pton($ip))
+            return ['', 'could not download that URL'];
         if ($code >= 300 && $code < 400 && $next !== '') { $url = $next; continue; }
         if ($code !== 200) return ['', $code ? "the server answered HTTP $code" : 'could not download that URL'];
         if (strlen($body) > $max) return ['', 'download too large'];
