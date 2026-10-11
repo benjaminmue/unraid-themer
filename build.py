@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.11.b01",
+    "beta": "2026.10.11.b02",
 }
 
 
@@ -45,6 +45,11 @@ def current_channel():
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "main"
     if branch not in VERSIONS:
+        # Imported (the tests read BOOT and other channel-free constants, and
+        # main() is __main__-gated), nothing gets stamped, so a feature branch
+        # or the detached HEAD of a CI pull-request checkout is fine.
+        if __name__ != "__main__":
+            return "main"
         # Falling back to main here is how a feature branch quietly produces a
         # stable-stamped .plg that then rides a merge into beta, pointing every
         # install on that channel at the wrong branch. Say so instead.
@@ -69,6 +74,12 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.11.b02
+- A theme you updated from the store now stays updated after a reboot. When the
+  registry fixed a theme that also ships with the plugin, the next boot put the
+  older bundled copy back and the store offered the update again. Boot now only
+  refreshes a bundled theme when the plugin package itself brings a new version.
+
 ## 2026.10.11.b01
 - Fix the custom logo being ignored on Unraid 7.3.3 (and on 7.3.2 once the
   Unraid Connect / API plugin is updated): the newer header draws the Unraid
@@ -495,7 +506,13 @@ fi
 #     anything that no longer matches is left alone
 #   - no record at all means the theme predates .origin: refresh it once and
 #     start recording, otherwise old installs would never pick a fix up
+# Only a package that actually changed a theme counts as an update. .bundled
+# remembers the packaged hash last seen per theme: while it is unchanged, the
+# copy on flash may be NEWER than the package (taken from the store after a
+# registry fix) and must survive the reboot. The next release ships the
+# registry state again, so it is at least as new as anything taken from there.
 ORIGIN={FLASH}/presets/.origin
+SEEN={FLASH}/presets/.bundled
 for src in {WEBROOT}/defaults/*.css; do
     [ -f "$src" ] || continue
     stem=$(basename "$src" .css)
@@ -504,22 +521,40 @@ for src in {WEBROOT}/defaults/*.css; do
     new=$(sha256sum "$src" | cut -d' ' -f1)
     cur=$(sha256sum "$dst" | cut -d' ' -f1)
     rec=$(grep "^$stem|" "$ORIGIN" 2>/dev/null | head -n1 | cut -d'|' -f3)
+    seen=$(grep "^$stem|" "$SEEN" 2>/dev/null | head -n1 | cut -d'|' -f2)
     # NOTE: keep this script free of ampersands and angle brackets. These INLINE
     # blocks are not CDATA, so one of them makes the .plg invalid XML; use an
     # "if" where a shell and-list would be shorter. build.py refuses to write one.
+    act=none
     if [ "$new" = "$cur" ]; then
         # already current; record it once so the store stops guessing
-        if [ -n "$rec" ]; then continue; fi
+        if [ -z "$rec" ]; then act=record; fi
+    elif [ "$seen" = "$new" ]; then
+        # same package as last boot: whatever is on flash now came from the
+        # store or the user, never from an older package
+        act=none
+    elif [ -n "$rec" ]; then
+        # a copy that no longer matches what we wrote is the user's edit
+        if [ "$rec" = "$cur" ]; then act=copy; fi
     else
-        if [ -n "$rec" ]; then
-            # a copy that no longer matches what we wrote is the user's edit
-            if [ "$rec" != "$cur" ]; then continue; fi
-        fi
-        cp -f "$src" "$dst"
+        act=copy
     fi
-    grep -v "^$stem|" "$ORIGIN" 2>/dev/null > "$ORIGIN.tmp"
-    printf '%s|%s|%s\\n' "$stem" "$new" "$new" >> "$ORIGIN.tmp"
-    mv -f "$ORIGIN.tmp" "$ORIGIN"
+    if [ "$act" = "copy" ]; then
+        # a failed copy records nothing, so the next boot tries again
+        if ! cp -f "$src" "$dst"; then continue; fi
+    fi
+    if [ "$act" != "none" ]; then
+        grep -v "^$stem|" "$ORIGIN" 2>/dev/null > "$ORIGIN.tmp"
+        printf '%s|%s|%s\\n' "$stem" "$new" "$new" >> "$ORIGIN.tmp"
+        mv -f "$ORIGIN.tmp" "$ORIGIN"
+    fi
+    # mark this package version as handled only now: a boot interrupted above
+    # retries the refresh instead of skipping it for good
+    if [ "$seen" != "$new" ]; then
+        grep -v "^$stem|" "$SEEN" 2>/dev/null > "$SEEN.tmp"
+        printf '%s|%s\\n' "$stem" "$new" >> "$SEEN.tmp"
+        mv -f "$SEEN.tmp" "$SEEN"
+    fi
 done
 
 # User custom overrides live on flash; recreate the webroot copy nginx serves.

@@ -2,12 +2,13 @@ name: Sanitize themes
 
 # The publish bot: any change to the theme registry is validated against the
 # same ruleset the plugin uses. Unsafe or malformed submissions fail here and
-# cannot be merged.
+# cannot be merged. Plugin sources, build.py and the generated .plg trigger it
+# too, since the boot-refresh test and the XML check cover exactly those.
 on:
   push:
-    paths: ["themes/**", "plugin/**/*.css", "scripts/*.py"]
+    paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg"]
   pull_request:
-    paths: ["themes/**", "plugin/**/*.css", "scripts/*.py"]
+    paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg"]
 
 jobs:
   sanitize:

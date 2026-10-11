@@ -73,7 +73,8 @@ checks += [
     ("origin: C untouched",       by_stem.get("edited", [None]*3)[2] == old_hash),
     ("origin: unrelated kept",    "keepme" in by_stem),
     ("origin: D recorded though unchanged", by_stem.get("current", [None]*3)[2] == new_hash),
-    ("origin: no tmp left over",  not os.path.exists(f"{FLASH}/presets/.origin.tmp")),
+    ("origin: no tmp left over",  not os.path.exists(f"{FLASH}/presets/.origin.tmp")
+                                  and not os.path.exists(f"{FLASH}/presets/.bundled.tmp")),
 ]
 
 # second run must change nothing (idempotent)
@@ -81,6 +82,38 @@ before = {f: sha(f"{FLASH}/presets/{f}") for f in os.listdir(f"{FLASH}/presets")
 subprocess.run(["bash", path], check=True, capture_output=True)
 after = {f: sha(f"{FLASH}/presets/{f}") for f in os.listdir(f"{FLASH}/presets") if f.endswith(".css")}
 checks.append(("second run idempotent", before == after and read(f"{FLASH}/presets/.origin") == origin))
+
+# F: the registry fixed a bundled theme after this release and the user took it
+#    with "Update installed" (the store records the registry hash + the sanitised
+#    hash). A reboot with the same package must not put the older bundled copy back.
+STORE = "/* v3 from the store */\n"
+write(f"{FLASH}/presets/current.css", STORE)
+rows_now = [l for l in read(f"{FLASH}/presets/.origin").split("\n") if l and not l.startswith("current|")]
+store_hash = hashlib.sha256(STORE.encode()).hexdigest()
+write(f"{FLASH}/presets/.origin", "\n".join(rows_now + [f"current|regsha|{store_hash}"]) + "\n")
+subprocess.run(["bash", path], check=True, capture_output=True)
+checks.append(("F store update survives reboot", read(f"{FLASH}/presets/current.css") == STORE))
+
+# G: the next release ships the theme again (now at least as new as the store
+#    copy); the untouched store copy is refreshed from the package.
+V4 = "/* v4 shipped */\n"
+write(f"{WEBROOT}/defaults/current.css", V4)
+subprocess.run(["bash", path], check=True, capture_output=True)
+checks.append(("G new package refreshes it", read(f"{FLASH}/presets/current.css") == V4))
+
+# H: the refresh is interrupted (here: the copy fails). Nothing may be marked as
+#    handled, so the next boot still delivers the new package version.
+V5 = "/* v5 shipped */\n"
+write(f"{WEBROOT}/defaults/current.css", V5)
+shim = f"{root}/shim"
+os.makedirs(shim)
+write(f"{shim}/cp", "#!/bin/sh\nexit 1\n")
+os.chmod(f"{shim}/cp", 0o755)
+subprocess.run(["bash", path], check=True, capture_output=True,
+               env={**os.environ, "PATH": f"{shim}:{os.environ['PATH']}"})
+checks.append(("H failed copy leaves the theme", read(f"{FLASH}/presets/current.css") == V4))
+subprocess.run(["bash", path], check=True, capture_output=True)
+checks.append(("H next boot retries it",          read(f"{FLASH}/presets/current.css") == V5))
 
 bad = 0
 for label, ok in checks:
