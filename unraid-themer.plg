@@ -17,6 +17,9 @@
   and the type is taken from the file content instead of its name. Before, a
   symlink planted in a share could copy any file of the system into the
   webGui when picked.
+- A background or logo stored by an earlier version is checked the same way at
+  every boot; a file that is not an image moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served.
 
 ## 2026.10.11.b04
 - Security: SVG files you add as custom icons, logo or background image are now
@@ -20049,6 +20052,11 @@ function themer_image_type($data) {
 }
 
 // Read an image file on this server: [data, ext, error]. $root only differs in tests.
+// A writer in the share could swap the file or a directory above it for a
+// symlink between the checks and the open. So the checks run again after the
+// open: the path must still resolve to itself below $root, and the file there
+// must be the one that was opened (same device and inode). /mnt holds other
+// file systems than / and /boot, so no hard link can make a system file pass.
 function themer_read_server_image($path, $root = '/mnt/') {
     if (is_link($path)) return ['', '', 'symlinks are not accepted, pick the file itself'];
     $real = realpath($path);
@@ -20056,7 +20064,16 @@ function themer_read_server_image($path, $root = '/mnt/') {
     // every link in the path is resolved by now, so this is where the bytes live
     if (strpos($real, $root) !== 0) return ['', '', 'only files under /mnt/ can be used'];
     if (filesize($real) > THEMER_IMAGE_MAX) return ['', '', 'image too large (>15 MB)'];
-    $data = @file_get_contents($real, false, null, 0, THEMER_IMAGE_MAX + 1);
+    $fh = @fopen($real, 'rb');
+    if ($fh === false) return ['', '', 'could not read that file'];
+    $st = fstat($fh);
+    $now = @stat($real);
+    $same = $st && $now && realpath($real) === $real
+        && ($st['mode'] & 0170000) === 0100000
+        && $st['dev'] === $now['dev'] && $st['ino'] === $now['ino'];
+    $data = $same ? stream_get_contents($fh, THEMER_IMAGE_MAX + 1) : false;
+    fclose($fh);
+    if (!$same) return ['', '', 'the file changed while it was read, try again'];
     if ($data === false) return ['', '', 'could not read that file'];
     if (strlen($data) > THEMER_IMAGE_MAX) return ['', '', 'image too large (>15 MB)'];
     $ext = themer_image_type($data);
@@ -20067,29 +20084,33 @@ function themer_read_server_image($path, $root = '/mnt/') {
 </INLINE>
 </FILE>
 
-<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/migrate-svg.php">
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/migrate-assets.php">
 <INLINE>
 <![CDATA[<?php
-/* Boot-time pass over every SVG the user stored on flash (icon overrides, logo,
- * background): clean it with the current sanitiser and publish the cleaned
- * bytes to the webroot. Earlier versions stored SVGs with a weaker check, or
- * none for logo and background, so a fix to the sanitiser only protects anyone
- * once those files are cleaned too.
+/* Boot-time pass over every image the user stored on flash (icon overrides,
+ * logo, background): check it with the current rules and publish it to the
+ * webroot. Earlier versions stored SVGs with a weaker check, or none for logo
+ * and background, and took a picked server file by its name alone, so a fix
+ * to the rules only protects anyone once those files are checked too.
  *
- * This is the only way an SVG reaches the webroot at boot; the boot script
- * copies none itself. If PHP or this script fails, nothing is published,
- * which costs a custom icon until the next boot but never serves an unchecked
- * document. For each file:
- *   - cleans: the cleaned bytes are published. The original on flash is never
- *     rewritten: cleaning can drop parts the allowlist does not know, and the
- *     user's file must survive that. It is cleaned again at every boot.
+ * This is the only way a stored image reaches the webroot at boot; the boot
+ * script copies none itself. If PHP or this script fails, nothing is
+ * published, which costs a custom image until the next boot but never serves
+ * an unchecked file. For each file:
+ *   - an SVG that cleans: the cleaned bytes are published. The original on
+ *     flash is never rewritten: cleaning can drop parts the allowlist does not
+ *     know, and the user's file must survive that. It is cleaned again at
+ *     every boot.
+ *   - a raster image (logo, background): published as it is if its bytes are
+ *     an image, and an SVG only under an .svg name
  *   - refused: it moves to quarantine/ on flash under a name that never
  *     replaces an earlier one, and is not published
  * Running it again changes nothing. Exit status 1 if anything failed.
  *
- * Usage (from the .plg boot script): php migrate-svg.php <flash dir> <webroot dir> */
+ * Usage (from the .plg boot script): php migrate-assets.php <flash dir> <webroot dir> */
 if (PHP_SAPI !== 'cli') exit;   // never as a web request
 require __DIR__ . '/svg.php';
+require __DIR__ . '/asset.php';
 
 $flash   = rtrim($argv[1] ?? '', '/');
 $webroot = rtrim($argv[2] ?? '', '/');
@@ -20102,13 +20123,29 @@ function themer_write_atomic($path, $data) {
     return true;
 }
 
+// [bytes to publish, error] for one stored file
+function themer_check_stored($raw, $name, $dir, $max) {
+    $is_svg = strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg';
+    if ($is_svg) return themer_sanitize_svg($raw, $max);
+    // icon overrides are SVG only; anything else there is not ours to serve
+    if ($dir === 'overrides') return ['', 'not an SVG'];
+    $type = themer_image_type($raw);
+    if ($type === '') return ['', 'not an image'];
+    if ($type === 'svg') return ['', 'an SVG under a raster name'];
+    return [$raw, ''];
+}
+
 $failed = false;
-foreach (['overrides' => 65536, 'bg' => 1024 * 1024, 'logo' => 1024 * 1024] as $dir => $max) {
-    foreach (glob("$flash/$dir/*.svg") ?: [] as $file) {
+foreach (['overrides' => 65536, 'bg' => THEMER_IMAGE_MAX, 'logo' => THEMER_IMAGE_MAX] as $dir => $max) {
+    $files = $dir === 'overrides' ? glob("$flash/$dir/*.svg") : glob("$flash/$dir/*");
+    foreach ($files ?: [] as $file) {
+        if (!is_file($file)) continue;
         $name = basename($file);
         $raw = file_get_contents($file);
         if ($raw === false) { $failed = true; echo "Unraid Themer: cannot read $dir/$name\n"; continue; }
-        [$clean, $err] = themer_sanitize_svg($raw, $max);
+        // an SVG logo or background keeps its own 1 MB limit
+        [$clean, $err] = themer_check_stored($raw, $name, $dir, $dir === 'overrides' ? $max : 1024 * 1024);
+        if ($err === '' && strlen($clean) > $max) $err = 'too large';
         if ($err !== '') {
             @mkdir("$flash/quarantine", 0700, true);
             $dest = "$flash/quarantine/$dir-$name";
@@ -21310,33 +21347,23 @@ cp -f /boot/config/plugins/unraid.themer/custom.css /usr/local/emhttp/plugins/un
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
 
-# Stored SVGs reach the webroot only through migrate-svg.php, which cleans each
-# with the current sanitiser and publishes the cleaned bytes (older versions
-# stored some unchecked; a refused one moves to quarantine/ on flash). The old
+# Stored images (icon overrides, background, logo) reach the webroot only
+# through migrate-assets.php, which checks each with the current rules: SVGs
+# are cleaned and the cleaned bytes published, a raster image must really be
+# one (older versions stored SVGs unchecked and took a picked server file by
+# its name alone); a refused file moves to quarantine/ on flash. The old
 # webroot copies go first, so nothing stale stays reachable after an update
-# without a reboot, and if PHP or the script fails no SVG is served at all.
-rm -f /usr/local/emhttp/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/bg/*.svg /usr/local/emhttp/plugins/unraid.themer/logo/*.svg
+# without a reboot, and if PHP or the script fails no image is served at all.
+rm -f /usr/local/emhttp/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/bg/* /usr/local/emhttp/plugins/unraid.themer/logo/*
 if [ -x /usr/bin/php ]; then
-    if [ -f /usr/local/emhttp/plugins/unraid.themer/include/migrate-svg.php ]; then
-        /usr/bin/php /usr/local/emhttp/plugins/unraid.themer/include/migrate-svg.php /boot/config/plugins/unraid.themer /usr/local/emhttp/plugins/unraid.themer
+    if [ -f /usr/local/emhttp/plugins/unraid.themer/include/migrate-assets.php ]; then
+        /usr/bin/php /usr/local/emhttp/plugins/unraid.themer/include/migrate-assets.php /boot/config/plugins/unraid.themer /usr/local/emhttp/plugins/unraid.themer
     fi
 fi
 
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p /usr/local/emhttp/plugins/unraid.themer/overrides
 cp -f /boot/config/plugins/unraid.themer/overrides.css /usr/local/emhttp/plugins/unraid.themer/overrides.css 2>/dev/null
-
-# Background image + custom logo (URL cached or a picked file) live on flash; restore.
-mkdir -p /usr/local/emhttp/plugins/unraid.themer/bg /usr/local/emhttp/plugins/unraid.themer/logo
-# raster images only; SVGs were published (cleaned) above
-for f in /boot/config/plugins/unraid.themer/bg/* /boot/config/plugins/unraid.themer/logo/*; do
-    [ -f "$f" ] || continue
-    case "$f" in
-        *.svg) ;;
-        */bg/*) cp -f "$f" /usr/local/emhttp/plugins/unraid.themer/bg/ ;;
-        *) cp -f "$f" /usr/local/emhttp/plugins/unraid.themer/logo/ ;;
-    esac
-done
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

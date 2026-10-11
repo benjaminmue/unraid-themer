@@ -7,7 +7,7 @@ Every attack must come out either refused or stripped of anything that could
 run script or load something. Every bundled icon must come out with all of its
 drawing intact. CI passes --require-php, so a runner without PHP fails instead
 of skipping."""
-import glob, json, os, re, shlex, shutil, subprocess, sys, tempfile
+import glob, json, os, re, shlex, shutil, struct, subprocess, sys, tempfile, zlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLUGIN = os.path.join(ROOT, "plugin/usr/local/emhttp/plugins/unraid.themer")
@@ -50,6 +50,15 @@ HARMLESS = {
     "gradient by reference":     f'<svg {SVG} viewBox="0 0 10 10"><defs><linearGradient id="g"><stop offset="0" stop-color="#e32929"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>',
 }
 
+def _png():
+    """A real 1x1 PNG."""
+    chunk = lambda t, d: struct.pack(">I", len(d)) + t + d + struct.pack(">I", zlib.crc32(t + d))
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"\x00\xff\x00\x00")) + chunk(b"IEND", b""))
+
+
+PNG = _png()
+
 DRAWING = re.compile(r"<(?:\w+:)?(path|circle|ellipse|line|polyline|polygon|rect|g|text|tspan)\b")
 
 
@@ -73,7 +82,7 @@ def run_php(cases, php_cmd):
 
 
 def migration_checks(php_cmd):
-    """Boot migration (include/migrate-svg.php) on a fake flash directory."""
+    """Boot migration (include/migrate-assets.php) on a fake flash directory."""
     tmp = tempfile.mkdtemp(prefix="themer-svgmig-")
     try:
         flash, web = os.path.join(tmp, "flash"), os.path.join(tmp, "web")
@@ -85,16 +94,18 @@ def migration_checks(php_cmd):
             "overrides/ok.svg":  open(sorted(glob.glob(os.path.join(PLUGIN, "icons/svg/*.svg")))[0]).read(),
             "logo/logo.svg":     ATTACKS["onload"],                    # cleanable
             "bg/bg.svg":         ATTACKS["doctype entity"],            # refused
-            "bg/photo.png":      "not an svg, not touched",
+            "bg/photo.png":      PNG,                                  # a real image
+            "logo/fake.png":     "root:$6$secret\n",                   # image name, not image bytes
+            "logo/disguised.png": ATTACKS["script"],                   # an SVG under a raster name
         }
         for rel, body in files.items():
-            with open(os.path.join(flash, rel), "w", encoding="utf-8") as f:
-                f.write(body)
+            with open(os.path.join(flash, rel), "wb") as f:
+                f.write(body if isinstance(body, bytes) else body.encode("utf-8"))
         plug = os.path.join(tmp, "plugin", "include")
         os.makedirs(plug)
-        for f in ("svg.php", "migrate-svg.php"):
+        for f in ("svg.php", "asset.php", "migrate-assets.php"):
             shutil.copy(os.path.join(PLUGIN, "include", f), plug)
-        run = lambda: subprocess.run(shlex.split(php_cmd) + [os.path.join(plug, "migrate-svg.php"), flash, web],
+        run = lambda: subprocess.run(shlex.split(php_cmd) + [os.path.join(plug, "migrate-assets.php"), flash, web],
                                      capture_output=True, text=True, check=True)
         run()
         webfile = lambda rel: os.path.join(web, rel)
@@ -110,6 +121,7 @@ def migration_checks(php_cmd):
             f.write(ATTACKS["html not svg"])
         run()
         quarantined = sorted(os.listdir(os.path.join(flash, "quarantine")))
+        photo = open(webfile("bg/photo.png"), "rb").read() if os.path.exists(webfile("bg/photo.png")) else b""
         return [
             ("migration: originals on flash are never rewritten",
              all(first[rel] == files[rel] for rel in first), ""),
@@ -118,11 +130,17 @@ def migration_checks(php_cmd):
             ("migration: harmless icon published with its drawing",
              len(DRAWING.findall(published.get("overrides/ok.svg", ""))) == len(DRAWING.findall(files["overrides/ok.svg"])), ""),
             ("migration: refused file is not published", not os.path.exists(webfile("bg/bg.svg")), ""),
-            ("migration: quarantine never overwrites", len(quarantined) == 2, " ".join(quarantined)),
+            ("migration: quarantine never overwrites",
+             sorted(q for q in quarantined if q.startswith("bg-")) == ["bg-1-bg.svg", "bg-bg.svg"], " ".join(quarantined)),
             ("migration: refused background quarantined",
              not os.path.exists(os.path.join(flash, "bg/bg.svg"))
              and os.path.exists(os.path.join(flash, "quarantine/bg-bg.svg")), ""),
-            ("migration: non-SVG untouched", read("bg/photo.png") == files["bg/photo.png"], ""),
+            ("migration: real raster image published unchanged",
+             photo == PNG and open(os.path.join(flash, "bg/photo.png"), "rb").read() == PNG, ""),
+            ("migration: fake raster image quarantined, not published",
+             "logo-fake.png" in quarantined and not os.path.exists(webfile("logo/fake.png")), " ".join(quarantined)),
+            ("migration: SVG under a raster name quarantined, not published",
+             "logo-disguised.png" in quarantined and not os.path.exists(webfile("logo/disguised.png")), " ".join(quarantined)),
             ("migration: second run changes nothing", first == second and again == published, ""),
         ]
     finally:

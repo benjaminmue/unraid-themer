@@ -80,6 +80,9 @@ CHANGES = """## Unraid Themer
   and the type is taken from the file content instead of its name. Before, a
   symlink planted in a share could copy any file of the system into the
   webGui when picked.
+- A background or logo stored by an earlier version is checked the same way at
+  every boot; a file that is not an image moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served.
 
 ## 2026.10.11.b04
 - Security: SVG files you add as custom icons, logo or background image are now
@@ -595,33 +598,23 @@ cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 # Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
 cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
 
-# Stored SVGs reach the webroot only through migrate-svg.php, which cleans each
-# with the current sanitiser and publishes the cleaned bytes (older versions
-# stored some unchecked; a refused one moves to quarantine/ on flash). The old
+# Stored images (icon overrides, background, logo) reach the webroot only
+# through migrate-assets.php, which checks each with the current rules: SVGs
+# are cleaned and the cleaned bytes published, a raster image must really be
+# one (older versions stored SVGs unchecked and took a picked server file by
+# its name alone); a refused file moves to quarantine/ on flash. The old
 # webroot copies go first, so nothing stale stays reachable after an update
-# without a reboot, and if PHP or the script fails no SVG is served at all.
-rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/*.svg {WEBROOT}/logo/*.svg
+# without a reboot, and if PHP or the script fails no image is served at all.
+rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/* {WEBROOT}/logo/*
 if [ -x /usr/bin/php ]; then
-    if [ -f {WEBROOT}/include/migrate-svg.php ]; then
-        /usr/bin/php {WEBROOT}/include/migrate-svg.php {FLASH} {WEBROOT}
+    if [ -f {WEBROOT}/include/migrate-assets.php ]; then
+        /usr/bin/php {WEBROOT}/include/migrate-assets.php {FLASH} {WEBROOT}
     fi
 fi
 
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p {WEBROOT}/overrides
 cp -f {FLASH}/overrides.css {WEBROOT}/overrides.css 2>/dev/null
-
-# Background image + custom logo (URL cached or a picked file) live on flash; restore.
-mkdir -p {WEBROOT}/bg {WEBROOT}/logo
-# raster images only; SVGs were published (cleaned) above
-for f in {FLASH}/bg/* {FLASH}/logo/*; do
-    [ -f "$f" ] || continue
-    case "$f" in
-        *.svg) ;;
-        */bg/*) cp -f "$f" {WEBROOT}/bg/ ;;
-        *) cp -f "$f" {WEBROOT}/logo/ ;;
-    esac
-done
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

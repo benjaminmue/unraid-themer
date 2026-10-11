@@ -31,6 +31,11 @@ function themer_image_type($data) {
 }
 
 // Read an image file on this server: [data, ext, error]. $root only differs in tests.
+// A writer in the share could swap the file or a directory above it for a
+// symlink between the checks and the open. So the checks run again after the
+// open: the path must still resolve to itself below $root, and the file there
+// must be the one that was opened (same device and inode). /mnt holds other
+// file systems than / and /boot, so no hard link can make a system file pass.
 function themer_read_server_image($path, $root = '/mnt/') {
     if (is_link($path)) return ['', '', 'symlinks are not accepted, pick the file itself'];
     $real = realpath($path);
@@ -38,7 +43,16 @@ function themer_read_server_image($path, $root = '/mnt/') {
     // every link in the path is resolved by now, so this is where the bytes live
     if (strpos($real, $root) !== 0) return ['', '', 'only files under /mnt/ can be used'];
     if (filesize($real) > THEMER_IMAGE_MAX) return ['', '', 'image too large (>15 MB)'];
-    $data = @file_get_contents($real, false, null, 0, THEMER_IMAGE_MAX + 1);
+    $fh = @fopen($real, 'rb');
+    if ($fh === false) return ['', '', 'could not read that file'];
+    $st = fstat($fh);
+    $now = @stat($real);
+    $same = $st && $now && realpath($real) === $real
+        && ($st['mode'] & 0170000) === 0100000
+        && $st['dev'] === $now['dev'] && $st['ino'] === $now['ino'];
+    $data = $same ? stream_get_contents($fh, THEMER_IMAGE_MAX + 1) : false;
+    fclose($fh);
+    if (!$same) return ['', '', 'the file changed while it was read, try again'];
     if ($data === false) return ['', '', 'could not read that file'];
     if (strlen($data) > THEMER_IMAGE_MAX) return ['', '', 'image too large (>15 MB)'];
     $ext = themer_image_type($data);
