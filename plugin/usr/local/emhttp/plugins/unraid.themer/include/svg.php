@@ -8,7 +8,8 @@
  * values (jav&#x61;script:). This parses the document instead and rebuilds it
  * from an allowlist: only SVG-namespace drawing elements, only un-namespaced
  * presentation attributes, url() only as a reference to an id in the same
- * document, no href, no text content outside <title>/<desc>. A style
+ * document, no href, text content only in <text>, <tspan>, <title> and <desc>
+ * (it is escaped on output, so it can only ever be text). A style
  * attribute is not kept as CSS: each declaration that names an allowed
  * presentation attribute with a safe value becomes that attribute, the rest
  * is dropped, so `style="fill:none;stroke:currentColor"` still draws.
@@ -23,7 +24,7 @@ const THEMER_SVG_NS = 'http://www.w3.org/2000/svg';
 function themer_svg_allowed_elements() {
     return array_flip(['svg', 'g', 'path', 'circle', 'ellipse', 'line', 'polyline',
         'polygon', 'rect', 'defs', 'title', 'desc', 'linearGradient', 'radialGradient',
-        'stop', 'clipPath', 'mask', 'symbol']);
+        'stop', 'clipPath', 'mask', 'symbol', 'text', 'tspan']);
 }
 
 function themer_svg_allowed_attributes() {
@@ -34,7 +35,11 @@ function themer_svg_allowed_attributes() {
         'stroke-dashoffset', 'stroke-opacity', 'opacity', 'offset', 'stop-color',
         'stop-opacity', 'gradientUnits', 'gradientTransform', 'spreadMethod',
         'clip-path', 'clip-rule', 'clipPathUnits', 'mask', 'maskUnits',
-        'maskContentUnits', 'color', 'version']);
+        'maskContentUnits', 'color', 'version', 'dx', 'dy', 'rotate', 'textLength',
+        'lengthAdjust', 'font-family', 'font-size', 'font-weight', 'font-style',
+        'font-variant', 'font-stretch', 'text-anchor', 'dominant-baseline',
+        'alignment-baseline', 'baseline-shift', 'letter-spacing', 'word-spacing',
+        'text-decoration', 'writing-mode']);
 }
 
 // An attribute value may reference another element of the same document
@@ -108,7 +113,7 @@ function themer_sanitize_svg($svg, $max = 65536) {
 
     $elements = themer_svg_allowed_elements();
     $attrs = themer_svg_allowed_attributes();
-    $text_ok = ['title' => 1, 'desc' => 1];
+    $text_ok = ['title' => 1, 'desc' => 1, 'text' => 1, 'tspan' => 1];
 
     // collect first, then remove: removing while iterating a live list skips nodes
     $drop = [];

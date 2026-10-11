@@ -9,9 +9,9 @@
  * copies none itself. If PHP or this script fails, nothing is published,
  * which costs a custom icon until the next boot but never serves an unchecked
  * document. For each file:
- *   - cleans: the cleaned bytes are published; flash is rewritten through a
- *     temp file and a rename, so a full or interrupted write leaves the
- *     original in place (it is simply cleaned again next boot)
+ *   - cleans: the cleaned bytes are published. The original on flash is never
+ *     rewritten: cleaning can drop parts the allowlist does not know, and the
+ *     user's file must survive that. It is cleaned again at every boot.
  *   - refused: it moves to quarantine/ on flash under a name that never
  *     replaces an earlier one, and is not published
  * Running it again changes nothing. Exit status 1 if anything failed.
@@ -49,10 +49,6 @@ foreach (['overrides' => 65536, 'bg' => 1024 * 1024, 'logo' => 1024 * 1024] as $
                 echo "Unraid Themer: could not quarantine $dir/$name ($err), not served\n";
             }
             continue;
-        }
-        if ($clean !== $raw && !themer_write_atomic($file, $clean)) {
-            $failed = true;       // original kept on flash; the cleaned copy is still published
-            echo "Unraid Themer: could not rewrite $dir/$name on flash, cleaned copy served\n";
         }
         @mkdir("$webroot/$dir", 0755, true);
         if (!themer_write_atomic("$webroot/$dir/$name", $clean)) {

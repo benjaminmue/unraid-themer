@@ -46,10 +46,11 @@ DANGER = re.compile(r"script|\son\w+\s*=|href|javascript|foreignObject|<\w*:?ani
 HARMLESS = {
     "inline icon without xmlns": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v16H4z"/><circle cx="12" cy="12" r="3"/></svg>',
     "outline icon via style":    f'<svg {SVG} viewBox="0 0 24 24"><path style="fill:none;stroke:currentColor;stroke-width:2" d="M2 2H22V22H2Z"/></svg>',
+    "text logo":                 f'<svg {SVG} viewBox="0 0 200 40"><text x="0" y="30" font-family="Inter, sans-serif" font-size="28" font-weight="900" fill="#f0f0f0">Brand<tspan fill="#e63312">.</tspan></text></svg>',
     "gradient by reference":     f'<svg {SVG} viewBox="0 0 10 10"><defs><linearGradient id="g"><stop offset="0" stop-color="#e32929"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>',
 }
 
-DRAWING = re.compile(r"<(?:\w+:)?(path|circle|ellipse|line|polyline|polygon|rect|g)\b")
+DRAWING = re.compile(r"<(?:\w+:)?(path|circle|ellipse|line|polyline|polygon|rect|g|text|tspan)\b")
 
 
 def run_php(cases, php_cmd):
@@ -103,24 +104,26 @@ def migration_checks(php_cmd):
         first = {rel: read(rel) for rel in ("overrides/cpu.svg", "overrides/ok.svg", "logo/logo.svg")}
         run()
         second = {rel: read(rel) for rel in first}
+        again = {rel: open(webfile(rel), encoding="utf-8").read() for rel in published}
         # a second refused file of the same name must not replace the first one
         with open(os.path.join(flash, "bg/bg.svg"), "w", encoding="utf-8") as f:
             f.write(ATTACKS["html not svg"])
         run()
         quarantined = sorted(os.listdir(os.path.join(flash, "quarantine")))
         return [
-            ("migration: publishes exactly the cleaned bytes", published == first, ""),
+            ("migration: originals on flash are never rewritten",
+             all(first[rel] == files[rel] for rel in first), ""),
+            ("migration: published copies are clean",
+             all(not DANGER.search(v) for v in published.values()) and len(published) == 3, ""),
+            ("migration: harmless icon published with its drawing",
+             len(DRAWING.findall(published.get("overrides/ok.svg", ""))) == len(DRAWING.findall(files["overrides/ok.svg"])), ""),
             ("migration: refused file is not published", not os.path.exists(webfile("bg/bg.svg")), ""),
             ("migration: quarantine never overwrites", len(quarantined) == 2, " ".join(quarantined)),
-            ("migration: hostile icon cleaned", not DANGER.search(first["overrides/cpu.svg"]), first["overrides/cpu.svg"][:80]),
-            ("migration: hostile logo cleaned", not DANGER.search(first["logo/logo.svg"]), first["logo/logo.svg"][:80]),
             ("migration: refused background quarantined",
              not os.path.exists(os.path.join(flash, "bg/bg.svg"))
              and os.path.exists(os.path.join(flash, "quarantine/bg-bg.svg")), ""),
-            ("migration: harmless icon keeps its drawing",
-             len(DRAWING.findall(first["overrides/ok.svg"])) == len(DRAWING.findall(files["overrides/ok.svg"])), ""),
             ("migration: non-SVG untouched", read("bg/photo.png") == files["bg/photo.png"], ""),
-            ("migration: second run changes nothing", first == second, ""),
+            ("migration: second run changes nothing", first == second and again == published, ""),
         ]
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
@@ -157,6 +160,9 @@ def main():
     checks.append(("style declarations become attributes",
                    all(a in styled for a in ('fill="none"', 'stroke="currentColor"', 'stroke-width="2"'))
                    and "style" not in styled, styled[:160]))
+    logo = res["text logo"][0]
+    checks.append(("text content and font attributes survive",
+                   "Brand" in logo and 'font-weight="900"' in logo and 'font-family="Inter, sans-serif"' in logo, logo[:160]))
     checks += migration_checks(php_cmd)
 
     bad = 0

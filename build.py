@@ -82,9 +82,11 @@ CHANGES = """## Unraid Themer
   run script when opened directly. Inline SVG copied from a web page without
   an xmlns is accepted and gets the namespace added; safe declarations in a
   style attribute are kept as plain attributes.
-- SVGs stored by earlier versions are cleaned the same way on update and at
-  boot. One that cannot be cleaned moves to quarantine/ in the plugin folder
-  on the flash drive instead of being served.
+- SVGs stored by earlier versions are served cleaned the same way after the
+  update and at every boot; your original file on the flash drive is kept as
+  it is. One that cannot be cleaned at all moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served. Text in SVG logos
+  (<text>) is supported.
 
 ## 2026.10.11.b03
 - Security: theme imports and store downloads are checked against much stricter
