@@ -500,6 +500,8 @@ if ($_POST && isset($_POST['store_update'])) {
     $origin = themer_origin_read($flash);
     $done = $failed = $edited = [];
     foreach ($idx['themes'] ?? [] as $t) {
+        // same filter as the store rows: the name goes into a URL and a path
+        if (!preg_match('/^[a-z0-9-]+\.css$/', (string) ($t['file'] ?? ''))) continue;
         $stem = pathinfo($t['file'], PATHINFO_FILENAME);
         $local = "$flash/presets/$stem.css";
         if (!is_file($local) || empty($t['sha256'])) continue;              // not installed / no hash
