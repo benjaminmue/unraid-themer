@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.12.b07",
+    "beta": "2026.10.12.b08",
 }
 
 
@@ -74,6 +74,15 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.12.b08
+- Security: a theme must be plain UTF-8 text. A theme saved as UTF-16 hid its
+  content from the theme checks while the browser still read it, so it could
+  again load content from other servers and leak Unraid's CSRF token. Such a
+  theme is refused on import and, if already stored, not loaded at boot.
+- Background and logo files on the flash drive are only served under the names
+  the plugin stores (bg.png, logo.svg, ...); anything else moves to quarantine/.
+- Theme store entries with an unexpected file name are skipped.
+
 ## 2026.10.12.b07
 - Security: themes stored on the flash drive are checked against the current
   theme rules at every boot, not only when they are imported. Themes imported

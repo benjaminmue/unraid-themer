@@ -13,10 +13,11 @@
  * are followed here, one hop at a time, with the same check on every hop.
  *
  * Not covered: the router's own public address. Through hairpin NAT it can
- * forward to a LAN service, but only what its port forwards already expose
- * to the internet, and a download only ever lands on this server as an image
- * or stylesheet, never back with whoever supplied the URL. Finding that
- * address would need an outside lookup service.
+ * forward to a LAN service, but only to what its port forwards already expose
+ * to the internet on 443, with a certificate curl accepts (no -k), and a
+ * download only ever lands on this server as an image or stylesheet, never
+ * back with whoever supplied the URL. A redirect from an outside host can
+ * name that address, so it is not hidden; the limit is what it can reach.
  *
  * test/test_fetch_rules.py runs the checks against private ranges, encoded
  * addresses and URL tricks. */
@@ -147,14 +148,13 @@ function themer_fetch($url, $max, $timeout = 20) {
         if ($err) return ['', $err];
         $left = (int) ceil($deadline - microtime(true));
         if ($left <= 0) return ['', 'the download timed out'];
-        if ($err) return ['', $err];
         // an address in the URL needs no lookup (curl refuses a pin for an
         // IPv6 literal); a name is pinned to the checked address
         $literal = filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false;
         // every checked address, so curl can still fall back between them
         $pin = implode(',', array_map(fn($a) => strpos($a, ':') !== false ? "[$a]" : $a, $ips));
         $tmp = tempnam(sys_get_temp_dir(), 'themer-');
-        $cmd = 'curl -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
+        $cmd = 'curl -q -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
              . ' --connect-timeout ' . min(6, $left) . ' --max-time ' . $left . ' --max-filesize ' . (int) $max
              . ($literal ? '' : ' --resolve ' . escapeshellarg("$host:443:$pin"))
              . ' -o ' . escapeshellarg($tmp) . ' -w ' . escapeshellarg('%{http_code} %{remote_ip} %{redirect_url}')
