@@ -1140,14 +1140,18 @@ if ($orphans) {
 }
 
 // Themes on flash the boot check did not load (migrate-assets.php): they broke
-// a rule that older versions did not enforce. They stay on flash, untouched.
-// One published since then (a fixed version from the store) is no longer listed.
+// a rule that older versions did not enforce. They stay on flash, untouched,
+// each with its own remove button: a store theme has no Uninstall while it is
+// not loaded. One published since then (a fixed version from the store) or
+// removed from flash is no longer listed.
 $blockedHtml = "";
-foreach (file("$webroot/blocked-themes", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+foreach (@file("$webroot/blocked-themes", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
     [$stem, $why] = array_pad(explode("\t", $line, 2), 2, '');
-    if ($stem === '' || isset($have_preset[$stem])) continue;
-    $blockedHtml .= "<br><span style='color:var(--orange, #e68a00)'>Not loaded: <strong>" . htmlspecialchars($stem)
-                  . "</strong> (" . htmlspecialchars($why) . "). It breaks the current theme rules; get a current version from the store or remove it.</span>";
+    if ($stem === '' || isset($have_preset[$stem]) || !is_file("$flash/presets/$stem.css")) continue;
+    $val = htmlspecialchars($stem, ENT_QUOTES);
+    $blockedHtml .= "<br><span style='color:var(--orange, #e68a00)'>Not loaded: <strong>$val</strong> ("
+                  . htmlspecialchars($why) . "). It breaks the current theme rules; get a current version from the store or remove it.</span> "
+                  . "<button type='submit' name='remove_preset' value='$val' onclick='return confirm(\"Remove $val?\")' style='$btn margin:0 0 0 6px;'>Remove</button>";
 }
 $addedHtml .= $blockedHtml;
 ?>
