@@ -13,6 +13,11 @@
  * one character per request. Returns the first broken rule, "" when acceptable. */
 function themer_css_violation($css) {
     if (strlen($css) > 512 * 1024)   return "file too large (>512 KB)";
+    // The checks only see what the browser sees if both read the same text. A
+    // UTF-16 file (BOM FF FE) puts a NUL between every letter, so `url(` never
+    // matches, yet the browser decodes it by its BOM and loads the URLs.
+    if (preg_match('//u', $css) !== 1) return "is not valid UTF-8 (a UTF-16 file would hide its content from these checks)";
+    if (strpos($css, "\0") !== false) return "contains a NUL byte";
     if (strpos($css, '\\') !== false) return "contains a backslash (CSS escapes are not allowed)";
     // only what can start an HTML tag; a bare < is a media range (`width < 800px`)
     if (preg_match('/<[a-zA-Z\/!?]/', $css) !== 0) return "contains markup (<tag)";

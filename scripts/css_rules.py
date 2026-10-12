@@ -17,6 +17,11 @@ CSS tokenizer accepts:
     need a CSS tokenizer in two languages, for a case no theme has
 A fetch is the dangerous part: with an attribute selector on Unraid's hidden
 csrf_token input, a theme could leak the token one character per request.
+
+The checks only see what a browser sees if both read the same text, so a
+stylesheet must be valid UTF-8 without NUL bytes. A file saved as UTF-16
+(BOM FF FE) puts a NUL between every letter, `url(` never matches, and the
+browser still decodes it by its BOM and loads the URLs.
 """
 import re
 
@@ -36,7 +41,15 @@ LEGACY = [
 
 
 def violations(css):
-    """Every rule the stylesheet breaks, empty when it is acceptable."""
+    """Every rule the stylesheet breaks, empty when it is acceptable.
+    Pass the file's bytes where there are any: str has already been decoded."""
+    if isinstance(css, bytes):
+        try:
+            css = css.decode("utf-8")
+        except UnicodeDecodeError:
+            return ["is not valid UTF-8 (a UTF-16 file would hide its content from these checks)"]
+    if "\x00" in css:
+        return ["contains a NUL byte"]
     errs = []
     if len(css.encode("utf-8")) > MAX_BYTES:
         errs.append("file too large (>512 KB)")

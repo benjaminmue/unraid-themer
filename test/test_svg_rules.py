@@ -7,7 +7,7 @@ Every attack must come out either refused or stripped of anything that could
 run script or load something. Every bundled icon must come out with all of its
 drawing intact. CI passes --require-php, so a runner without PHP fails instead
 of skipping."""
-import glob, json, os, re, shlex, shutil, struct, subprocess, sys, tempfile, zlib
+import base64, glob, json, os, re, shlex, shutil, struct, subprocess, sys, tempfile, zlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLUGIN = os.path.join(ROOT, "plugin/usr/local/emhttp/plugins/unraid.themer")
@@ -38,6 +38,12 @@ ATTACKS = {
     "xml:base":              f'<svg {SVG} xml:base="https://evil.example/"><path d="M0 0"/></svg>',
 }
 
+# attacks that only exist as bytes
+BYTE_ATTACKS = {
+    "UTF-16 with DOCTYPE":   ('<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE svg [<!ENTITY x SYSTEM "file:///etc/passwd">]>'
+                              f'<svg {SVG}><title>&x;</title></svg>').encode("utf-16"),
+}
+
 # what must never survive in a cleaned document
 DANGER = re.compile(r"script|\son\w+\s*=|href|javascript|foreignObject|<\w*:?animate|<\w*:?set\b|<\w*:?use\b"
                     r"|<\w*:?image\b|style|<!|<\?|xml:base|https?:(?!//www\.w3\.org/)", re.I)
@@ -66,13 +72,15 @@ def run_php(cases, php_cmd):
     tmp = tempfile.mkdtemp(prefix="themer-svg-")
     try:
         with open(os.path.join(tmp, "cases.json"), "w", encoding="utf-8") as f:
-            json.dump(cases, f)
+            # base64, so byte cases (UTF-16) reach PHP unchanged
+            json.dump({k: base64.b64encode(v if isinstance(v, bytes) else v.encode("utf-8")).decode()
+                       for k, v in cases.items()}, f)
         shutil.copy(os.path.join(PLUGIN, "include", "svg.php"), os.path.join(tmp, "svg.php"))
         with open(os.path.join(tmp, "run.php"), "w", encoding="utf-8") as f:
             f.write("<?php\nrequire __DIR__ . '/svg.php';\n"
                     "$cases = json_decode(file_get_contents($argv[1]), true);\n"
                     "$out = [];\n"
-                    "foreach ($cases as $k => $svg) $out[$k] = themer_sanitize_svg($svg);\n"
+                    "foreach ($cases as $k => $svg) $out[$k] = themer_sanitize_svg(base64_decode($svg));\n"
                     "echo json_encode($out);\n")
         cmd = shlex.split(php_cmd) + [os.path.join(tmp, "run.php"), os.path.join(tmp, "cases.json")]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -94,9 +102,11 @@ def migration_checks(php_cmd):
             "overrides/ok.svg":  open(sorted(glob.glob(os.path.join(PLUGIN, "icons/svg/*.svg")))[0]).read(),
             "logo/logo.svg":     ATTACKS["onload"],                    # cleanable
             "bg/bg.svg":         ATTACKS["doctype entity"],            # refused
-            "bg/photo.png":      PNG,                                  # a real image
-            "logo/fake.png":     "root:$6$secret\n",                   # image name, not image bytes
-            "logo/disguised.png": ATTACKS["script"],                   # an SVG under a raster name
+            "bg/bg.png":         PNG,                                  # a real image
+            "logo/logo.jpg":     "root:$6$secret\n",                   # image name, not image bytes
+            "logo/logo.gif":     ATTACKS["script"],                    # an SVG under a raster name
+            "logo/logo.php":     PNG + b"<?php system($_GET[1]); ?>",  # an image, but a name the webroot runs
+            "bg/bg.html":        b"GIF89a<script>alert(1)</script>",   # an image, but a name the webroot renders
             "presets/good.css":  ":root{--background-color:#101010}",  # passes the CSS rules
             "presets/old.css":   ':root{--x:1} body{background:image-set("https://evil.example/x" 1x)}',
         }
@@ -123,7 +133,7 @@ def migration_checks(php_cmd):
             f.write(ATTACKS["html not svg"])
         run()
         quarantined = sorted(os.listdir(os.path.join(flash, "quarantine")))
-        photo = open(webfile("bg/photo.png"), "rb").read() if os.path.exists(webfile("bg/photo.png")) else b""
+        photo = open(webfile("bg/bg.png"), "rb").read() if os.path.exists(webfile("bg/bg.png")) else b""
         blocked = open(webfile("blocked-themes"), encoding="utf-8").read() if os.path.exists(webfile("blocked-themes")) else ""
         return [
             ("migration: originals on flash are never rewritten",
@@ -134,16 +144,19 @@ def migration_checks(php_cmd):
              len(DRAWING.findall(published.get("overrides/ok.svg", ""))) == len(DRAWING.findall(files["overrides/ok.svg"])), ""),
             ("migration: refused file is not published", not os.path.exists(webfile("bg/bg.svg")), ""),
             ("migration: quarantine never overwrites",
-             sorted(q for q in quarantined if q.startswith("bg-")) == ["bg-1-bg.svg", "bg-bg.svg"], " ".join(quarantined)),
+             sorted(q for q in quarantined if q.startswith("bg-") and q.endswith(".svg")) == ["bg-1-bg.svg", "bg-bg.svg"], " ".join(quarantined)),
             ("migration: refused background quarantined",
              not os.path.exists(os.path.join(flash, "bg/bg.svg"))
              and os.path.exists(os.path.join(flash, "quarantine/bg-bg.svg")), ""),
             ("migration: real raster image published unchanged",
-             photo == PNG and open(os.path.join(flash, "bg/photo.png"), "rb").read() == PNG, ""),
+             photo == PNG and open(os.path.join(flash, "bg/bg.png"), "rb").read() == PNG, ""),
             ("migration: fake raster image quarantined, not published",
-             "logo-fake.png" in quarantined and not os.path.exists(webfile("logo/fake.png")), " ".join(quarantined)),
+             "logo-logo.jpg" in quarantined and not os.path.exists(webfile("logo/logo.jpg")), " ".join(quarantined)),
             ("migration: SVG under a raster name quarantined, not published",
-             "logo-disguised.png" in quarantined and not os.path.exists(webfile("logo/disguised.png")), " ".join(quarantined)),
+             "logo-logo.gif" in quarantined and not os.path.exists(webfile("logo/logo.gif")), " ".join(quarantined)),
+            ("migration: image under a .php or .html name quarantined, not published",
+             {"logo-logo.php", "bg-bg.html"} <= set(quarantined)
+             and not os.path.exists(webfile("logo/logo.php")) and not os.path.exists(webfile("bg/bg.html")), " ".join(quarantined)),
             ("migration: theme within the rules published",
              os.path.exists(webfile("presets/good.css")), ""),
             ("migration: theme breaking a rule not published, kept on flash, listed",
@@ -165,10 +178,11 @@ def main():
     icons = {"icon " + os.path.relpath(p, PLUGIN): open(p, encoding="utf-8").read()
              for p in sorted(glob.glob(os.path.join(PLUGIN, "icons/svg/**/*.svg"), recursive=True))}
     keep = {**HARMLESS, **icons}
-    res = run_php({**ATTACKS, **keep}, php_cmd)
+    attacks = {**ATTACKS, **BYTE_ATTACKS}
+    res = run_php({**attacks, **keep}, php_cmd)
 
     checks = []
-    for name in ATTACKS:
+    for name in attacks:
         clean, err = res[name]
         hit = DANGER.search(clean or "")
         checks.append((f"attack {name}: " + (f"refused ({err})" if err else "cleaned"),

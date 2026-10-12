@@ -44,6 +44,10 @@ function themer_write_atomic($path, $data) {
 
 // [bytes to publish, error] for one stored file
 function themer_check_stored($raw, $name, $dir, $max) {
+    // the plugin only ever stores bg.<ext> and logo.<ext>; under any other name
+    // (logo.php, bg.html) the webroot would run or render it as something else
+    if ($dir !== 'overrides' && !preg_match("/^$dir\\.(jpg|jpeg|png|webp|gif|avif|bmp|svg)\$/", $name))
+        return ['', 'not a name the plugin stores'];
     $is_svg = strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg';
     if ($is_svg) return themer_sanitize_svg($raw, $max);
     // icon overrides are SVG only; anything else there is not ours to serve

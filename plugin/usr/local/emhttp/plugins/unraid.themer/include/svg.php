@@ -100,6 +100,8 @@ function themer_sanitize_svg($svg, $max = 65536) {
 
     $doc = themer_svg_parse($svg);
     if (!$doc) return ["", "not a well-formed SVG document"];
+    // the byte check above misses a DOCTYPE in UTF-16; the parsed document does not
+    if ($doc->doctype !== null) return ["", "contains a DOCTYPE or entity"];
     $root = $doc->documentElement;
     // inline <svg> copied out of a web page has no xmlns; as a file it would not
     // even render. Give it the SVG namespace and clean it like any other.

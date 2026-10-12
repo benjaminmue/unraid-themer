@@ -8,6 +8,7 @@ consistency. Exits non-zero on any violation, so unsafe submissions fail the
 GitHub Action and cannot be merged.
 """
 import json
+import re
 import os
 import sys
 
@@ -18,8 +19,9 @@ VALID_BASE = {"any", "white", "black", "azure", "gray"}
 
 
 def check_css(path):
-    data = open(path, encoding="utf-8", errors="replace").read()
-    errs = violations(data)
+    raw = open(path, "rb").read()
+    errs = violations(raw)   # the bytes: a decoding error must fail, not be replaced
+    data = raw.decode("utf-8", errors="replace")
     if data.strip() == "":
         errs.append("empty")
     if data.count("{") != data.count("}"):
@@ -47,6 +49,10 @@ def main():
                 print(f"::error::index entry missing '{k}': {t}")
                 fail = True
         listed.add(t.get("file"))
+        # the file name ends up in the plugin's HTML and in a flash path
+        if not re.fullmatch(r"[a-z0-9-]+\.css", str(t.get("file", ""))):
+            print(f"::error::index entry has an invalid file name '{t.get('file')}' (a-z, 0-9, - and .css)")
+            fail = True
         if t.get("base") not in VALID_BASE:
             print(f"::error::index entry '{t.get('file')}' has invalid base '{t.get('base')}'")
             fail = True

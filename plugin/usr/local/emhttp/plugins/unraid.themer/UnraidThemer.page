@@ -594,6 +594,8 @@ $stale_stems = [];
 if (!empty($store_index['themes'])) {
     $rows = "";
     foreach ($store_index['themes'] as $t) {
+        // the registry is checked in CI, but the page does not rely on that
+        if (!preg_match('/^[a-z0-9-]+\.css$/', (string) ($t['file'] ?? ''))) continue;
         $stem = pathinfo($t['file'], PATHINFO_FILENAME);
         $store_stems[$stem] = 1;
         $ins     = isset($have_preset[$stem]);
