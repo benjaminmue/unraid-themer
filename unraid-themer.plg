@@ -20116,6 +20116,12 @@ function themer_read_server_image($path, $root = '/mnt/') {
  * curl actually connected to is compared afterwards as well. Redirects
  * are followed here, one hop at a time, with the same check on every hop.
  *
+ * Not covered: the router's own public address. Through hairpin NAT it can
+ * forward to a LAN service, but only what its port forwards already expose
+ * to the internet, and a download only ever lands on this server as an image
+ * or stylesheet, never back with whoever supplied the URL. Finding that
+ * address would need an outside lookup service.
+ *
  * test/test_fetch_rules.py runs the checks against private ranges, encoded
  * addresses and URL tricks. */
 
@@ -20195,7 +20201,7 @@ function themer_resolve_host($host, $resolver = null) {
     return array_values(array_unique($ips));
 }
 
-// Check one URL: [host, address to connect to, error]. $resolver and $local
+// Check one URL: [host, addresses curl may connect to, error]. $resolver and $local
 // (interface list as "ip -o addr" prints it) replace the system in tests.
 function themer_url_target($url, $resolver = null, $local = null) {
     if (!preg_match('#^https://[^\s\'"<>\\\\]+$#i', $url)) return ['', '', 'only https:// URLs can be used'];
@@ -20227,19 +20233,20 @@ function themer_url_target($url, $resolver = null, $local = null) {
             if (themer_ip_in_cidr($ip, $cidr)) return ['', '', "that address is in this server's own network"];
         }
     }
-    return [$host, $ips[0], ''];
+    return [$host, $ips, ''];
 }
 
 // Download a URL: [body, error]. At most $max bytes; redirects are followed
 // only to URLs that pass the same check.
 function themer_fetch($url, $max, $timeout = 20) {
     for ($hop = 0; $hop <= THEMER_FETCH_HOPS; $hop++) {
-        [$host, $ip, $err] = themer_url_target($url);
+        [$host, $ips, $err] = themer_url_target($url);
         if ($err) return ['', $err];
         // an address in the URL needs no lookup (curl refuses a pin for an
         // IPv6 literal); a name is pinned to the checked address
         $literal = filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false;
-        $pin = strpos($ip, ':') !== false ? "[$ip]" : $ip;
+        // every checked address, so curl can still fall back between them
+        $pin = implode(',', array_map(fn($a) => strpos($a, ':') !== false ? "[$a]" : $a, $ips));
         $tmp = tempnam(sys_get_temp_dir(), 'themer-');
         $cmd = 'curl -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
              . ' --connect-timeout 6 --max-time ' . (int) $timeout . ' --max-filesize ' . (int) $max
@@ -20255,7 +20262,8 @@ function themer_fetch($url, $max, $timeout = 20) {
         // a transfer that broke off after the headers is not a download
         if ($rc !== 0) return ['', 'could not download that URL'];
         // the pin must have held: connected to the checked address, nothing else
-        if (@inet_pton($peer) === false || inet_pton($peer) !== inet_pton($ip))
+        $peer_bin = @inet_pton($peer);
+        if ($peer_bin === false || !in_array($peer_bin, array_map('inet_pton', $ips), true))
             return ['', 'could not download that URL'];
         if ($code >= 300 && $code < 400 && $next !== '') { $url = $next; continue; }
         if ($code !== 200) return ['', $code ? "the server answered HTTP $code" : 'could not download that URL'];
