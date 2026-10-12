@@ -38,6 +38,11 @@ jobs:
       - name: Check the server image reader against planted links
         run: python3 test/test_asset_rules.py --require-php
 
+      # Downloads run on the server inside the LAN; a URL must never reach a
+      # private, local or metadata address, in any spelling or through DNS.
+      - name: Check the URL rules against SSRF tricks
+        run: python3 test/test_fetch_rules.py --require-php
+
       # Every registry entry needs a palette swatch, otherwise the store shows
       # a submitted theme without its colour preview.
       - name: Check swatches are present and current

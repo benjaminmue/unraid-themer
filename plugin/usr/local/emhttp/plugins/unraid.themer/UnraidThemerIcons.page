@@ -11,6 +11,7 @@ Icon="icon-apps"
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
 require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
+require_once "$docroot/plugins/unraid.themer/include/fetch.php"; // themer_fetch()
 
 $name    = "unraid.themer";
 $flash   = "/boot/config/plugins/$name";
@@ -240,7 +241,8 @@ function themer_resolve_icon($key, $src, $ctx) {
     }
     // (b) https URL to an SVG
     if (preg_match('#^https://[^\s\'"<>]+$#i', $src)) {
-        $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 65536 " . escapeshellarg($src) . " 2>/dev/null");
+        [$raw, $err] = themer_fetch($src, 65536);
+        if ($err) return ["", $err];
         [$clean, $err] = themer_sanitize_svg($raw);
         if ($err) return ["", $err];
         @mkdir($ov_dir_f, 0755, true); @mkdir($ov_dir_w, 0755, true);
