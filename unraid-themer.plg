@@ -20202,11 +20202,14 @@ function themer_fetch($url, $max, $timeout = 20) {
     for ($hop = 0; $hop <= THEMER_FETCH_HOPS; $hop++) {
         [$host, $ip, $err] = themer_url_target($url);
         if ($err) return ['', $err];
+        // an address in the URL needs no lookup (curl refuses a pin for an
+        // IPv6 literal); a name is pinned to the checked address
+        $literal = filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false;
         $pin = strpos($ip, ':') !== false ? "[$ip]" : $ip;
         $tmp = tempnam(sys_get_temp_dir(), 'themer-');
         $cmd = 'curl -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
              . ' --connect-timeout 6 --max-time ' . (int) $timeout . ' --max-filesize ' . (int) $max
-             . ' --resolve ' . escapeshellarg("$host:443:$pin")
+             . ($literal ? '' : ' --resolve ' . escapeshellarg("$host:443:$pin"))
              . ' -o ' . escapeshellarg($tmp) . ' -w ' . escapeshellarg('%{http_code} %{remote_ip} %{redirect_url}')
              . ' ' . escapeshellarg($url) . ' 2>/dev/null';
         $out = [];
