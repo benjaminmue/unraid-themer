@@ -20188,22 +20188,25 @@ function themer_local_prefixes($text = null) {
     return $out;
 }
 
-// Every address a host name resolves to, through DNS and the system resolver
-// (which also reads /etc/hosts). $resolver replaces both in tests.
-function themer_resolve_host($host, $resolver = null) {
+// Every address a host name resolves to, IPv4 and IPv6, through the system
+// resolver (which also reads /etc/hosts), the same one curl would use. It runs
+// under timeout(1): PHP's own lookups cannot be bounded, and a dead DNS
+// server would otherwise hold the settings page. $resolver replaces it in tests.
+function themer_resolve_host($host, $seconds = 5, $resolver = null) {
     if ($resolver) return $resolver($host);
+    $out = [];
+    exec('timeout ' . max(1, (int) $seconds) . ' getent ahosts ' . escapeshellarg($host) . ' 2>/dev/null', $out);
     $ips = [];
-    foreach (@dns_get_record($host, DNS_A | DNS_AAAA) ?: [] as $r) {
-        if (isset($r['ip'])) $ips[] = $r['ip'];
-        if (isset($r['ipv6'])) $ips[] = $r['ipv6'];
+    foreach ($out as $line) {
+        $ip = strtok($line, " \t");
+        if ($ip !== false && filter_var($ip, FILTER_VALIDATE_IP)) $ips[] = $ip;
     }
-    foreach (@gethostbynamel($host) ?: [] as $ip) $ips[] = $ip;
     return array_values(array_unique($ips));
 }
 
 // Check one URL: [host, addresses curl may connect to, error]. $resolver and $local
 // (interface list as "ip -o addr" prints it) replace the system in tests.
-function themer_url_target($url, $resolver = null, $local = null) {
+function themer_url_target($url, $resolver = null, $local = null, $dns_seconds = 5) {
     if (!preg_match('#^https://[^\s\'"<>\\\\]+$#i', $url)) return ['', '', 'only https:// URLs can be used'];
     $p = parse_url($url);
     if (!$p || strtolower($p['scheme'] ?? '') !== 'https' || empty($p['host']))
@@ -20222,7 +20225,7 @@ function themer_url_target($url, $resolver = null, $local = null) {
         $labels = explode('.', $host);
         if (!preg_match('/^[a-z0-9.-]+$/', $host) || !preg_match('/^[a-z][a-z0-9-]*$/', end($labels)))
             return ['', '', 'not a valid host name'];
-        $ips = themer_resolve_host($host, $resolver);
+        $ips = themer_resolve_host($host, $dns_seconds, $resolver);
     }
     if (!$ips) return ['', '', "cannot resolve $host"];
     $nets = themer_local_prefixes($local);
@@ -20237,10 +20240,17 @@ function themer_url_target($url, $resolver = null, $local = null) {
 }
 
 // Download a URL: [body, error]. At most $max bytes; redirects are followed
-// only to URLs that pass the same check.
+// only to URLs that pass the same check. $timeout covers everything: name
+// lookups and every hop.
 function themer_fetch($url, $max, $timeout = 20) {
+    $deadline = microtime(true) + $timeout;
     for ($hop = 0; $hop <= THEMER_FETCH_HOPS; $hop++) {
-        [$host, $ips, $err] = themer_url_target($url);
+        $left = (int) ceil($deadline - microtime(true));
+        if ($left <= 0) return ['', 'the download timed out'];
+        [$host, $ips, $err] = themer_url_target($url, null, null, min(5, $left));
+        if ($err) return ['', $err];
+        $left = (int) ceil($deadline - microtime(true));
+        if ($left <= 0) return ['', 'the download timed out'];
         if ($err) return ['', $err];
         // an address in the URL needs no lookup (curl refuses a pin for an
         // IPv6 literal); a name is pinned to the checked address
@@ -20249,7 +20259,7 @@ function themer_fetch($url, $max, $timeout = 20) {
         $pin = implode(',', array_map(fn($a) => strpos($a, ':') !== false ? "[$a]" : $a, $ips));
         $tmp = tempnam(sys_get_temp_dir(), 'themer-');
         $cmd = 'curl -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
-             . ' --connect-timeout 6 --max-time ' . (int) $timeout . ' --max-filesize ' . (int) $max
+             . ' --connect-timeout ' . min(6, $left) . ' --max-time ' . $left . ' --max-filesize ' . (int) $max
              . ($literal ? '' : ' --resolve ' . escapeshellarg("$host:443:$pin"))
              . ' -o ' . escapeshellarg($tmp) . ' -w ' . escapeshellarg('%{http_code} %{remote_ip} %{redirect_url}')
              . ' ' . escapeshellarg($url) . ' 2>/dev/null';
