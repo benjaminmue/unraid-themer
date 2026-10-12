@@ -26,7 +26,19 @@ DNS = {
     "mapped.example.com":  ["::ffff:7f00:1"],
     "nat64.example.com":   ["64:ff9b::a00:1"],
     "trailing.example.com": ["10.1.1.1"],
+    "v6lan.example.com":   ["2a02:168:abcd:170::1"],     # same /64 as the server
+    "v6vlan.example.com":  ["2a02:168:abcd:20::5"],      # other VLAN, same delegated prefix
+    "v6far.example.com":   ["2a02:168:ffff::1"],         # same ISP, other customer
 }
+
+# the server's interfaces as "ip -o addr show" prints them: a LAN address, a
+# global IPv6 address from the ISP and a public IPv4 on a second interface
+LOCAL = """1: lo    inet 127.0.0.1/8 scope host lo
+2: br0    inet 192.168.170.15/24 brd 192.168.170.255 scope global br0
+2: br0    inet6 2a02:168:abcd:170::15/64 scope global dynamic mngtmpaddr
+2: br0    inet6 fe80::1234/64 scope link
+3: eth1    inet 85.195.200.10/29 brd 85.195.200.15 scope global eth1
+"""
 
 ALLOWED = [
     "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/themes/index.json",
@@ -35,6 +47,8 @@ ALLOWED = [
     "https://1.1.1.1/x.png",
     "https://[2606:4700:4700::1111]/x.png",
     "https://github.com:443/x.css",
+    "https://v6far.example.com/x.png",          # outside the server's /48
+    "https://85.195.200.20/x.png",              # outside the public /29
 ]
 
 REFUSED = [
@@ -73,6 +87,11 @@ REFUSED = [
     "https://github.com./x.png",               # even for a public host
     "https://unknown.example.com/x.png",       # does not resolve
     "https://exa mple.com/x.png",
+    "https://v6lan.example.com/x.png",          # global IPv6 host in the server's LAN
+    "https://v6vlan.example.com/x.png",         # global IPv6 host in another VLAN of the site
+    "https://[2a02:168:abcd:170::15]/x.png",    # the server's own global IPv6
+    "https://85.195.200.10/x.png",              # the server's own public IPv4
+    "https://85.195.200.13/x.png",              # a neighbour in its public /29
 ]
 
 
@@ -86,14 +105,15 @@ def main():
     tmp = tempfile.mkdtemp(prefix="themer-fetch-")
     try:
         with open(os.path.join(tmp, "cases.json"), "w", encoding="utf-8") as f:
-            json.dump({"dns": DNS, "urls": ALLOWED + REFUSED}, f)
+            json.dump({"dns": DNS, "local": LOCAL, "urls": ALLOWED + REFUSED}, f)
         shutil.copy(FETCH, os.path.join(tmp, "fetch.php"))
         with open(os.path.join(tmp, "run.php"), "w", encoding="utf-8") as f:
             f.write("<?php\nrequire __DIR__ . '/fetch.php';\n"
                     "$c = json_decode(file_get_contents($argv[1]), true);\n"
                     "$dns = function ($h) use ($c) { return $c['dns'][$h] ?? []; };\n"
                     "$out = [];\n"
-                    "foreach ($c['urls'] as $u) $out[$u] = themer_url_target($u, $dns)[2];\n"
+                    "foreach ($c['urls'] as $u) $out[$u] = themer_url_target($u, $dns, $c['local'])[2];\n"
+                    "$out['#unreadable interfaces'] = themer_url_target('https://github.com/x', $dns, '')[2];\n"
                     "echo json_encode($out);\n")
         res = subprocess.run(shlex.split(php_cmd) + [os.path.join(tmp, "run.php"), os.path.join(tmp, "cases.json")],
                              capture_output=True, text=True, check=True)
@@ -108,7 +128,11 @@ def main():
         if not ok or "--verbose" in args:
             print(f"  {'PASS' if ok else 'FAIL'}  {url}: " + (f"refused ({err})" if err else "allowed"))
         bad += 0 if ok else 1
-    total = len(ALLOWED) + len(REFUSED)
+    ok = got["#unreadable interfaces"] != ""
+    if not ok or "--verbose" in args:
+        print(f"  {'PASS' if ok else 'FAIL'}  unreadable interface list refuses every download")
+    bad += 0 if ok else 1
+    total = len(ALLOWED) + len(REFUSED) + 1
     print(f"\n{total - bad}/{total} checks passed")
     sys.exit(1 if bad else 0)
 

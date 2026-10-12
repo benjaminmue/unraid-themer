@@ -79,7 +79,8 @@ CHANGES = """## Unraid Themer
   background and logo by URL) now only reaches public https hosts on port 443.
   Addresses of the server itself, the LAN, Tailscale, link-local and metadata
   ranges are refused in every spelling, also when a host name resolves to one
-  or a redirect leads to one. Before, a URL could make the server fetch from
+  or a redirect leads to one. The server's own networks are refused too,
+  including global IPv6 addresses in its site prefix (/48). Before, a URL could make the server fetch from
   your own network. Background and logo URLs must now be https.
 
 ## 2026.10.12.b05

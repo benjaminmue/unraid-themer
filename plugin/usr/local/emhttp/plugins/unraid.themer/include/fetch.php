@@ -5,7 +5,8 @@
  * The download runs on the server, inside the LAN, so a URL must never reach
  * anything a browser on the internet could not: not the server itself, the
  * router, other LAN or Tailscale hosts, or a cloud metadata address. Every URL
- * is https on port 443, its host name must resolve only to public addresses,
+ * is https on port 443, its host name must resolve only to public addresses
+ * outside the server's own networks,
  * and curl is pinned to the address that was checked (--resolve), so a DNS
  * answer that changes between check and connect does not matter; the address
  * curl actually connected to is compared afterwards as well. Redirects
@@ -51,6 +52,32 @@ function themer_ip_public($ip) {
     return true;
 }
 
+// The networks this server sits in, from its interface addresses ("ip -o
+// addr"): the connected prefix of each, and for a global IPv6 address the
+// whole /48 around it, since an ISP delegates one prefix for all VLANs of a
+// site and those hosts carry public-looking addresses too. null when the
+// interfaces cannot be read, which refuses every download. $text replaces
+// the command in tests.
+function themer_local_prefixes($text = null) {
+    static $cache = null;
+    $live = $text === null;
+    if ($live) {
+        if ($cache !== null) return $cache;
+        $ip = is_executable('/sbin/ip') ? '/sbin/ip' : 'ip';
+        $text = (string) shell_exec("$ip -o addr show 2>/dev/null");
+    }
+    preg_match_all('#\binet6?\s+([0-9a-f.:]+)/(\d+)#i', $text, $m, PREG_SET_ORDER);
+    if (!$m) return null;
+    $out = [];
+    foreach ($m as [, $addr, $len]) {
+        $len = (int) $len;
+        if (strpos($addr, ':') !== false) $len = min($len, 48);
+        $out[] = "$addr/$len";
+    }
+    if ($live) $cache = $out;
+    return $out;
+}
+
 // Every address a host name resolves to, through DNS and the system resolver
 // (which also reads /etc/hosts). $resolver replaces both in tests.
 function themer_resolve_host($host, $resolver = null) {
@@ -64,8 +91,9 @@ function themer_resolve_host($host, $resolver = null) {
     return array_values(array_unique($ips));
 }
 
-// Check one URL: [host, address to connect to, error].
-function themer_url_target($url, $resolver = null) {
+// Check one URL: [host, address to connect to, error]. $resolver and $local
+// (interface list as "ip -o addr" prints it) replace the system in tests.
+function themer_url_target($url, $resolver = null, $local = null) {
     if (!preg_match('#^https://[^\s\'"<>\\\\]+$#i', $url)) return ['', '', 'only https:// URLs can be used'];
     $p = parse_url($url);
     if (!$p || strtolower($p['scheme'] ?? '') !== 'https' || empty($p['host']))
@@ -87,8 +115,13 @@ function themer_url_target($url, $resolver = null) {
         $ips = themer_resolve_host($host, $resolver);
     }
     if (!$ips) return ['', '', "cannot resolve $host"];
+    $nets = themer_local_prefixes($local);
+    if ($nets === null) return ['', '', "cannot read this server's network addresses"];
     foreach ($ips as $ip) {
         if (!themer_ip_public($ip)) return ['', '', 'that address is on a private or local network'];
+        foreach ($nets as $cidr) {
+            if (themer_ip_in_cidr($ip, $cidr)) return ['', '', "that address is in this server's own network"];
+        }
     }
     return [$host, $ips[0], ''];
 }
