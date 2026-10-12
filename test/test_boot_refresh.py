@@ -132,6 +132,8 @@ checks.append(("I no SVG served without the migration",
                not glob.glob(f"{WEBROOT}/**/*.svg", recursive=True)))
 checks.append(("I no background or logo served without the migration",
                not glob.glob(f"{WEBROOT}/bg/*") and not glob.glob(f"{WEBROOT}/logo/*")))
+checks.append(("I no stored theme served without the migration",
+               not [p for p in glob.glob(f"{WEBROOT}/presets/*.css") if os.path.basename(p) != "bebamu.css"]))
 
 bad = 0
 for label, ok in checks:

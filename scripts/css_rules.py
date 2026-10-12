@@ -3,7 +3,7 @@ css_rules.py: what a theme stylesheet may contain.
 
 One definition for the CI gate (sanitize_css.py), the submission bot and the
 publish bot. The plugin enforces the same rules in PHP (themer_css_violation in
-UnraidThemer.page); test/test_css_rules.py runs both against one corpus so the
+include/css.php); test/test_css_rules.py runs both against one corpus so the
 two cannot drift apart.
 
 A theme only sets colours, sizes and fonts on existing selectors. Everything

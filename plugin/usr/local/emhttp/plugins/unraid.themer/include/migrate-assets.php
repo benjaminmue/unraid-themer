@@ -1,14 +1,20 @@
 <?php
-/* Boot-time pass over every image the user stored on flash (icon overrides,
- * logo, background): check it with the current rules and publish it to the
- * webroot. Earlier versions stored SVGs with a weaker check, or none for logo
- * and background, and took a picked server file by its name alone, so a fix
- * to the rules only protects anyone once those files are checked too.
+/* Boot-time pass over everything the user stored on flash (themes, icon
+ * overrides, logo, background): check it with the current rules and publish
+ * it to the webroot. Earlier versions checked themes with a weaker blocklist,
+ * stored SVGs with a weaker check, or none for logo and background, and took
+ * a picked server file by its name alone, so a fix to the rules only protects
+ * anyone once those files are checked too.
  *
- * This is the only way a stored image reaches the webroot at boot; the boot
- * script copies none itself. If PHP or this script fails, nothing is
- * published, which costs a custom image until the next boot but never serves
- * an unchecked file. For each file:
+ * This is the only way a stored theme or image reaches the webroot at boot;
+ * the boot script copies none itself. If PHP or this script fails, nothing is
+ * published, which costs a custom look until the next boot but never serves
+ * an unchecked file. For each theme (presets/*.css):
+ *   - passes the CSS rules: published as it is
+ *   - breaks one: stays on flash untouched, is not published, and is listed
+ *     in blocked-themes in the webroot, so the settings page can say why. It
+ *     is the user's file and may be theirs to fix; nothing is moved.
+ * For each image:
  *   - an SVG that cleans: the cleaned bytes are published. The original on
  *     flash is never rewritten: cleaning can drop parts the allowlist does not
  *     know, and the user's file must survive that. It is cleaned again at
@@ -23,6 +29,7 @@
 if (PHP_SAPI !== 'cli') exit;   // never as a web request
 require __DIR__ . '/svg.php';
 require __DIR__ . '/asset.php';
+require __DIR__ . '/css.php';
 
 $flash   = rtrim($argv[1] ?? '', '/');
 $webroot = rtrim($argv[2] ?? '', '/');
@@ -48,6 +55,27 @@ function themer_check_stored($raw, $name, $dir, $max) {
 }
 
 $failed = false;
+
+// themes: a theme that breaks a rule stays on flash but is never served
+@mkdir("$webroot/presets", 0755, true);
+$blocked = '';
+foreach (glob("$flash/presets/*.css") ?: [] as $file) {
+    $name = basename($file);
+    $css = file_get_contents($file);
+    if ($css === false) { $failed = true; echo "Unraid Themer: cannot read presets/$name\n"; continue; }
+    $why = themer_css_violation($css);
+    if ($why !== '') {
+        $blocked .= basename($name, '.css') . "\t$why\n";
+        echo "Unraid Themer: not loading theme presets/$name ($why)\n";
+        continue;
+    }
+    if (!themer_write_atomic("$webroot/presets/$name", $css)) {
+        $failed = true;
+        echo "Unraid Themer: could not publish presets/$name\n";
+    }
+}
+if (!themer_write_atomic("$webroot/blocked-themes", $blocked)) $failed = true;
+
 foreach (['overrides' => 65536, 'bg' => THEMER_IMAGE_MAX, 'logo' => THEMER_IMAGE_MAX] as $dir => $max) {
     $files = $dir === 'overrides' ? glob("$flash/$dir/*.svg") : glob("$flash/$dir/*");
     foreach ($files ?: [] as $file) {

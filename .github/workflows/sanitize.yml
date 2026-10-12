@@ -10,6 +10,10 @@ on:
   pull_request:
     paths: ["themes/**", "plugin/**", "scripts/*.py", "test/**", "build.py", "unraid-themer.plg", ".github/workflows/sanitize.yml"]
 
+# read-only token: the job only checks out and runs checks
+permissions:
+  contents: read
+
 jobs:
   sanitize:
     runs-on: ubuntu-latest

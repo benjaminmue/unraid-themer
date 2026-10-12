@@ -86,7 +86,7 @@ def migration_checks(php_cmd):
     tmp = tempfile.mkdtemp(prefix="themer-svgmig-")
     try:
         flash, web = os.path.join(tmp, "flash"), os.path.join(tmp, "web")
-        for d in ("overrides", "bg", "logo"):
+        for d in ("overrides", "bg", "logo", "presets"):
             os.makedirs(os.path.join(flash, d))
         os.makedirs(web)
         files = {
@@ -97,13 +97,15 @@ def migration_checks(php_cmd):
             "bg/photo.png":      PNG,                                  # a real image
             "logo/fake.png":     "root:$6$secret\n",                   # image name, not image bytes
             "logo/disguised.png": ATTACKS["script"],                   # an SVG under a raster name
+            "presets/good.css":  ":root{--background-color:#101010}",  # passes the CSS rules
+            "presets/old.css":   ':root{--x:1} body{background:image-set("https://evil.example/x" 1x)}',
         }
         for rel, body in files.items():
             with open(os.path.join(flash, rel), "wb") as f:
                 f.write(body if isinstance(body, bytes) else body.encode("utf-8"))
         plug = os.path.join(tmp, "plugin", "include")
         os.makedirs(plug)
-        for f in ("svg.php", "asset.php", "migrate-assets.php"):
+        for f in ("svg.php", "asset.php", "css.php", "migrate-assets.php"):
             shutil.copy(os.path.join(PLUGIN, "include", f), plug)
         run = lambda: subprocess.run(shlex.split(php_cmd) + [os.path.join(plug, "migrate-assets.php"), flash, web],
                                      capture_output=True, text=True, check=True)
@@ -122,6 +124,7 @@ def migration_checks(php_cmd):
         run()
         quarantined = sorted(os.listdir(os.path.join(flash, "quarantine")))
         photo = open(webfile("bg/photo.png"), "rb").read() if os.path.exists(webfile("bg/photo.png")) else b""
+        blocked = open(webfile("blocked-themes"), encoding="utf-8").read() if os.path.exists(webfile("blocked-themes")) else ""
         return [
             ("migration: originals on flash are never rewritten",
              all(first[rel] == files[rel] for rel in first), ""),
@@ -141,6 +144,11 @@ def migration_checks(php_cmd):
              "logo-fake.png" in quarantined and not os.path.exists(webfile("logo/fake.png")), " ".join(quarantined)),
             ("migration: SVG under a raster name quarantined, not published",
              "logo-disguised.png" in quarantined and not os.path.exists(webfile("logo/disguised.png")), " ".join(quarantined)),
+            ("migration: theme within the rules published",
+             os.path.exists(webfile("presets/good.css")), ""),
+            ("migration: theme breaking a rule not published, kept on flash, listed",
+             not os.path.exists(webfile("presets/old.css")) and read("presets/old.css") == files["presets/old.css"]
+             and blocked.startswith("old\tloads a resource"), blocked.strip()),
             ("migration: second run changes nothing", first == second and again == published, ""),
         ]
     finally:
