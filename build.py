@@ -31,7 +31,7 @@ FLASH = f"/boot/config/plugins/{NAME}"
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
     "main": "2026.08.23",
-    "beta": "2026.10.12.b06",
+    "beta": "2026.10.12.b07",
 }
 
 
@@ -74,6 +74,14 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.12.b07
+- Security: themes stored on the flash drive are checked against the current
+  theme rules at every boot, not only when they are imported. Themes imported
+  with an earlier version were checked with a weaker rule set; one that breaks
+  a current rule is no longer loaded, stays on the flash drive untouched, and
+  the settings page names it with the reason. Getting it again from the store
+  or removing it clears the note.
+
 ## 2026.10.12.b06
 - Security: every download the plugin makes (theme import and store, icons,
   background and logo by URL) now only reaches public https hosts on port 443.
@@ -604,16 +612,16 @@ if [ ! -f {FLASH}/custom.css ]; then
 fi
 cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 
-# Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
-cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
-
-# Stored images (icon overrides, background, logo) reach the webroot only
-# through migrate-assets.php, which checks each with the current rules: SVGs
-# are cleaned and the cleaned bytes published, a raster image must really be
-# one (older versions stored SVGs unchecked and took a picked server file by
-# its name alone); a refused file moves to quarantine/ on flash. The old
-# webroot copies go first, so nothing stale stays reachable after an update
-# without a reboot, and if PHP or the script fails no image is served at all.
+# Stored themes (seeded defaults, imports, store downloads) and images (icon
+# overrides, background, logo) reach the webroot only through
+# migrate-assets.php, which checks each with the current rules. A theme that
+# breaks one stays on flash but is not loaded (older versions checked themes
+# with a weaker blocklist). SVGs are cleaned and the cleaned bytes published,
+# a raster image must really be one (older versions stored SVGs unchecked and
+# took a picked server file by its name alone); a refused image moves to
+# quarantine/ on flash. The old webroot copies go first, so nothing stale
+# stays reachable after an update without a reboot, and if PHP or the script
+# fails no stored theme or image is served at all.
 rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/* {WEBROOT}/logo/*
 if [ -x /usr/bin/php ]; then
     if [ -f {WEBROOT}/include/migrate-assets.php ]; then

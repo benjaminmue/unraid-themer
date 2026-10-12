@@ -4,10 +4,9 @@
 Run:  python3 test/test_css_rules.py [--require-php] [--php "<command>"]
 
 scripts/css_rules.py (CI and the bots) and themer_css_violation() in
-UnraidThemer.page (the plugin) must reject every attack below and accept every
-harmless stylesheet, including all registry and bundled themes. The PHP side is
-taken verbatim from the .page (between the css-rules markers) and run with the
-`php` binary, or the command given with --php. CI passes --require-php, so a
+include/css.php (the plugin) must reject every attack below and accept every
+harmless stylesheet, including all registry and bundled themes. The PHP side
+runs with the `php` binary, or the command given with --php. CI passes --require-php, so a
 runner without PHP fails instead of quietly testing only half."""
 import glob, json, os, shlex, shutil, subprocess, sys, tempfile
 
@@ -15,7 +14,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
 from css_rules import violations  # noqa: E402
 
-PAGE = os.path.join(ROOT, "plugin/usr/local/emhttp/plugins/unraid.themer/UnraidThemer.page")
+CSS_PHP = os.path.join(ROOT, "plugin/usr/local/emhttp/plugins/unraid.themer/include/css.php")
 EVIL = "https://evil.example/x"
 
 # every entry must be refused; each is a way the old blocklist was beaten or a
@@ -70,15 +69,14 @@ HARMLESS = {
 
 
 def php_verdicts(cases, php_cmd):
-    """Run the PHP rules from the .page on every case; returns {name: error}."""
-    src = open(PAGE, encoding="utf-8").read()
-    begin, end = src.index("// --- css-rules:begin"), src.index("// --- css-rules:end")
+    """Run the PHP rules (include/css.php) on every case; returns {name: error}."""
     tmp = tempfile.mkdtemp(prefix="themer-css-")
     try:
         with open(os.path.join(tmp, "cases.json"), "w", encoding="utf-8") as f:
             json.dump(cases, f)
+        shutil.copy(CSS_PHP, os.path.join(tmp, "css.php"))
         with open(os.path.join(tmp, "run.php"), "w", encoding="utf-8") as f:
-            f.write("<?php\n" + src[begin:end] + "\n"
+            f.write("<?php\nrequire __DIR__ . '/css.php';\n"
                     "$cases = json_decode(file_get_contents($argv[1]), true);\n"
                     "$out = [];\n"
                     "foreach ($cases as $k => $css) $out[$k] = themer_sanitize_css($css)[1];\n"
