@@ -34,6 +34,10 @@ in a theme + icon system instead of a raw CSS textarea.
   Nunito, Comic Neue), previewed live and saved as a preset. A **live WCAG
   contrast readout** covers the pairs that carry text, and the button label
   colour is chosen for you so it stays readable on any accent.
+- **Themes stay current**: a fix to a bundled theme reaches your server with the
+  next plugin update instead of sitting in the release; registry-only themes get
+  an "Update installed" button in the store. A theme file you edited yourself is
+  recognised and never overwritten, and one you uninstalled stays gone.
 - **Background image** — set a background behind the whole UI, by URL (cached
   locally, CSP-safe) or a file on the server (Unraid's file picker), with a dim
   slider for legibility.

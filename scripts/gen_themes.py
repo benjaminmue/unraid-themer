@@ -20,7 +20,8 @@ THEME_DATA = [
     ("Kanagawa", "kanagawa", "black", "#1f1f28", "255,255,255",
      ("#1f1f28", "#2a2a37", "#363646", "#dcd7ba", "#c8c093", "#54546d", "#7e9cd8", "#e46876"),
      "Muted ink-wash blues inspired by Hokusai."),
-    ("One Dark", "one-dark", "black", "#ffffff", "255,255,255",
+    # button label is the theme's own bg: white on #61afef is 2.4:1 (check_contrast)
+    ("One Dark", "one-dark", "black", "#282c34", "255,255,255",
      ("#282c34", "#2f343d", "#3b4048", "#abb2bf", "#7f848e", "#3e4451", "#61afef", "#c678dd"),
      "Atom's classic, balanced dark."),
     ("Ayu Mirage", "ayu-mirage", "black", "#1f2430", "255,255,255",
@@ -187,6 +188,20 @@ table.dashboard tbody {{
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }}
 
 /*! themer-base: {base} */

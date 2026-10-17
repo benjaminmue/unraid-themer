@@ -9,29 +9,11 @@ Icon="paint-brush"
  * mirrored to the RAM webroot so nginx can serve them.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
+require_once "$docroot/plugins/unraid.themer/include/asset.php"; // themer_read_server_image()
+require_once "$docroot/plugins/unraid.themer/include/fetch.php"; // themer_fetch()
+require_once "$docroot/plugins/unraid.themer/include/css.php";   // themer_sanitize_css()
 
-/* Validate imported CSS before we ever write it to disk. Returns [clean, error].
- * This is the security core of the theme store: reject anything that could run
- * code or phone home. Same ruleset the future publish-bot will use. */
-function themer_sanitize_css($css) {
-    $css = (string) $css;
-    if (trim($css) === '')        return ["", "empty or download failed"];
-    if (strlen($css) > 512 * 1024) return ["", "file too large (>512 KB)"];
-    $blocked = [
-        '/<\s*script/i'                          => "contains a <script> tag",
-        '/<\s*\/?\s*(iframe|object|embed|base)/i' => "contains embedded HTML",
-        '/javascript\s*:/i'                      => "contains a javascript: URI",
-        '/expression\s*\(/i'                     => "contains a CSS expression()",
-        '/behaviou?r\s*:/i'                      => "contains a CSS behavior:",
-        '/-moz-binding/i'                        => "contains -moz-binding",
-        '/@import/i'                             => "contains @import",
-        '/url\s*\(\s*[\'"]?\s*(https?:|\/\/)/i'  => "loads an external url()",
-    ];
-    foreach ($blocked as $re => $why) {
-        if (preg_match($re, $css)) return ["", $why];
-    }
-    return [$css, ""];
-}
 
 $name        = "unraid.themer";
 $flash       = "/boot/config/plugins/$name";
@@ -69,6 +51,12 @@ function themer_cfg_write($path, $over) {
 // Store the image bytes for asset kind $dir ('bg' | 'logo') on flash + webroot and
 // return the served URL. Each kind keeps a single active file.
 function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
+    // an SVG is a document, not a picture: served from this origin it could run
+    // script, so it goes through the same allowlist as icon overrides
+    if ($ext === 'svg') {
+        [$data, $err] = themer_sanitize_svg($data, 1024 * 1024);
+        if ($err) return ['', "SVG rejected: $err"];
+    }
     @mkdir("$flash/$dir", 0755, true);
     @mkdir("$webroot/$dir", 0755, true);
     foreach (glob("$flash/$dir/*") as $f) @unlink($f);
@@ -79,42 +67,68 @@ function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
     return ["$weburl/$rel", ''];
 }
 
-// Resolve an image source (https URL or a file on this server) to a locally served
+// Resolve an image source (https URL or a file under /mnt/) to a locally served
 // URL for asset kind $dir. URLs are downloaded and cached so the browser never
 // fetches a cross-origin image (CSP-safe) and it works offline. [servedUrl, error].
 function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
     $src  = trim($src);
     if ($src === '') return ['', ''];
-    $exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp'];
     // a file the user picked with the Unraid file browser
     if ($src[0] === '/') {
-        if (!is_file($src)) return ['', 'file not found on the server'];
-        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
-        if (!in_array($ext, $exts)) return ['', "unsupported image type .$ext"];
-        if (filesize($src) > 15 * 1024 * 1024) return ['', 'image too large (>15 MB)'];
-        $data = @file_get_contents($src);
-        if ($data === false) return ['', 'could not read that file'];
-        return themer_store_asset($data, $ext === 'jpeg' ? 'jpg' : $ext, $dir, $webroot, $flash, $weburl);
+        [$data, $ext, $err] = themer_read_server_image($src);
+        if ($err) return ['', $err];
+        return themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl);
     }
     // an https URL — fetch and cache locally
-    if (preg_match('#^https?://[^\s\'"<>]+$#i', $src)) {
-        $raw = shell_exec("curl -fsSL --max-time 25 --max-filesize 15728640 " . escapeshellarg($src) . " 2>/dev/null");
-        if (!$raw) return ['', 'could not download that URL'];
-        $fi = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_buffer($fi, $raw);
-        finfo_close($fi);
-        $map = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
-                'image/gif' => 'gif', 'image/svg+xml' => 'svg', 'image/avif' => 'avif',
-                'image/x-ms-bmp' => 'bmp', 'image/bmp' => 'bmp'];
-        if (!isset($map[$mime])) return ['', 'that URL is not an image'];
-        return themer_store_asset($raw, $map[$mime], $dir, $webroot, $flash, $weburl);
+    if (preg_match('#^https?://#i', $src)) {
+        [$raw, $err] = themer_fetch($src, THEMER_IMAGE_MAX, 25);
+        if ($err) return ['', $err];
+        $ext = themer_image_type($raw);
+        if ($ext === '') return ['', 'that URL is not an image'];
+        return themer_store_asset($raw, $ext, $dir, $webroot, $flash, $weburl);
     }
-    return ['', 'enter an http(s) URL or a file path on this server'];
+    return ['', 'enter an https:// URL or the path of an image file under /mnt/'];
+}
+
+/* Provenance for installed themes: one line per preset,
+ *     stem|source sha256|installed sha256
+ * The source hash is the registry file as served, so it can be compared with
+ * index.json to answer "is a newer version out?". The installed hash is what
+ * actually sits on flash after sanitising, so an edited theme is recognisable
+ * and never silently overwritten. Boot reads the same file (see build.py). */
+function themer_origin_read($flash) {
+    $rows = [];
+    foreach (@file("$flash/presets/.origin", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $parts = explode("|", $line);
+        if (count($parts) === 3) $rows[$parts[0]] = ['source' => $parts[1], 'installed' => $parts[2]];
+    }
+    return $rows;
+}
+function themer_origin_set($flash, $stem, $source, $installed) {
+    $rows = themer_origin_read($flash);
+    $rows[$stem] = ['source' => $source, 'installed' => $installed];
+    $out = "";
+    foreach ($rows as $k => $v) $out .= "$k|{$v['source']}|{$v['installed']}\n";
+    @file_put_contents("$flash/presets/.origin", $out);
+}
+function themer_origin_drop($flash, $stem) {
+    $rows = themer_origin_read($flash);
+    unset($rows[$stem]);
+    $out = "";
+    foreach ($rows as $k => $v) $out .= "$k|{$v['source']}|{$v['installed']}\n";
+    @file_put_contents("$flash/presets/.origin", $out);
+}
+
+// the community registry index (best-effort, short timeout); null when offline
+function themer_store_index($store_base) {
+    [$raw, $err] = themer_fetch("$store_base/index.json", 1024 * 1024, 8);
+    return $err ? null : (@json_decode($raw, true) ?: null);
 }
 
 // download + sanitise a theme into the presets folder; returns "" or an error
 function themer_fetch_theme($url, $flash, $webroot) {
-    $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 524288 " . escapeshellarg($url) . " 2>/dev/null");
+    [$raw, $err] = themer_fetch($url, 512 * 1024);
+    if ($err) return $err;
     [$clean, $err] = themer_sanitize_css($raw);
     if ($err) return $err;
     $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower(pathinfo((string) parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME)));
@@ -122,6 +136,7 @@ function themer_fetch_theme($url, $flash, $webroot) {
     @mkdir("$flash/presets", 0755, true);
     file_put_contents("$flash/presets/$stem.css", $clean);
     @copy("$flash/presets/$stem.css", "$webroot/presets/$stem.css");
+    themer_origin_set($flash, $stem, hash('sha256', (string) $raw), hash('sha256', $clean));
     return "";  // success
 }
 
@@ -253,6 +268,20 @@ div.title { border-left: 3px solid var(--t-accent); }
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 {$fontblock}
 /*! themer-base: {$base} */
@@ -462,6 +491,35 @@ if ($_POST && isset($_POST['store_get'])) {
     }
 }
 
+// --- REFRESH INSTALLED STORE THEMES ---
+// A theme fix in the registry is worthless while every server keeps its old
+// copy. Bundled themes are refreshed on boot straight from the package (see
+// build.py); the ones that only exist in the registry are pulled here.
+if ($_POST && isset($_POST['store_update'])) {
+    $idx    = themer_store_index($store_base);
+    $origin = themer_origin_read($flash);
+    $done = $failed = $edited = [];
+    foreach ($idx['themes'] ?? [] as $t) {
+        // same filter as the store rows: the name goes into a URL and a path
+        if (!preg_match('/^[a-z0-9-]+\.css$/', (string) ($t['file'] ?? ''))) continue;
+        $stem = pathinfo($t['file'], PATHINFO_FILENAME);
+        $local = "$flash/presets/$stem.css";
+        if (!is_file($local) || empty($t['sha256'])) continue;              // not installed / no hash
+        $known = $origin[$stem] ?? null;
+        if ($known && $known['source'] === $t['sha256']) continue;          // already current
+        // an edited copy is the user's, not ours: leave it and say so
+        if ($known && $known['installed'] !== hash_file('sha256', $local)) { $edited[] = $stem; continue; }
+        $err = themer_fetch_theme("$store_base/{$t['file']}", $flash, $webroot);
+        if ($err) $failed[] = $stem; else $done[] = $stem;
+    }
+    $parts = [];
+    if ($done)   $parts[] = "Updated " . implode(", ", $done) . ".";
+    if ($edited) $parts[] = "Kept your edited copy of " . implode(", ", $edited) . ".";
+    if ($failed) $parts[] = "Failed for " . implode(", ", $failed) . ".";
+    $msg = $parts ? implode(" ", $parts) . " Reload the browser (Ctrl+Shift+R) to see the change."
+                  : "All installed store themes are already current.";
+}
+
 // --- REMOVE A USER-ADDED THEME ---
 if ($_POST && isset($_POST['remove_preset'])) {
     $r = preg_replace('/[^A-Za-z0-9_-]/', '', $_POST['remove_preset']);
@@ -470,6 +528,7 @@ if ($_POST && isset($_POST['remove_preset'])) {
     if ($r !== '' && is_file("$flash/presets/$r.css")) {
         @unlink("$flash/presets/$r.css");
         @unlink("$webroot/presets/$r.css");
+        themer_origin_drop($flash, $r);
         // if it was the active preset, fall back to bebamu
         $cur = parse_plugin_cfg($name);
         if (($cur['PRESET'] ?? '') === $r) {
@@ -510,9 +569,8 @@ foreach (glob("$flash/presets/*.css") as $p) $user_presets[] = basename($p, '.cs
 sort($user_presets);
 
 // fetch the community theme store index (best-effort, short timeout)
-$store_index = null;
-$raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
-if ($raw) $store_index = @json_decode($raw, true);
+$store_index  = themer_store_index($store_base);
+$origin_rows  = themer_origin_read($flash);
 
 // Build the "Added themes" and "Theme store" blocks as HTML strings, echoed
 // inline in the form so Unraid's markdown parser keeps them in the value column.
@@ -534,9 +592,12 @@ foreach ($presets as $p) {
 
 // theme store rows — three button states: Get / Uninstall (user-added) / Installed (built-in)
 $store_stems = [];
+$stale_stems = [];
 if (!empty($store_index['themes'])) {
     $rows = "";
     foreach ($store_index['themes'] as $t) {
+        // the registry is checked in CI, but the page does not rely on that
+        if (!preg_match('/^[a-z0-9-]+\.css$/', (string) ($t['file'] ?? ''))) continue;
         $stem = pathinfo($t['file'], PATHINFO_FILENAME);
         $store_stems[$stem] = 1;
         $ins     = isset($have_preset[$stem]);
@@ -545,6 +606,15 @@ if (!empty($store_index['themes'])) {
         $L = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
         $D = in_array($base, ['black', 'gray', 'any']) ? '1' : '0';
         $dn = htmlspecialchars(strtolower($t['name'] . ' ' . $t['description']));
+        // newer version in the registry than the copy on flash? An entry the
+        // .origin file has never seen (installed before this was introduced)
+        // counts as unknown, and unknown is offered rather than hidden.
+        $stale = false;
+        if ($onflash && !empty($t['sha256'])) {
+            $known = $origin_rows[$stem] ?? null;
+            $stale = !$known || $known['source'] !== $t['sha256'];
+        }
+        if ($stale) $stale_stems[$stem] = 1;
         if (!$ins) {
             $b = "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "' style='$btnStore'>Get</button>";
         } elseif ($onflash) {
@@ -560,14 +630,20 @@ if (!empty($store_index['themes'])) {
         $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:grid; grid-template-columns:112px 64px 1fr; align-items:center; column-gap:14px; padding:6px 10px; border-top:1px solid rgba(128,128,128,0.18);'>"
             . $b
             . themer_swatch_html($sw)
-            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em></span>"
+            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em>"
+            . ($stale ? " <strong style='color:var(--link-text-color,#e68321);'>&middot; update available</strong>" : "")
+            . "</span>"
             . "</div>";
     }
     $n = count($store_index['themes']);
     $storeHtml = "<div style='max-width:820px;'>"
         . "<div style='display:flex; gap:8px; margin-bottom:8px; align-items:center;'><input type='text' id='ut-store-search' placeholder='Search themes…' autocomplete='off' onkeyup='utStoreFilter()' style='flex:1; min-width:0;'><select id='ut-store-filter' onchange='utStoreFilter()' style='width:auto;'><option value='all'>All</option><option value='light'>Light</option><option value='dark'>Dark</option></select></div>"
         . "<div id='ut-store-list' style='max-height:320px; overflow-y:auto; border:1px solid rgba(128,128,128,0.25);'>$rows</div>"
-        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/$channel/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving.</span>"
+        . ($stale_stems
+            ? "<div style='margin-top:8px;'><button type='submit' name='store_update' value='1' style='$btn'>Update installed</button> "
+              . "<span>" . count($stale_stems) . " installed theme(s) have a newer version in the registry. Your own edits to a theme are kept.</span></div>"
+            : "")
+        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/$channel/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving. Bundled themes refresh themselves when the plugin updates.</span>"
         . "</div>"
         . "<script>function utStoreFilter(){var q=(document.getElementById('ut-store-search').value||'').toLowerCase().trim();var f=document.getElementById('ut-store-filter').value;var rows=document.querySelectorAll('#ut-store-list .ut-store-row');for(var i=0;i<rows.length;i++){var r=rows[i];var okq=!q||r.getAttribute('data-name').indexOf(q)>=0;var okf=f=='all'||(f=='light'&&r.getAttribute('data-light')=='1')||(f=='dark'&&r.getAttribute('data-dark')=='1');r.style.display=(okq&&okf)?'':'none';}}</script>";
 } else {
@@ -588,6 +664,22 @@ if ($orphans) {
 } else {
     $addedHtml = "<span>Store themes are removed with <strong>Uninstall</strong> in the store above; built-in themes stay.</span>";
 }
+
+// Themes on flash the boot check did not load (migrate-assets.php): they broke
+// a rule that older versions did not enforce. They stay on flash, untouched,
+// each with its own remove button: a store theme has no Uninstall while it is
+// not loaded. One published since then (a fixed version from the store) or
+// removed from flash is no longer listed.
+$blockedHtml = "";
+foreach (@file("$webroot/blocked-themes", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+    [$stem, $why] = array_pad(explode("\t", $line, 2), 2, '');
+    if ($stem === '' || isset($have_preset[$stem]) || !is_file("$flash/presets/$stem.css")) continue;
+    $val = htmlspecialchars($stem, ENT_QUOTES);
+    $blockedHtml .= "<br><span style='color:var(--orange, #e68a00)'>Not loaded: <strong>$val</strong> ("
+                  . htmlspecialchars($why) . "). It breaks the current theme rules; get a current version from the store or remove it.</span> "
+                  . "<button type='submit' name='remove_preset' value='$val' onclick='return confirm(\"Remove $val?\")' style='$btn margin:0 0 0 6px;'>Remove</button>";
+}
+$addedHtml .= $blockedHtml;
 ?>
 
 <div markdown="1">
@@ -646,14 +738,14 @@ Custom icons (per slot):
 
 Background image:
 : <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="bg_src" id="ut-bg-src" value="<?= htmlspecialchars($bg_src_val) ?>" spellcheck="false" placeholder="https://…/image.jpg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseBg()"></span><span style="display:flex; gap:10px; align-items:center; margin-top:8px;">Dim for legibility <input type="range" name="bg_dim" min="0" max="90" step="5" value="<?= $bg_dim_val ?>" oninput="document.getElementById('ut-bg-dimval').textContent=this.value+'%'" style="vertical-align:middle;"><span id="ut-bg-dimval"><?= $bg_dim_val ?>%</span></span>
-  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or a file on the server (<strong>Browse…</strong> opens Unraid's file picker). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
+  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or an image file under <code>/mnt/</code> (<strong>Browse…</strong> opens Unraid's file picker; symlinks are not accepted). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
   <link type="text/css" rel="stylesheet" href="/webGui/styles/jquery.filetree.css">
   <script src="/webGui/javascript/jquery.filetree.js" charset="utf-8"></script>
   <script defer src="/plugins/unraid.themer/js/themer-branding.js?v=<?= @filemtime("$webroot/js/themer-branding.js") ?>"></script>
 
 Logo:
 : <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="logo_src" id="ut-logo-src" value="<?= htmlspecialchars($logo_src_val) ?>" spellcheck="false" placeholder="https://…/logo.png / .svg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseLogo()"></span>
-  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or a file on the server. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
+  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or an image file under <code>/mnt/</code>. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
 
 <?php
 $cp = [

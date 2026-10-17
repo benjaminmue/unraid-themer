@@ -10,6 +10,8 @@ Icon="icon-apps"
  * loader injects AFTER the icon set — so a single swap wins even with set = Default.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
+require_once "$docroot/plugins/unraid.themer/include/fetch.php"; // themer_fetch()
 
 $name    = "unraid.themer";
 $flash   = "/boot/config/plugins/$name";
@@ -216,24 +218,6 @@ foreach (glob("$webroot/icons/svg/*", GLOB_ONLYDIR) as $dirpath) {
 $all_values = [];
 foreach ($picker_groups as $items) foreach ($items as $it) $all_values[] = $it[0];
 
-/* Validate an SVG before it is ever written to disk. Returns [clean, error]. */
-function themer_sanitize_svg($svg) {
-    $svg = (string) $svg;
-    if (trim($svg) === '')            return ["", "empty or download failed"];
-    if (strlen($svg) > 64 * 1024)     return ["", "too large (>64 KB)"];
-    if (!preg_match('/<svg[\s>]/i', $svg)) return ["", "not an <svg> document"];
-    $blocked = [
-        '/<\s*script/i'                                          => "a <script> tag",
-        '/<\s*(foreignObject|iframe|image|use|animate|set)\b/i'  => "an embedded/external element",
-        '/\son\w+\s*=/i'                                         => "an inline event handler",
-        '/javascript\s*:/i'                                      => "a javascript: URI",
-        '/(?:href|xlink:href)\s*=\s*[\'"]?\s*(?:https?:|\/\/|data:)/i' => "an external/data href",
-        '/<!ENTITY|<!DOCTYPE/i'                                  => "an XML entity/doctype",
-    ];
-    foreach ($blocked as $re => $why) if (preg_match($re, $svg)) return ["", "contains $why"];
-    return [$svg, ""];
-}
-
 /* Resolve one slot's raw input to a served icon URL, saving a custom SVG if needed.
  * Returns [targetUrl, error]. Empty input => ["", ""] (no override). */
 function themer_resolve_icon($key, $src, $ctx) {
@@ -257,7 +241,8 @@ function themer_resolve_icon($key, $src, $ctx) {
     }
     // (b) https URL to an SVG
     if (preg_match('#^https://[^\s\'"<>]+$#i', $src)) {
-        $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 65536 " . escapeshellarg($src) . " 2>/dev/null");
+        [$raw, $err] = themer_fetch($src, 65536);
+        if ($err) return ["", $err];
         [$clean, $err] = themer_sanitize_svg($raw);
         if ($err) return ["", $err];
         @mkdir($ov_dir_f, 0755, true); @mkdir($ov_dir_w, 0755, true);

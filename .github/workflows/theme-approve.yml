@@ -2,8 +2,16 @@ name: Publish approved theme
 
 # When a maintainer adds the "approved" label to a theme-submission issue, the
 # submitted CSS is re-validated, written to themes/<slug>.css and registered in
-# themes/index.json (credited to the issue opener), committed, and the issue is
-# closed. Only users with write access can approve.
+# themes/index.json (credited to the issue opener) on a branch of its own, and
+# the issue gets a link to open the pull request. Only users with write access
+# can approve.
+#
+# Why a branch and not a direct push: the issue body can still change after the
+# maintainer looked at it, and the label fires on whatever it says at that
+# moment. The pull request freezes those bytes, its diff is what gets reviewed
+# and merged, and opening it as a person runs the CI checks (a PR created with
+# GITHUB_TOKEN would not). A name that already exists is refused, so a
+# submission can never replace a published theme.
 on:
   issues:
     types: [labeled]
@@ -19,7 +27,7 @@ jobs:
       contains(join(github.event.issue.labels.*.name, ','), 'theme-submission')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Only a maintainer may approve
         env:
@@ -31,19 +39,22 @@ jobs:
           echo "$ACTOR has permission: $perm"
           case "$perm" in admin|write|maintain) : ;; *) echo "::error::$ACTOR is not a maintainer"; exit 1 ;; esac
 
-      - name: Validate, publish, close
+      - name: Validate, stage on a branch, link the pull request
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number }}
           BODY: ${{ github.event.issue.body }}
           AUTHOR: ${{ github.event.issue.user.login }}
+          BASE: ${{ github.event.repository.default_branch }}
         run: |
           python3 - << 'PY'
-          import os, re, json, subprocess
+          import hashlib, json, os, re, subprocess, sys, urllib.parse
+          sys.path.insert(0, "scripts")
+          from css_rules import violations   # the rules the plugin enforces too
 
           body = os.environ.get("BODY", "") or ""
-          repo, num = os.environ["REPO"], os.environ["NUMBER"]
+          repo, num, base = os.environ["REPO"], os.environ["NUMBER"], os.environ["BASE"]
           author = os.environ.get("AUTHOR", "").strip()
 
           def section(label):
@@ -58,60 +69,75 @@ jobs:
           name = section("Theme name").splitlines()[0].strip() if section("Theme name") else ""
           desc = section("One-line description").splitlines()[0].strip() if section("One-line description") else ""
           base_raw = section("Base").lower()
-          base = "white" if "light" in base_raw else "black"
+          theme_base = "white" if "light" in base_raw else "black"
 
-          def comment(msg, close=False):
+          def comment(msg):
               with open("c.md", "w", encoding="utf-8") as f:
                   f.write("<!-- themer-bot -->\n" + msg)
               subprocess.run(["gh", "issue", "comment", num, "--repo", repo, "--body-file", "c.md"], check=True)
-              if close:
-                  subprocess.run(["gh", "issue", "close", num, "--repo", repo], check=True)
 
-          # re-validate before publishing (defence in depth)
-          BLOCKED = [
-              (r"<\s*script", "a <script> tag"), (r"javascript\s*:", "a javascript: URI"),
-              (r"expression\s*\(", "a CSS expression()"), (r"behaviou?r\s*:", "a CSS behavior:"),
-              (r"-moz-binding", "-moz-binding"), (r"@import", "@import"),
-              (r"url\s*\(\s*['\"]?\s*(https?:|//)", "an external url()"),
-              (r"<\s*/?\s*(iframe|object|embed|base)", "embedded HTML"),
-          ]
+          def refuse(why):
+              comment("❌ Cannot publish: " + why + ". Removing the `approved` label.")
+              subprocess.run(["gh", "issue", "edit", num, "--repo", repo, "--remove-label", "approved"])
+              raise SystemExit(0)
+
+          slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+          path = os.path.join("themes", slug + ".css")
+          idx_path = os.path.join("themes", "index.json")
+          idx = json.load(open(idx_path, encoding="utf-8"))
+
           errs = []
           if not css or (":root" not in css and "--background-color" not in css):
               errs.append("no valid CSS found")
           elif css.count("{") != css.count("}"):
               errs.append("unbalanced braces")
           else:
-              for rx, why in BLOCKED:
-                  if re.search(rx, css, re.I):
-                      errs.append("contains " + why)
-          if not name:
-              errs.append("no theme name")
+              errs += violations(css)
+          # plain text only: the name lands in bot comments, the PR title and the
+          # store, and markdown in it could plant a second "review" link
+          if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 .'+-]{0,39}", name) or not slug:
+              errs.append("the theme name may only use letters, digits, spaces and . ' + - (max 40)")
+          elif os.path.exists(path) or any(t.get("file") == slug + ".css" for t in idx["themes"]):
+              errs.append(f"a theme named `{slug}` already exists, please pick another name")
           if errs:
-              comment("❌ Cannot publish — " + "; ".join(errs) + ". Removing the `approved` label.")
-              subprocess.run(["gh", "issue", "edit", num, "--repo", repo, "--remove-label", "approved"])
-              raise SystemExit(0)
+              refuse("; ".join(errs))
 
-          slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-") or "theme"
-          path = os.path.join("themes", slug + ".css")
           with open(path, "w", encoding="utf-8") as f:
               f.write(css if css.endswith("\n") else css + "\n")
-
-          idx_path = os.path.join("themes", "index.json")
-          idx = json.load(open(idx_path, encoding="utf-8"))
-          entry = {"name": name, "file": slug + ".css", "author": author or "community",
-                   "base": base, "description": desc or name}
-          idx["themes"] = [t for t in idx["themes"] if t.get("file") != entry["file"]] + [entry]
+          idx["themes"].append({"name": name, "file": slug + ".css", "author": author or "community",
+                                "base": theme_base, "description": desc or name})
           with open(idx_path, "w", encoding="utf-8") as f:
               json.dump(idx, f, indent=2, ensure_ascii=False); f.write("\n")
+          # palette preview + content hash for the store, same as for every theme
+          subprocess.run([sys.executable, "scripts/gen_swatches.py"], check=True, stdout=subprocess.DEVNULL)
 
+          # one branch per approved snapshot, named after its content: approving
+          # again after an edit stages a new branch, it never rewrites one that
+          # is already under review
+          digest = hashlib.sha256(open(path, "rb").read()).hexdigest()
+          branch = f"theme/{slug}-{num}-{digest[:12]}"
+          if subprocess.run(["git", "ls-remote", "--exit-code", "--heads", "origin", branch],
+                            capture_output=True).returncode == 0:
+              comment(f"ℹ️ This exact version is already staged on `{branch}`; use the link above.")
+              raise SystemExit(0)
           subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(["git", "config", "user.email",
                           "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "switch", "-c", branch], check=True)
           subprocess.run(["git", "add", path, idx_path], check=True)
           subprocess.run(["git", "commit", "-m",
                           f"Add theme \"{name}\" by @{author} (from #{num})"], check=True)
-          subprocess.run(["git", "push"], check=True)
+          subprocess.run(["git", "push", "origin", f"HEAD:refs/heads/{branch}"], check=True)
 
-          comment(f"🎉 Published **{name}** to the store as `{slug}.css`, credited to @{author}. "
-                  f"It'll appear in everyone's Theme store shortly. Thanks!", close=True)
+          q = urllib.parse.urlencode({
+              "quick_pull": "1",
+              "title": f"Add theme \"{name}\" by @{author}",
+              "body": f"From #{num}. Staged by the approve bot from the issue as it was when "
+                      f"`approved` was set; `themes/{slug}.css` sha256 `{digest}`.\n\nCloses #{num}",
+          })
+          url = f"https://github.com/{repo}/compare/{base}...{urllib.parse.quote(branch)}?{q}"
+          comment(f"📦 Staged **{name}** as `themes/{slug}.css` on branch `{branch}` "
+                  f"(sha256 `{digest[:12]}`).\n\n**[Open the pull request]({url})**, review the "
+                  f"diff and merge. Edits to this issue no longer change what gets published; "
+                  f"the issue closes with the merge.")
           PY

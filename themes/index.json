@@ -14,7 +14,8 @@
         "#0a0a0a",
         "#e63312",
         "#b71f08"
-      ]
+      ],
+      "sha256": "ee801a255c3725a3d776fab1664d362cc1f4569f3291a55f3bd979d7a80182fc"
     },
     {
       "name": "Nord",
@@ -28,7 +29,8 @@
         "#eceff4",
         "#88c0d0",
         "#5e81ac"
-      ]
+      ],
+      "sha256": "eb4ade37b09272b3bf1262b1978807927f171ec5c5ac5537e824141140b4f43d"
     },
     {
       "name": "Dracula",
@@ -42,7 +44,8 @@
         "#f8f8f2",
         "#bd93f9",
         "#ff79c6"
-      ]
+      ],
+      "sha256": "7b41cb73dbf28c2b0e5691cf172eb1a8c0aceaf833ff7fdb5518efb36fd55eff"
     },
     {
       "name": "Solarized Dark",
@@ -56,7 +59,8 @@
         "#eee8d5",
         "#268bd2",
         "#2aa198"
-      ]
+      ],
+      "sha256": "06764af1c18cf22e0ee64aefc35957a604423642c8cb5690a63250b58f1e8d0e"
     },
     {
       "name": "Monokai",
@@ -70,7 +74,8 @@
         "#f8f8f2",
         "#f92672",
         "#a6e22e"
-      ]
+      ],
+      "sha256": "f81418784198b77ffac55bcb2e2d956eec130205b712453802d02ab7ac06d126"
     },
     {
       "name": "Gruvbox Dark",
@@ -84,7 +89,8 @@
         "#ebdbb2",
         "#fe8019",
         "#fabd2f"
-      ]
+      ],
+      "sha256": "2c78890eff2a0f3cedb130fc7f8fbe4a5b31151a79cef53839ba98490c7ffe14"
     },
     {
       "name": "Tokyo Night",
@@ -98,7 +104,8 @@
         "#c0caf5",
         "#7aa2f7",
         "#bb9af7"
-      ]
+      ],
+      "sha256": "b88366396854f771aff4e43868041f2640091c6854cf03601c34135ddceb0ded"
     },
     {
       "name": "Catppuccin Mocha",
@@ -112,7 +119,8 @@
         "#cdd6f4",
         "#cba6f7",
         "#89b4fa"
-      ]
+      ],
+      "sha256": "7dfe7c3c30ea5a93e15196a88b5a2e360310a09b23b259b94a94c4064d3ad317"
     },
     {
       "name": "Catppuccin Latte",
@@ -126,7 +134,8 @@
         "#4c4f69",
         "#8839ef",
         "#1e66f5"
-      ]
+      ],
+      "sha256": "4e00c26b13e0c9b46e795ac78a7e514c6058f2508a1f896d6b2615efab76804f"
     },
     {
       "name": "Solarized Light",
@@ -140,7 +149,8 @@
         "#073642",
         "#268bd2",
         "#2aa198"
-      ]
+      ],
+      "sha256": "4e347dde67eb6e6749710b4ed6c0e0351ac915fa77996c4746346d9af0558dec"
     },
     {
       "name": "Rose Pine Dawn",
@@ -154,7 +164,8 @@
         "#575279",
         "#907aa9",
         "#d7827e"
-      ]
+      ],
+      "sha256": "1d51bfc397211193541d8ec98db59a8aeef3423e4c734275627cf411d7d99321"
     },
     {
       "name": "GitHub Light",
@@ -168,7 +179,8 @@
         "#1f2328",
         "#0969da",
         "#1a7f37"
-      ]
+      ],
+      "sha256": "3cdee5df3aa5bddb633c519a8e7007a65a22c9511c0118409b7a51dfc6d77d0c"
     },
     {
       "name": "Everforest",
@@ -182,7 +194,8 @@
         "#d3c6aa",
         "#a7c080",
         "#e67e80"
-      ]
+      ],
+      "sha256": "d9e052a065ba201e5032ae02c0b6ce02feabfb2655490448a77713782f59261e"
     },
     {
       "name": "Kanagawa",
@@ -196,7 +209,8 @@
         "#dcd7ba",
         "#7e9cd8",
         "#e46876"
-      ]
+      ],
+      "sha256": "de90eabd1762523e94c908aeab81c2a3b172488d6ffbb2f2cf0cbf30ff4083ef"
     },
     {
       "name": "One Dark",
@@ -210,7 +224,8 @@
         "#abb2bf",
         "#61afef",
         "#c678dd"
-      ]
+      ],
+      "sha256": "32fcbab9a5965efd2f48c9dee1b99c2559fb78504f2615f78df07f018ecf700f"
     },
     {
       "name": "Ayu Mirage",
@@ -224,7 +239,8 @@
         "#cbccc6",
         "#ffcc66",
         "#73d0ff"
-      ]
+      ],
+      "sha256": "c6c7668db54c77e1ad94cf13b0310a0ee3d3ff1ff3d9c956c66969b1818a9c97"
     },
     {
       "name": "Synthwave 84",
@@ -238,7 +254,8 @@
         "#f8f8f2",
         "#ff7edb",
         "#36f9f6"
-      ]
+      ],
+      "sha256": "7ba01fc89c471bfa4e98b80a25850b0f90d12fdc22390696b0ba6e2162f9dc48"
     },
     {
       "name": "Matrix",
@@ -252,7 +269,8 @@
         "#63f763",
         "#00ff41",
         "#b6ff00"
-      ]
+      ],
+      "sha256": "6c31153a9bcf500b5a23fa60077fed41e4d25aad5c6b657bbfd5b9200731519a"
     },
     {
       "name": "Unraid Appreciation",
@@ -266,7 +284,8 @@
         "#f0f0f0",
         "#ff8c2f",
         "#e32929"
-      ]
+      ],
+      "sha256": "09a9bde3edd208003c0d77055b8d529245e8ed92c6ab678b8bdec89e2e2d8352"
     },
     {
       "name": "Amberloom",
@@ -280,7 +299,8 @@
         "#ece7de",
         "#e0a458",
         "#4fb3a9"
-      ]
+      ],
+      "sha256": "2e8cd77d7e72c40c49359458fdf732a2fa546616c8e4e94ab312bf7f8d2f5f7e"
     }
   ]
 }

@@ -86,15 +86,24 @@ Link="nav-user"
            . "</style>\n";
     }
 
-    // 4c) custom logo — the top-left Unraid wordmark is a light-DOM <img>, so
-    //     plain CSS `content:url()` swaps it (no JS / shadow DOM needed)
+    // 4c) custom logo — the top-left Unraid wordmark sits in the light DOM inside
+    //     <unraid-header-os-version>, in one of two shapes depending on the
+    //     web-component build: an <img src=".../UN-logotype-gradient.svg"> (7.3.2
+    //     stock) or an inline <svg> (7.3.3, and 7.3.2 after an Unraid Connect /
+    //     API plugin update). The <img> takes `content:url()`; an inline <svg>
+    //     does not, so it is hidden and its link draws the logo instead. The
+    //     :has() keeps that second rule off the <img> variant (no double logo).
     $logo = trim($cfg['LOGO'] ?? '');
     if ($logo !== '') {
         $lq = htmlspecialchars($logo, ENT_QUOTES);
+        $la = 'unraid-header-os-version a[href="https://unraid.net"]';
         echo "<style id=\"ut-logo\">"
            . "img[src*=\"UN-logotype\"],img[alt=\"Unraid Logo\"]{"
            . "content:url('$lq')!important;height:2.6rem!important;width:auto!important;"
            . "max-width:16rem;object-fit:contain!important}"
+           . "$la>svg{display:none!important}"
+           . "$la:has(>svg)::before{content:'';display:block;height:2.6rem;width:16rem;"
+           . "max-width:100%;background:url('$lq') left center/contain no-repeat}"
            . "</style>\n";
     }
 

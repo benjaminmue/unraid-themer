@@ -30,8 +30,8 @@ FLASH = f"/boot/config/plugins/{NAME}"
 
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
-    "main": "2026.08.23",
-    "beta": "2026.08.23.b01",
+    "main": "2026.10.17",
+    "beta": "2026.10.17.b01",
 }
 
 
@@ -44,7 +44,19 @@ def current_channel():
                                 capture_output=True, text=True, check=True).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "main"
-    return branch if branch in VERSIONS else "main"
+    if branch not in VERSIONS:
+        # Imported (the tests read BOOT and other channel-free constants, and
+        # main() is __main__-gated), nothing gets stamped, so a feature branch
+        # or the detached HEAD of a CI pull-request checkout is fine.
+        if __name__ != "__main__":
+            return "main"
+        # Falling back to main here is how a feature branch quietly produces a
+        # stable-stamped .plg that then rides a merge into beta, pointing every
+        # install on that channel at the wrong branch. Say so instead.
+        sys.exit(f"On branch '{branch}', which is not a release channel "
+                 f"({', '.join(VERSIONS)}). Build from the channel branch, or "
+                 f"pass --channel explicitly if that is really what you want.")
+    return branch
 
 
 CHANNEL = current_channel()
@@ -62,6 +74,131 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.17
+- Fixed: the custom logo was ignored on Unraid 7.3.3 (and on 7.3.2 with a
+  current Unraid Connect / API plugin), where the header draws the wordmark as
+  an inline SVG. Both header variants are covered.
+- Security: this release closes several ways a theme, an icon or an image URL
+  could be turned against the webGui. Nothing changes for themes from the
+  store or for normal images.
+  - Themes may not load anything from elsewhere: no url(), image-set() or
+    similar, no CSS escapes, no at-rules besides @media and @supports, plain
+    UTF-8 only. Before, a crafted theme could leak Unraid's CSRF token.
+  - SVG icons, logos and backgrounds are rebuilt from an allowlist of drawing
+    elements, so an SVG can no longer run script.
+  - Downloads (theme import, store, icon / logo / background by URL) only reach
+    public https hosts, never the server itself, the LAN or Tailscale.
+    Background and logo URLs must be https.
+  - A background or logo picked on the server must be a real image under /mnt/;
+    symlinks are refused.
+  - Everything stored by an earlier version is checked the same way at every
+    boot. A theme that breaks the rules is not loaded and the settings page says
+    why; an image that is not one moves to quarantine/ in the plugin folder on
+    the flash drive. Your files are never rewritten.
+- Installed themes now receive theme fixes: bundled themes refresh on update,
+  "Update installed" in the store covers registry themes, and a theme you
+  edited yourself is left alone. A theme updated from the store stays updated
+  after a reboot.
+- Community Applications is readable on every theme again (the app-detail popup
+  kept the base theme's text colour), and One Dark's button label keeps its
+  contrast fix.
+
+## 2026.10.12.b08
+- Security: a theme must be plain UTF-8 text. A theme saved as UTF-16 hid its
+  content from the theme checks while the browser still read it, so it could
+  again load content from other servers and leak Unraid's CSRF token. Such a
+  theme is refused on import and, if already stored, not loaded at boot.
+- Background and logo files on the flash drive are only served under the names
+  the plugin stores (bg.png, logo.svg, ...); anything else moves to quarantine/.
+- Theme store entries with an unexpected file name are skipped.
+
+## 2026.10.12.b07
+- Security: themes stored on the flash drive are checked against the current
+  theme rules at every boot, not only when they are imported. Themes imported
+  with an earlier version were checked with a weaker rule set; one that breaks
+  a current rule is no longer loaded, stays on the flash drive untouched, and
+  the settings page names it with the reason. Getting it again from the store
+  or removing it clears the note.
+
+## 2026.10.12.b06
+- Security: every download the plugin makes (theme import and store, icons,
+  background and logo by URL) now only reaches public https hosts on port 443.
+  Addresses of the server itself, the LAN, Tailscale, link-local and metadata
+  ranges are refused in every spelling, also when a host name resolves to one
+  or a redirect leads to one. The server's own networks are refused too,
+  including global IPv6 addresses in its site prefix (/48). Before, a URL could make the server fetch from
+  your own network. Background and logo URLs must now be https.
+
+## 2026.10.12.b05
+- Security: a background or logo picked as a file on the server must now be a
+  real image under /mnt/. Symlinks and paths leading elsewhere are refused,
+  and the type is taken from the file content instead of its name. Before, a
+  symlink planted in a share could copy any file of the system into the
+  webGui when picked.
+- A background or logo stored by an earlier version is checked the same way at
+  every boot; a file that is not an image moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served.
+
+## 2026.10.11.b04
+- Security: SVG files you add as custom icons, logo or background image are now
+  cleaned by parsing them and keeping only drawing elements and attributes.
+  The old check could be tricked with namespace prefixes and encoded values,
+  and a logo or background SVG was not checked at all, so a hostile SVG could
+  run script when opened directly. Inline SVG copied from a web page without
+  an xmlns is accepted and gets the namespace added; safe declarations in a
+  style attribute are kept as plain attributes.
+- SVGs stored by earlier versions are served cleaned the same way after the
+  update and at every boot; your original file on the flash drive is kept as
+  it is. One that cannot be cleaned at all moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served. Text in SVG logos
+  (<text>) is supported.
+
+## 2026.10.11.b03
+- Security: theme imports and store downloads are checked against much stricter
+  rules. The old check could be bypassed with CSS escapes and with image-set(),
+  so a theme could load content from other servers and, through Unraid's hidden
+  CSRF token field, leak that token. Themes may no longer contain backslashes,
+  url(), image-set() or similar functions, or any at-rule except @media and
+  @supports. No theme in the store uses any of these.
+
+## 2026.10.11.b02
+- A theme you updated from the store now stays updated after a reboot. When the
+  registry fixed a theme that also ships with the plugin, the next boot put the
+  older bundled copy back and the store offered the update again. Boot now only
+  refreshes a bundled theme when the plugin package itself brings a new version.
+
+## 2026.10.11.b01
+- Fix the custom logo being ignored on Unraid 7.3.3 (and on 7.3.2 once the
+  Unraid Connect / API plugin is updated): the newer header draws the Unraid
+  wordmark as an inline SVG instead of an image, which the logo swap did not
+  reach. Both header variants are now covered.
+
+## 2026.09.09.b02
+- Installed themes now actually receive theme fixes. Until now a bundled theme
+  was copied to your flash drive once, at first install, and never touched
+  again, so a corrected theme sat in the release while every server kept the
+  broken copy. Bundled themes are refreshed on update, and the theme store
+  offers "Update installed" for the ones that only live in the registry.
+- Your own edits are safe: the plugin records what it wrote, and a theme file
+  that no longer matches that record is treated as yours and left alone. A
+  theme you uninstalled stays uninstalled; nothing is resurrected.
+- The store marks entries with "update available" and says how many are behind.
+
+## 2026.09.09.b01
+- Community Applications is readable again on every theme. CA takes both the
+  surfaces AND the text colours of its app-detail popup from the base Dynamix
+  theme, and themes remapped only the surfaces, so the description text and the
+  Actions / Support / Pin App / All Apps / Profile / Favourite / CLOSE buttons
+  kept the base theme's ink: black on a dark preset (2.1:1 on Nord), near-white
+  on a light one (1.1:1). Every one of the 20 store themes was affected. The
+  matching text variables now follow the palette, in the bundled themes and in
+  themes you build yourself.
+- Fixed the One Dark button label reverting to white (2.4:1) whenever the theme
+  files were regenerated: the earlier fix had only been applied to the generated
+  file, not to the palette table it comes from.
+- The contrast gate covers the Community Applications pair as well now, and it
+  reads a theme's dark variant too instead of measuring only its light half.
+
 ## 2026.08.23
 - Themes now show their palette. Every entry in the theme store and the preset
   dropdown carries a five-colour strip (background, surface, text, accent,
@@ -449,24 +586,90 @@ if [ ! -f {FLASH}/presets/.seeded ]; then
     touch {FLASH}/presets/.seeded
 fi
 
+# Refresh the bundled themes that are still installed, so fixing a theme in a
+# release actually reaches servers that already run it. Three rules:
+#   - only files that ARE there get touched, so an uninstalled theme stays gone
+#   - a copy the user edited is theirs; .origin records what we last wrote, and
+#     anything that no longer matches is left alone
+#   - no record at all means the theme predates .origin: refresh it once and
+#     start recording, otherwise old installs would never pick a fix up
+# Only a package that actually changed a theme counts as an update. .bundled
+# remembers the packaged hash last seen per theme: while it is unchanged, the
+# copy on flash may be NEWER than the package (taken from the store after a
+# registry fix) and must survive the reboot. The next release ships the
+# registry state again, so it is at least as new as anything taken from there.
+ORIGIN={FLASH}/presets/.origin
+SEEN={FLASH}/presets/.bundled
+for src in {WEBROOT}/defaults/*.css; do
+    [ -f "$src" ] || continue
+    stem=$(basename "$src" .css)
+    dst={FLASH}/presets/$stem.css
+    [ -f "$dst" ] || continue
+    new=$(sha256sum "$src" | cut -d' ' -f1)
+    cur=$(sha256sum "$dst" | cut -d' ' -f1)
+    rec=$(grep "^$stem|" "$ORIGIN" 2>/dev/null | head -n1 | cut -d'|' -f3)
+    seen=$(grep "^$stem|" "$SEEN" 2>/dev/null | head -n1 | cut -d'|' -f2)
+    # NOTE: keep this script free of ampersands and angle brackets. These INLINE
+    # blocks are not CDATA, so one of them makes the .plg invalid XML; use an
+    # "if" where a shell and-list would be shorter. build.py refuses to write one.
+    act=none
+    if [ "$new" = "$cur" ]; then
+        # already current; record it once so the store stops guessing
+        if [ -z "$rec" ]; then act=record; fi
+    elif [ "$seen" = "$new" ]; then
+        # same package as last boot: whatever is on flash now came from the
+        # store or the user, never from an older package
+        act=none
+    elif [ -n "$rec" ]; then
+        # a copy that no longer matches what we wrote is the user's edit
+        if [ "$rec" = "$cur" ]; then act=copy; fi
+    else
+        act=copy
+    fi
+    if [ "$act" = "copy" ]; then
+        # a failed copy records nothing, so the next boot tries again
+        if ! cp -f "$src" "$dst"; then continue; fi
+    fi
+    if [ "$act" != "none" ]; then
+        grep -v "^$stem|" "$ORIGIN" 2>/dev/null > "$ORIGIN.tmp"
+        printf '%s|%s|%s\\n' "$stem" "$new" "$new" >> "$ORIGIN.tmp"
+        mv -f "$ORIGIN.tmp" "$ORIGIN"
+    fi
+    # mark this package version as handled only now: a boot interrupted above
+    # retries the refresh instead of skipping it for good
+    if [ "$seen" != "$new" ]; then
+        grep -v "^$stem|" "$SEEN" 2>/dev/null > "$SEEN.tmp"
+        printf '%s|%s\\n' "$stem" "$new" >> "$SEEN.tmp"
+        mv -f "$SEEN.tmp" "$SEEN"
+    fi
+done
+
 # User custom overrides live on flash; recreate the webroot copy nginx serves.
 if [ ! -f {FLASH}/custom.css ]; then
     echo '/* Your custom CSS overrides — loaded on top of the selected preset. */' > {FLASH}/custom.css
 fi
 cp -f {FLASH}/custom.css {WEBROOT}/custom.css 2>/dev/null
 
-# Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
-cp -f {FLASH}/presets/*.css {WEBROOT}/presets/ 2>/dev/null
+# Stored themes (seeded defaults, imports, store downloads) and images (icon
+# overrides, background, logo) reach the webroot only through
+# migrate-assets.php, which checks each with the current rules. A theme that
+# breaks one stays on flash but is not loaded (older versions checked themes
+# with a weaker blocklist). SVGs are cleaned and the cleaned bytes published,
+# a raster image must really be one (older versions stored SVGs unchecked and
+# took a picked server file by its name alone); a refused image moves to
+# quarantine/ on flash. The old webroot copies go first, so nothing stale
+# stays reachable after an update without a reboot, and if PHP or the script
+# fails no stored theme or image is served at all.
+rm -f {WEBROOT}/overrides/*.svg {WEBROOT}/bg/* {WEBROOT}/logo/*
+if [ -x /usr/bin/php ]; then
+    if [ -f {WEBROOT}/include/migrate-assets.php ]; then
+        /usr/bin/php {WEBROOT}/include/migrate-assets.php {FLASH} {WEBROOT}
+    fi
+fi
 
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p {WEBROOT}/overrides
-cp -f {FLASH}/overrides/*.svg {WEBROOT}/overrides/ 2>/dev/null
 cp -f {FLASH}/overrides.css {WEBROOT}/overrides.css 2>/dev/null
-
-# Background image + custom logo (URL cached or a picked file) live on flash; restore.
-mkdir -p {WEBROOT}/bg {WEBROOT}/logo
-cp -f {FLASH}/bg/* {WEBROOT}/bg/ 2>/dev/null
-cp -f {FLASH}/logo/* {WEBROOT}/logo/ 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."
@@ -507,6 +710,16 @@ def build():
                    .replace("<", "&lt;").replace(">", "&gt;"))
     parts.append("<CHANGES>\n" + changes_xml + "\n</CHANGES>")
     parts.append("")
+
+    # The INLINE scripts go in raw, not as CDATA, so a bare &, < or > in them
+    # produces a .plg that no longer parses, and Unraid would only tell you
+    # that on the server. Catch it here instead.
+    for label, script in (("INSTALL", INSTALL), ("BOOT", BOOT), ("REMOVE", REMOVE)):
+        bad = sorted({c for c in ("&", "<") if c in script})
+        if bad:
+            sys.exit(f"{label} script contains XML metacharacters {bad}. Rewrite "
+                     f"it without them (an 'if' instead of '&&', a temp file "
+                     f"instead of a here-doc '<<').")
 
     # 1) prepare dirs
     parts.append('<FILE Run="/bin/bash">')

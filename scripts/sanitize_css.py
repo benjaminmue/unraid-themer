@@ -2,42 +2,30 @@
 """
 sanitize_css.py — CI gate for the theme registry.
 
-Validates every themes/*.css against the same ruleset the plugin uses
-(themer_sanitize_css in UnraidThemer.page) and checks themes/index.json for
+Validates every themes/*.css against the shared ruleset in css_rules.py
+(mirrored by themer_css_violation in UnraidThemer.page) and checks themes/index.json for
 consistency. Exits non-zero on any violation, so unsafe submissions fail the
 GitHub Action and cannot be merged.
 """
 import json
-import os
 import re
+import os
 import sys
 
-MAX_BYTES = 512 * 1024
-BLOCKED = [
-    (re.compile(r"<\s*script", re.I),                          "contains a <script> tag"),
-    (re.compile(r"<\s*/?\s*(iframe|object|embed|base)", re.I),  "contains embedded HTML"),
-    (re.compile(r"javascript\s*:", re.I),                      "contains a javascript: URI"),
-    (re.compile(r"expression\s*\(", re.I),                     "contains a CSS expression()"),
-    (re.compile(r"behaviou?r\s*:", re.I),                      "contains a CSS behavior:"),
-    (re.compile(r"-moz-binding", re.I),                        "contains -moz-binding"),
-    (re.compile(r"@import", re.I),                             "contains @import"),
-    (re.compile(r"url\s*\(\s*['\"]?\s*(https?:|//)", re.I),     "loads an external url()"),
-]
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from css_rules import violations  # noqa: E402  (shared with the bots and, via the corpus test, the plugin)
+
 VALID_BASE = {"any", "white", "black", "azure", "gray"}
 
 
 def check_css(path):
-    errs = []
-    data = open(path, encoding="utf-8", errors="replace").read()
-    if len(data.encode("utf-8")) > MAX_BYTES:
-        errs.append("file too large (>512 KB)")
+    raw = open(path, "rb").read()
+    errs = violations(raw)   # the bytes: a decoding error must fail, not be replaced
+    data = raw.decode("utf-8", errors="replace")
     if data.strip() == "":
         errs.append("empty")
     if data.count("{") != data.count("}"):
         errs.append("unbalanced braces")
-    for rx, why in BLOCKED:
-        if rx.search(data):
-            errs.append(why)
     return errs
 
 
@@ -61,6 +49,10 @@ def main():
                 print(f"::error::index entry missing '{k}': {t}")
                 fail = True
         listed.add(t.get("file"))
+        # the file name ends up in the plugin's HTML and in a flash path
+        if not re.fullmatch(r"[a-z0-9-]+\.css", str(t.get("file", ""))):
+            print(f"::error::index entry has an invalid file name '{t.get('file')}' (a-z, 0-9, - and .css)")
+            fail = True
         if t.get("base") not in VALID_BASE:
             print(f"::error::index entry '{t.get('file')}' has invalid base '{t.get('base')}'")
             fail = True

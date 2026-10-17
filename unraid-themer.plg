@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "unraid.themer">
   <!ENTITY author    "benjaminmue">
-  <!ENTITY version   "2026.08.23">
+  <!ENTITY version   "2026.10.17">
   <!ENTITY launch    "Settings/UnraidThemer">
   <!ENTITY pluginURL "https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg">
   <!ENTITY support   "https://github.com/benjaminmue/unraid-themer">
@@ -11,6 +11,131 @@
 
 <CHANGES>
 ## Unraid Themer
+## 2026.10.17
+- Fixed: the custom logo was ignored on Unraid 7.3.3 (and on 7.3.2 with a
+  current Unraid Connect / API plugin), where the header draws the wordmark as
+  an inline SVG. Both header variants are covered.
+- Security: this release closes several ways a theme, an icon or an image URL
+  could be turned against the webGui. Nothing changes for themes from the
+  store or for normal images.
+  - Themes may not load anything from elsewhere: no url(), image-set() or
+    similar, no CSS escapes, no at-rules besides @media and @supports, plain
+    UTF-8 only. Before, a crafted theme could leak Unraid's CSRF token.
+  - SVG icons, logos and backgrounds are rebuilt from an allowlist of drawing
+    elements, so an SVG can no longer run script.
+  - Downloads (theme import, store, icon / logo / background by URL) only reach
+    public https hosts, never the server itself, the LAN or Tailscale.
+    Background and logo URLs must be https.
+  - A background or logo picked on the server must be a real image under /mnt/;
+    symlinks are refused.
+  - Everything stored by an earlier version is checked the same way at every
+    boot. A theme that breaks the rules is not loaded and the settings page says
+    why; an image that is not one moves to quarantine/ in the plugin folder on
+    the flash drive. Your files are never rewritten.
+- Installed themes now receive theme fixes: bundled themes refresh on update,
+  "Update installed" in the store covers registry themes, and a theme you
+  edited yourself is left alone. A theme updated from the store stays updated
+  after a reboot.
+- Community Applications is readable on every theme again (the app-detail popup
+  kept the base theme's text colour), and One Dark's button label keeps its
+  contrast fix.
+
+## 2026.10.12.b08
+- Security: a theme must be plain UTF-8 text. A theme saved as UTF-16 hid its
+  content from the theme checks while the browser still read it, so it could
+  again load content from other servers and leak Unraid's CSRF token. Such a
+  theme is refused on import and, if already stored, not loaded at boot.
+- Background and logo files on the flash drive are only served under the names
+  the plugin stores (bg.png, logo.svg, ...); anything else moves to quarantine/.
+- Theme store entries with an unexpected file name are skipped.
+
+## 2026.10.12.b07
+- Security: themes stored on the flash drive are checked against the current
+  theme rules at every boot, not only when they are imported. Themes imported
+  with an earlier version were checked with a weaker rule set; one that breaks
+  a current rule is no longer loaded, stays on the flash drive untouched, and
+  the settings page names it with the reason. Getting it again from the store
+  or removing it clears the note.
+
+## 2026.10.12.b06
+- Security: every download the plugin makes (theme import and store, icons,
+  background and logo by URL) now only reaches public https hosts on port 443.
+  Addresses of the server itself, the LAN, Tailscale, link-local and metadata
+  ranges are refused in every spelling, also when a host name resolves to one
+  or a redirect leads to one. The server's own networks are refused too,
+  including global IPv6 addresses in its site prefix (/48). Before, a URL could make the server fetch from
+  your own network. Background and logo URLs must now be https.
+
+## 2026.10.12.b05
+- Security: a background or logo picked as a file on the server must now be a
+  real image under /mnt/. Symlinks and paths leading elsewhere are refused,
+  and the type is taken from the file content instead of its name. Before, a
+  symlink planted in a share could copy any file of the system into the
+  webGui when picked.
+- A background or logo stored by an earlier version is checked the same way at
+  every boot; a file that is not an image moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served.
+
+## 2026.10.11.b04
+- Security: SVG files you add as custom icons, logo or background image are now
+  cleaned by parsing them and keeping only drawing elements and attributes.
+  The old check could be tricked with namespace prefixes and encoded values,
+  and a logo or background SVG was not checked at all, so a hostile SVG could
+  run script when opened directly. Inline SVG copied from a web page without
+  an xmlns is accepted and gets the namespace added; safe declarations in a
+  style attribute are kept as plain attributes.
+- SVGs stored by earlier versions are served cleaned the same way after the
+  update and at every boot; your original file on the flash drive is kept as
+  it is. One that cannot be cleaned at all moves to quarantine/ in the plugin
+  folder on the flash drive instead of being served. Text in SVG logos
+  (&lt;text&gt;) is supported.
+
+## 2026.10.11.b03
+- Security: theme imports and store downloads are checked against much stricter
+  rules. The old check could be bypassed with CSS escapes and with image-set(),
+  so a theme could load content from other servers and, through Unraid's hidden
+  CSRF token field, leak that token. Themes may no longer contain backslashes,
+  url(), image-set() or similar functions, or any at-rule except @media and
+  @supports. No theme in the store uses any of these.
+
+## 2026.10.11.b02
+- A theme you updated from the store now stays updated after a reboot. When the
+  registry fixed a theme that also ships with the plugin, the next boot put the
+  older bundled copy back and the store offered the update again. Boot now only
+  refreshes a bundled theme when the plugin package itself brings a new version.
+
+## 2026.10.11.b01
+- Fix the custom logo being ignored on Unraid 7.3.3 (and on 7.3.2 once the
+  Unraid Connect / API plugin is updated): the newer header draws the Unraid
+  wordmark as an inline SVG instead of an image, which the logo swap did not
+  reach. Both header variants are now covered.
+
+## 2026.09.09.b02
+- Installed themes now actually receive theme fixes. Until now a bundled theme
+  was copied to your flash drive once, at first install, and never touched
+  again, so a corrected theme sat in the release while every server kept the
+  broken copy. Bundled themes are refreshed on update, and the theme store
+  offers "Update installed" for the ones that only live in the registry.
+- Your own edits are safe: the plugin records what it wrote, and a theme file
+  that no longer matches that record is treated as yours and left alone. A
+  theme you uninstalled stays uninstalled; nothing is resurrected.
+- The store marks entries with "update available" and says how many are behind.
+
+## 2026.09.09.b01
+- Community Applications is readable again on every theme. CA takes both the
+  surfaces AND the text colours of its app-detail popup from the base Dynamix
+  theme, and themes remapped only the surfaces, so the description text and the
+  Actions / Support / Pin App / All Apps / Profile / Favourite / CLOSE buttons
+  kept the base theme's ink: black on a dark preset (2.1:1 on Nord), near-white
+  on a light one (1.1:1). Every one of the 20 store themes was affected. The
+  matching text variables now follow the palette, in the bundled themes and in
+  themes you build yourself.
+- Fixed the One Dark button label reverting to white (2.4:1) whenever the theme
+  files were regenerated: the earlier fix had only been applied to the generated
+  file, not to the palette table it comes from.
+- The contrast gate covers the Community Applications pair as well now, and it
+  reads a theme's dark variant too instead of measuring only its light half.
+
 ## 2026.08.23
 - Themes now show their palette. Every entry in the theme store and the preset
   dropdown carries a five-colour strip (background, surface, text, accent,
@@ -400,29 +525,11 @@ Icon="paint-brush"
  * mirrored to the RAM webroot so nginx can serve them.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
+require_once "$docroot/plugins/unraid.themer/include/asset.php"; // themer_read_server_image()
+require_once "$docroot/plugins/unraid.themer/include/fetch.php"; // themer_fetch()
+require_once "$docroot/plugins/unraid.themer/include/css.php";   // themer_sanitize_css()
 
-/* Validate imported CSS before we ever write it to disk. Returns [clean, error].
- * This is the security core of the theme store: reject anything that could run
- * code or phone home. Same ruleset the future publish-bot will use. */
-function themer_sanitize_css($css) {
-    $css = (string) $css;
-    if (trim($css) === '')        return ["", "empty or download failed"];
-    if (strlen($css) > 512 * 1024) return ["", "file too large (>512 KB)"];
-    $blocked = [
-        '/<\s*script/i'                          => "contains a <script> tag",
-        '/<\s*\/?\s*(iframe|object|embed|base)/i' => "contains embedded HTML",
-        '/javascript\s*:/i'                      => "contains a javascript: URI",
-        '/expression\s*\(/i'                     => "contains a CSS expression()",
-        '/behaviou?r\s*:/i'                      => "contains a CSS behavior:",
-        '/-moz-binding/i'                        => "contains -moz-binding",
-        '/@import/i'                             => "contains @import",
-        '/url\s*\(\s*[\'"]?\s*(https?:|\/\/)/i'  => "loads an external url()",
-    ];
-    foreach ($blocked as $re => $why) {
-        if (preg_match($re, $css)) return ["", $why];
-    }
-    return [$css, ""];
-}
 
 $name        = "unraid.themer";
 $flash       = "/boot/config/plugins/$name";
@@ -460,6 +567,12 @@ function themer_cfg_write($path, $over) {
 // Store the image bytes for asset kind $dir ('bg' | 'logo') on flash + webroot and
 // return the served URL. Each kind keeps a single active file.
 function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
+    // an SVG is a document, not a picture: served from this origin it could run
+    // script, so it goes through the same allowlist as icon overrides
+    if ($ext === 'svg') {
+        [$data, $err] = themer_sanitize_svg($data, 1024 * 1024);
+        if ($err) return ['', "SVG rejected: $err"];
+    }
     @mkdir("$flash/$dir", 0755, true);
     @mkdir("$webroot/$dir", 0755, true);
     foreach (glob("$flash/$dir/*") as $f) @unlink($f);
@@ -470,42 +583,68 @@ function themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl) {
     return ["$weburl/$rel", ''];
 }
 
-// Resolve an image source (https URL or a file on this server) to a locally served
+// Resolve an image source (https URL or a file under /mnt/) to a locally served
 // URL for asset kind $dir. URLs are downloaded and cached so the browser never
 // fetches a cross-origin image (CSP-safe) and it works offline. [servedUrl, error].
 function themer_resolve_asset($src, $dir, $webroot, $flash, $weburl) {
     $src  = trim($src);
     if ($src === '') return ['', ''];
-    $exts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'avif', 'bmp'];
     // a file the user picked with the Unraid file browser
     if ($src[0] === '/') {
-        if (!is_file($src)) return ['', 'file not found on the server'];
-        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
-        if (!in_array($ext, $exts)) return ['', "unsupported image type .$ext"];
-        if (filesize($src) > 15 * 1024 * 1024) return ['', 'image too large (>15 MB)'];
-        $data = @file_get_contents($src);
-        if ($data === false) return ['', 'could not read that file'];
-        return themer_store_asset($data, $ext === 'jpeg' ? 'jpg' : $ext, $dir, $webroot, $flash, $weburl);
+        [$data, $ext, $err] = themer_read_server_image($src);
+        if ($err) return ['', $err];
+        return themer_store_asset($data, $ext, $dir, $webroot, $flash, $weburl);
     }
     // an https URL — fetch and cache locally
-    if (preg_match('#^https?://[^\s\'"<>]+$#i', $src)) {
-        $raw = shell_exec("curl -fsSL --max-time 25 --max-filesize 15728640 " . escapeshellarg($src) . " 2>/dev/null");
-        if (!$raw) return ['', 'could not download that URL'];
-        $fi = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_buffer($fi, $raw);
-        finfo_close($fi);
-        $map = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
-                'image/gif' => 'gif', 'image/svg+xml' => 'svg', 'image/avif' => 'avif',
-                'image/x-ms-bmp' => 'bmp', 'image/bmp' => 'bmp'];
-        if (!isset($map[$mime])) return ['', 'that URL is not an image'];
-        return themer_store_asset($raw, $map[$mime], $dir, $webroot, $flash, $weburl);
+    if (preg_match('#^https?://#i', $src)) {
+        [$raw, $err] = themer_fetch($src, THEMER_IMAGE_MAX, 25);
+        if ($err) return ['', $err];
+        $ext = themer_image_type($raw);
+        if ($ext === '') return ['', 'that URL is not an image'];
+        return themer_store_asset($raw, $ext, $dir, $webroot, $flash, $weburl);
     }
-    return ['', 'enter an http(s) URL or a file path on this server'];
+    return ['', 'enter an https:// URL or the path of an image file under /mnt/'];
+}
+
+/* Provenance for installed themes: one line per preset,
+ *     stem|source sha256|installed sha256
+ * The source hash is the registry file as served, so it can be compared with
+ * index.json to answer "is a newer version out?". The installed hash is what
+ * actually sits on flash after sanitising, so an edited theme is recognisable
+ * and never silently overwritten. Boot reads the same file (see build.py). */
+function themer_origin_read($flash) {
+    $rows = [];
+    foreach (@file("$flash/presets/.origin", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $parts = explode("|", $line);
+        if (count($parts) === 3) $rows[$parts[0]] = ['source' => $parts[1], 'installed' => $parts[2]];
+    }
+    return $rows;
+}
+function themer_origin_set($flash, $stem, $source, $installed) {
+    $rows = themer_origin_read($flash);
+    $rows[$stem] = ['source' => $source, 'installed' => $installed];
+    $out = "";
+    foreach ($rows as $k => $v) $out .= "$k|{$v['source']}|{$v['installed']}\n";
+    @file_put_contents("$flash/presets/.origin", $out);
+}
+function themer_origin_drop($flash, $stem) {
+    $rows = themer_origin_read($flash);
+    unset($rows[$stem]);
+    $out = "";
+    foreach ($rows as $k => $v) $out .= "$k|{$v['source']}|{$v['installed']}\n";
+    @file_put_contents("$flash/presets/.origin", $out);
+}
+
+// the community registry index (best-effort, short timeout); null when offline
+function themer_store_index($store_base) {
+    [$raw, $err] = themer_fetch("$store_base/index.json", 1024 * 1024, 8);
+    return $err ? null : (@json_decode($raw, true) ?: null);
 }
 
 // download + sanitise a theme into the presets folder; returns "" or an error
 function themer_fetch_theme($url, $flash, $webroot) {
-    $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 524288 " . escapeshellarg($url) . " 2>/dev/null");
+    [$raw, $err] = themer_fetch($url, 512 * 1024);
+    if ($err) return $err;
     [$clean, $err] = themer_sanitize_css($raw);
     if ($err) return $err;
     $stem = preg_replace('/[^a-z0-9_-]/', '', strtolower(pathinfo((string) parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME)));
@@ -513,6 +652,7 @@ function themer_fetch_theme($url, $flash, $webroot) {
     @mkdir("$flash/presets", 0755, true);
     file_put_contents("$flash/presets/$stem.css", $clean);
     @copy("$flash/presets/$stem.css", "$webroot/presets/$stem.css");
+    themer_origin_set($flash, $stem, hash('sha256', (string) $raw), hash('sha256', $clean));
     return "";  // success
 }
 
@@ -644,6 +784,20 @@ div.title { border-left: 3px solid var(--t-accent); }
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 {$fontblock}
 /*! themer-base: {$base} */
@@ -853,6 +1007,35 @@ if ($_POST && isset($_POST['store_get'])) {
     }
 }
 
+// --- REFRESH INSTALLED STORE THEMES ---
+// A theme fix in the registry is worthless while every server keeps its old
+// copy. Bundled themes are refreshed on boot straight from the package (see
+// build.py); the ones that only exist in the registry are pulled here.
+if ($_POST && isset($_POST['store_update'])) {
+    $idx    = themer_store_index($store_base);
+    $origin = themer_origin_read($flash);
+    $done = $failed = $edited = [];
+    foreach ($idx['themes'] ?? [] as $t) {
+        // same filter as the store rows: the name goes into a URL and a path
+        if (!preg_match('/^[a-z0-9-]+\.css$/', (string) ($t['file'] ?? ''))) continue;
+        $stem = pathinfo($t['file'], PATHINFO_FILENAME);
+        $local = "$flash/presets/$stem.css";
+        if (!is_file($local) || empty($t['sha256'])) continue;              // not installed / no hash
+        $known = $origin[$stem] ?? null;
+        if ($known && $known['source'] === $t['sha256']) continue;          // already current
+        // an edited copy is the user's, not ours: leave it and say so
+        if ($known && $known['installed'] !== hash_file('sha256', $local)) { $edited[] = $stem; continue; }
+        $err = themer_fetch_theme("$store_base/{$t['file']}", $flash, $webroot);
+        if ($err) $failed[] = $stem; else $done[] = $stem;
+    }
+    $parts = [];
+    if ($done)   $parts[] = "Updated " . implode(", ", $done) . ".";
+    if ($edited) $parts[] = "Kept your edited copy of " . implode(", ", $edited) . ".";
+    if ($failed) $parts[] = "Failed for " . implode(", ", $failed) . ".";
+    $msg = $parts ? implode(" ", $parts) . " Reload the browser (Ctrl+Shift+R) to see the change."
+                  : "All installed store themes are already current.";
+}
+
 // --- REMOVE A USER-ADDED THEME ---
 if ($_POST && isset($_POST['remove_preset'])) {
     $r = preg_replace('/[^A-Za-z0-9_-]/', '', $_POST['remove_preset']);
@@ -861,6 +1044,7 @@ if ($_POST && isset($_POST['remove_preset'])) {
     if ($r !== '' && is_file("$flash/presets/$r.css")) {
         @unlink("$flash/presets/$r.css");
         @unlink("$webroot/presets/$r.css");
+        themer_origin_drop($flash, $r);
         // if it was the active preset, fall back to bebamu
         $cur = parse_plugin_cfg($name);
         if (($cur['PRESET'] ?? '') === $r) {
@@ -901,9 +1085,8 @@ foreach (glob("$flash/presets/*.css") as $p) $user_presets[] = basename($p, '.cs
 sort($user_presets);
 
 // fetch the community theme store index (best-effort, short timeout)
-$store_index = null;
-$raw = shell_exec("curl -fsSL --connect-timeout 4 --max-time 8 " . escapeshellarg("$store_base/index.json") . " 2>/dev/null");
-if ($raw) $store_index = @json_decode($raw, true);
+$store_index  = themer_store_index($store_base);
+$origin_rows  = themer_origin_read($flash);
 
 // Build the "Added themes" and "Theme store" blocks as HTML strings, echoed
 // inline in the form so Unraid's markdown parser keeps them in the value column.
@@ -925,9 +1108,12 @@ foreach ($presets as $p) {
 
 // theme store rows — three button states: Get / Uninstall (user-added) / Installed (built-in)
 $store_stems = [];
+$stale_stems = [];
 if (!empty($store_index['themes'])) {
     $rows = "";
     foreach ($store_index['themes'] as $t) {
+        // the registry is checked in CI, but the page does not rely on that
+        if (!preg_match('/^[a-z0-9-]+\.css$/', (string) ($t['file'] ?? ''))) continue;
         $stem = pathinfo($t['file'], PATHINFO_FILENAME);
         $store_stems[$stem] = 1;
         $ins     = isset($have_preset[$stem]);
@@ -936,6 +1122,15 @@ if (!empty($store_index['themes'])) {
         $L = in_array($base, ['white', 'azure', 'any']) ? '1' : '0';
         $D = in_array($base, ['black', 'gray', 'any']) ? '1' : '0';
         $dn = htmlspecialchars(strtolower($t['name'] . ' ' . $t['description']));
+        // newer version in the registry than the copy on flash? An entry the
+        // .origin file has never seen (installed before this was introduced)
+        // counts as unknown, and unknown is offered rather than hidden.
+        $stale = false;
+        if ($onflash && !empty($t['sha256'])) {
+            $known = $origin_rows[$stem] ?? null;
+            $stale = !$known || $known['source'] !== $t['sha256'];
+        }
+        if ($stale) $stale_stems[$stem] = 1;
         if (!$ins) {
             $b = "<button type='submit' name='store_get' value='" . htmlspecialchars($t['file']) . "' style='$btnStore'>Get</button>";
         } elseif ($onflash) {
@@ -951,14 +1146,20 @@ if (!empty($store_index['themes'])) {
         $rows .= "<div class='ut-store-row' data-name='$dn' data-light='$L' data-dark='$D' style='display:grid; grid-template-columns:112px 64px 1fr; align-items:center; column-gap:14px; padding:6px 10px; border-top:1px solid rgba(128,128,128,0.18);'>"
             . $b
             . themer_swatch_html($sw)
-            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em></span>"
+            . "<span><strong>" . htmlspecialchars($t['name']) . "</strong> &mdash; " . htmlspecialchars($t['description']) . " <em style='opacity:.6;'>(" . htmlspecialchars($t['base']) . " &middot; " . htmlspecialchars($t['author']) . ")</em>"
+            . ($stale ? " <strong style='color:var(--link-text-color,#e68321);'>&middot; update available</strong>" : "")
+            . "</span>"
             . "</div>";
     }
     $n = count($store_index['themes']);
     $storeHtml = "<div style='max-width:820px;'>"
         . "<div style='display:flex; gap:8px; margin-bottom:8px; align-items:center;'><input type='text' id='ut-store-search' placeholder='Search themes…' autocomplete='off' onkeyup='utStoreFilter()' style='flex:1; min-width:0;'><select id='ut-store-filter' onchange='utStoreFilter()' style='width:auto;'><option value='all'>All</option><option value='light'>Light</option><option value='dark'>Dark</option></select></div>"
         . "<div id='ut-store-list' style='max-height:320px; overflow-y:auto; border:1px solid rgba(128,128,128,0.25);'>$rows</div>"
-        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/$channel/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving.</span>"
+        . ($stale_stems
+            ? "<div style='margin-top:8px;'><button type='submit' name='store_update' value='1' style='$btn'>Update installed</button> "
+              . "<span>" . count($stale_stems) . " installed theme(s) have a newer version in the registry. Your own edits to a theme are kept.</span></div>"
+            : "")
+        . "<span>$n community themes from the <a href='https://github.com/benjaminmue/unraid-themer/tree/$channel/themes' target='_blank'>registry</a> &mdash; downloaded on demand and validated before saving. Bundled themes refresh themselves when the plugin updates.</span>"
         . "</div>"
         . "<script>function utStoreFilter(){var q=(document.getElementById('ut-store-search').value||'').toLowerCase().trim();var f=document.getElementById('ut-store-filter').value;var rows=document.querySelectorAll('#ut-store-list .ut-store-row');for(var i=0;i<rows.length;i++){var r=rows[i];var okq=!q||r.getAttribute('data-name').indexOf(q)>=0;var okf=f=='all'||(f=='light'&&r.getAttribute('data-light')=='1')||(f=='dark'&&r.getAttribute('data-dark')=='1');r.style.display=(okq&&okf)?'':'none';}}</script>";
 } else {
@@ -979,6 +1180,22 @@ if ($orphans) {
 } else {
     $addedHtml = "<span>Store themes are removed with <strong>Uninstall</strong> in the store above; built-in themes stay.</span>";
 }
+
+// Themes on flash the boot check did not load (migrate-assets.php): they broke
+// a rule that older versions did not enforce. They stay on flash, untouched,
+// each with its own remove button: a store theme has no Uninstall while it is
+// not loaded. One published since then (a fixed version from the store) or
+// removed from flash is no longer listed.
+$blockedHtml = "";
+foreach (@file("$webroot/blocked-themes", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+    [$stem, $why] = array_pad(explode("\t", $line, 2), 2, '');
+    if ($stem === '' || isset($have_preset[$stem]) || !is_file("$flash/presets/$stem.css")) continue;
+    $val = htmlspecialchars($stem, ENT_QUOTES);
+    $blockedHtml .= "<br><span style='color:var(--orange, #e68a00)'>Not loaded: <strong>$val</strong> ("
+                  . htmlspecialchars($why) . "). It breaks the current theme rules; get a current version from the store or remove it.</span> "
+                  . "<button type='submit' name='remove_preset' value='$val' onclick='return confirm(\"Remove $val?\")' style='$btn margin:0 0 0 6px;'>Remove</button>";
+}
+$addedHtml .= $blockedHtml;
 ?>
 
 <div markdown="1">
@@ -1037,14 +1254,14 @@ Custom icons (per slot):
 
 Background image:
 : <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="bg_src" id="ut-bg-src" value="<?= htmlspecialchars($bg_src_val) ?>" spellcheck="false" placeholder="https://…/image.jpg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseBg()"></span><span style="display:flex; gap:10px; align-items:center; margin-top:8px;">Dim for legibility <input type="range" name="bg_dim" min="0" max="90" step="5" value="<?= $bg_dim_val ?>" oninput="document.getElementById('ut-bg-dimval').textContent=this.value+'%'" style="vertical-align:middle;"><span id="ut-bg-dimval"><?= $bg_dim_val ?>%</span></span>
-  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or a file on the server (<strong>Browse…</strong> opens Unraid's file picker). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
+  <span>Optional background image behind the UI, by <strong>URL</strong> (downloaded and cached locally, so it's CSP-safe and works offline) or an image file under <code>/mnt/</code> (<strong>Browse…</strong> opens Unraid's file picker; symlinks are not accepted). It survives reboots. <em>Dim</em> darkens it so text stays readable. Clear the field and Apply to remove it.</span>
   <link type="text/css" rel="stylesheet" href="/webGui/styles/jquery.filetree.css">
   <script src="/webGui/javascript/jquery.filetree.js" charset="utf-8"></script>
   <script defer src="/plugins/unraid.themer/js/themer-branding.js?v=<?= @filemtime("$webroot/js/themer-branding.js") ?>"></script>
 
 Logo:
 : <span style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; max-width:640px;"><input type="text" name="logo_src" id="ut-logo-src" value="<?= htmlspecialchars($logo_src_val) ?>" spellcheck="false" placeholder="https://…/logo.png / .svg  or  a file on the server" style="flex:1; min-width:280px;"><input type="button" value="Browse…" onclick="utBrowseLogo()"></span>
-  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or a file on the server. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
+  <span>Replaces the Unraid wordmark in the top-left header with your own logo, by <strong>URL</strong> (cached locally) or an image file under <code>/mnt/</code>. A wide, transparent PNG/SVG works best. It survives reboots. Clear the field and Apply to restore the Unraid logo.</span>
 
 <?php
 $cp = [
@@ -1125,6 +1342,8 @@ Icon="icon-apps"
  * loader injects AFTER the icon set — so a single swap wins even with set = Default.
  */
 require_once "$docroot/plugins/dynamix/include/Wrappers.php";
+require_once "$docroot/plugins/unraid.themer/include/svg.php";   // themer_sanitize_svg()
+require_once "$docroot/plugins/unraid.themer/include/fetch.php"; // themer_fetch()
 
 $name    = "unraid.themer";
 $flash   = "/boot/config/plugins/$name";
@@ -1331,24 +1550,6 @@ foreach (glob("$webroot/icons/svg/*", GLOB_ONLYDIR) as $dirpath) {
 $all_values = [];
 foreach ($picker_groups as $items) foreach ($items as $it) $all_values[] = $it[0];
 
-/* Validate an SVG before it is ever written to disk. Returns [clean, error]. */
-function themer_sanitize_svg($svg) {
-    $svg = (string) $svg;
-    if (trim($svg) === '')            return ["", "empty or download failed"];
-    if (strlen($svg) > 64 * 1024)     return ["", "too large (>64 KB)"];
-    if (!preg_match('/<svg[\s>]/i', $svg)) return ["", "not an <svg> document"];
-    $blocked = [
-        '/<\s*script/i'                                          => "a <script> tag",
-        '/<\s*(foreignObject|iframe|image|use|animate|set)\b/i'  => "an embedded/external element",
-        '/\son\w+\s*=/i'                                         => "an inline event handler",
-        '/javascript\s*:/i'                                      => "a javascript: URI",
-        '/(?:href|xlink:href)\s*=\s*[\'"]?\s*(?:https?:|\/\/|data:)/i' => "an external/data href",
-        '/<!ENTITY|<!DOCTYPE/i'                                  => "an XML entity/doctype",
-    ];
-    foreach ($blocked as $re => $why) if (preg_match($re, $svg)) return ["", "contains $why"];
-    return [$svg, ""];
-}
-
 /* Resolve one slot's raw input to a served icon URL, saving a custom SVG if needed.
  * Returns [targetUrl, error]. Empty input => ["", ""] (no override). */
 function themer_resolve_icon($key, $src, $ctx) {
@@ -1372,7 +1573,8 @@ function themer_resolve_icon($key, $src, $ctx) {
     }
     // (b) https URL to an SVG
     if (preg_match('#^https://[^\s\'"<>]+$#i', $src)) {
-        $raw = shell_exec("curl -fsSL --max-time 20 --max-filesize 65536 " . escapeshellarg($src) . " 2>/dev/null");
+        [$raw, $err] = themer_fetch($src, 65536);
+        if ($err) return ["", $err];
         [$clean, $err] = themer_sanitize_svg($raw);
         if ($err) return ["", $err];
         @mkdir($ov_dir_f, 0755, true); @mkdir($ov_dir_w, 0755, true);
@@ -1726,15 +1928,24 @@ Link="nav-user"
            . "</style>\n";
     }
 
-    // 4c) custom logo — the top-left Unraid wordmark is a light-DOM <img>, so
-    //     plain CSS `content:url()` swaps it (no JS / shadow DOM needed)
+    // 4c) custom logo — the top-left Unraid wordmark sits in the light DOM inside
+    //     <unraid-header-os-version>, in one of two shapes depending on the
+    //     web-component build: an <img src=".../UN-logotype-gradient.svg"> (7.3.2
+    //     stock) or an inline <svg> (7.3.3, and 7.3.2 after an Unraid Connect /
+    //     API plugin update). The <img> takes `content:url()`; an inline <svg>
+    //     does not, so it is hidden and its link draws the logo instead. The
+    //     :has() keeps that second rule off the <img> variant (no double logo).
     $logo = trim($cfg['LOGO'] ?? '');
     if ($logo !== '') {
         $lq = htmlspecialchars($logo, ENT_QUOTES);
+        $la = 'unraid-header-os-version a[href="https://unraid.net"]';
         echo "<style id=\"ut-logo\">"
            . "img[src*=\"UN-logotype\"],img[alt=\"Unraid Logo\"]{"
            . "content:url('$lq')!important;height:2.6rem!important;width:auto!important;"
            . "max-width:16rem;object-fit:contain!important}"
+           . "$la>svg{display:none!important}"
+           . "$la:has(>svg)::before{content:'';display:block;height:2.6rem;width:16rem;"
+           . "max-width:100%;background:url('$lq') left center/contain no-repeat}"
            . "</style>\n";
     }
 
@@ -1822,7 +2033,7 @@ html.Theme--gray  #menu .nav-item:hover a {
 
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/version">
 <INLINE>
-<![CDATA[2026.08.23
+<![CDATA[2026.10.17
 ]]>
 </INLINE>
 </FILE>
@@ -1957,6 +2168,20 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: white */
@@ -2132,6 +2357,20 @@ table.dashboard tbody {
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: black */
@@ -2269,6 +2508,20 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: white */
@@ -2444,6 +2697,20 @@ table.dashboard tbody {
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: black */
@@ -2619,6 +2886,20 @@ table.dashboard tbody {
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: black */
@@ -2794,6 +3075,20 @@ table.dashboard tbody {
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: black */
@@ -2931,6 +3226,20 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: white */
@@ -3106,6 +3415,20 @@ table.dashboard tbody {
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: black */
@@ -3243,6 +3566,20 @@ table.dashboard tbody { border: 1px solid var(--border-color) !important; border
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 
 /*! themer-base: white */
@@ -19716,6 +20053,593 @@ unicode: "eb55"
 </INLINE>
 </FILE>
 
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/asset.php">
+<INLINE>
+<![CDATA[<?php
+/* Reading a background or logo image the user picked, by URL or as a file on
+ * this server. Whatever is read here is copied into the webroot and served by
+ * the webGui, so it must really be an image and must come from a place the
+ * user meant.
+ *
+ * A file path is only accepted below /mnt/ (the array, pools and unassigned
+ * disks) after every symlink in it is resolved. A share is writable over SMB,
+ * NFS and from containers, so a link planted there (`logo.png ->
+ * /boot/config/shadow`) would otherwise copy a system file into the webroot.
+ * The type comes from the bytes, never from the file name.
+ *
+ * test/test_asset_rules.py runs these functions against planted links. */
+
+const THEMER_IMAGE_MAX = 15 * 1024 * 1024;
+
+// The image type of $data as a file extension, '' when it is not an image.
+// finfo reports an SVG without an XML prolog as text, so an SVG is also
+// recognised by its root element; the SVG sanitiser checks the rest.
+function themer_image_type($data) {
+    $map = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
+            'image/gif' => 'gif', 'image/svg+xml' => 'svg', 'image/avif' => 'avif',
+            'image/x-ms-bmp' => 'bmp', 'image/bmp' => 'bmp'];
+    $fi = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_buffer($fi, $data);
+    finfo_close($fi);
+    if (isset($map[$mime])) return $map[$mime];
+    if (in_array($mime, ['text/xml', 'application/xml', 'text/plain', 'text/html'], true)
+        && preg_match('/^\s*(<\?xml[^>]*>\s*)?(<!--.*?-->\s*)*<svg[\s>]/is', $data)) return 'svg';
+    return '';
+}
+
+// Read an image file on this server: [data, ext, error]. $root only differs in tests.
+// A writer in the share could swap the file or a directory above it for a
+// symlink between the checks and the open. So the checks run again after the
+// open: the path must still resolve to itself below $root, and the file there
+// must be the one that was opened (same device and inode). /mnt holds other
+// file systems than / and /boot, so no hard link can make a system file pass.
+// Left open on purpose: a file swapped for a FIFO in that window makes fopen()
+// wait for a writer. That stalls only the admin's own Apply request, leaks
+// nothing, and plain PHP has no O_NONBLOCK open to prevent it.
+function themer_read_server_image($path, $root = '/mnt/') {
+    if (is_link($path)) return ['', '', 'symlinks are not accepted, pick the file itself'];
+    $real = realpath($path);
+    if ($real === false || !is_file($real)) return ['', '', 'file not found on the server'];
+    // every link in the path is resolved by now, so this is where the bytes live
+    if (strpos($real, $root) !== 0) return ['', '', 'only files under /mnt/ can be used'];
+    if (filesize($real) > THEMER_IMAGE_MAX) return ['', '', 'image too large (>15 MB)'];
+    $fh = @fopen($real, 'rb');
+    if ($fh === false) return ['', '', 'could not read that file'];
+    $st = fstat($fh);
+    $now = @stat($real);
+    $same = $st && $now && realpath($real) === $real
+        && ($st['mode'] & 0170000) === 0100000
+        && $st['dev'] === $now['dev'] && $st['ino'] === $now['ino'];
+    $data = $same ? stream_get_contents($fh, THEMER_IMAGE_MAX + 1) : false;
+    fclose($fh);
+    if (!$same) return ['', '', 'the file changed while it was read, try again'];
+    if ($data === false) return ['', '', 'could not read that file'];
+    if (strlen($data) > THEMER_IMAGE_MAX) return ['', '', 'image too large (>15 MB)'];
+    $ext = themer_image_type($data);
+    if ($ext === '') return ['', '', 'that file is not an image'];
+    return [$data, $ext, ''];
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/css.php">
+<INLINE>
+<![CDATA[<?php
+/* Theme stylesheet rules, used by the settings page (imports, store) and by
+ * migrate-assets.php at boot (themes stored on flash). test/test_css_rules.py
+ * runs this file against the attack corpus. */
+
+/* What a theme stylesheet may contain: the PHP side of scripts/css_rules.py,
+ * held to the same corpus by test/test_css_rules.py. A theme only sets colours,
+ * sizes and fonts, so everything that can make the browser fetch is refused:
+ * any backslash (CSS escapes turn `\68ttps` into `https` and `@\69mport` into
+ * `@import`), resource functions like url() and image-set(), and every at-rule
+ * except @media and @supports. A fetch is what makes a theme dangerous: an
+ * attribute selector on Unraid's hidden csrf_token input could leak the token
+ * one character per request. Returns the first broken rule, "" when acceptable. */
+function themer_css_violation($css) {
+    if (strlen($css) > 512 * 1024)   return "file too large (>512 KB)";
+    // The checks only see what the browser sees if both read the same text. A
+    // UTF-16 file (BOM FF FE) puts a NUL between every letter, so `url(` never
+    // matches, yet the browser decodes it by its BOM and loads the URLs.
+    if (preg_match('//u', $css) !== 1) return "is not valid UTF-8 (a UTF-16 file would hide its content from these checks)";
+    if (strpos($css, "\0") !== false) return "contains a NUL byte";
+    if (strpos($css, '\\') !== false) return "contains a backslash (CSS escapes are not allowed)";
+    // only what can start an HTML tag; a bare < is a media range (`width < 800px`)
+    if (preg_match('/<[a-zA-Z\/!?]/', $css) !== 0) return "contains markup (<tag)";
+    // a regex that fails (backtrack limit) returns false/null, which must count
+    // as a hit: "no match" would let the stylesheet through unchecked
+    $code  = preg_replace('~/\*.*?\*/~s', '', $css);
+    if ($code === null) return "could not be checked";
+    $fetch = '/(?<![\w-])(?:-[a-z]+-)?(?:url|image-set|image|cross-fade|element|src|attr|paint)\s*\(/i';
+    // both spellings: a comment can hide a name from one view but not the other
+    if (preg_match($fetch, $css) !== 0 || preg_match($fetch, $code) !== 0)
+        return "loads a resource (url(), image-set() or similar)";
+    if (preg_match('/@(?!(?:media|supports)\b)/i', $code) !== 0)
+        return "contains an at-rule other than @media or @supports";
+    $legacy = [
+        '/javascript\s*:/i'  => "contains a javascript: URI",
+        '/expression\s*\(/i' => "contains a CSS expression()",
+        '/behaviou?r\s*:/i'  => "contains a CSS behavior:",
+        '/-moz-binding/i'    => "contains -moz-binding",
+    ];
+    foreach ($legacy as $re => $why) {
+        if (preg_match($re, $css) !== 0) return $why;
+    }
+    return "";
+}
+
+/* Validate imported CSS before we ever write it to disk. Returns [clean, error]. */
+function themer_sanitize_css($css) {
+    $css = (string) $css;
+    if (trim($css) === '') return ["", "empty or download failed"];
+    $why = themer_css_violation($css);
+    return $why === "" ? [$css, ""] : ["", $why];
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/fetch.php">
+<INLINE>
+<![CDATA[<?php
+/* Downloading what the user points the plugin at: theme CSS, icon SVGs,
+ * background and logo images, the theme store.
+ *
+ * The download runs on the server, inside the LAN, so a URL must never reach
+ * anything a browser on the internet could not: not the server itself, the
+ * router, other LAN or Tailscale hosts, or a cloud metadata address. Every URL
+ * is https on port 443, its host name must resolve only to public addresses
+ * outside the server's own networks,
+ * and curl is pinned to the address that was checked (--resolve), so a DNS
+ * answer that changes between check and connect does not matter; the address
+ * curl actually connected to is compared afterwards as well. Redirects
+ * are followed here, one hop at a time, with the same check on every hop.
+ *
+ * Not covered: the router's own public address. Through hairpin NAT it can
+ * forward to a LAN service, but only to what its port forwards already expose
+ * to the internet on 443, with a certificate curl accepts (no -k), and a
+ * download only ever lands on this server as an image or stylesheet, never
+ * back with whoever supplied the URL. A redirect from an outside host can
+ * name that address, so it is not hidden; the limit is what it can reach.
+ *
+ * test/test_fetch_rules.py runs the checks against private ranges, encoded
+ * addresses and URL tricks. */
+
+const THEMER_FETCH_HOPS = 5;
+
+// Ranges PHP's FILTER_FLAG_NO_PRIV_RANGE / NO_RES_RANGE do not all cover:
+// shared address space (CGNAT, Tailscale), IETF and benchmark ranges,
+// IPv4-mapped/-translated IPv6, 6to4, Teredo, multicast, documentation.
+function themer_ip_blocked_ranges() {
+    return ['0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8', '169.254.0.0/16',
+            '172.16.0.0/12', '192.0.0.0/24', '192.0.2.0/24', '192.88.99.0/24', '192.168.0.0/16',
+            '198.18.0.0/15', '198.51.100.0/24', '203.0.113.0/24', '224.0.0.0/3',
+            '::/96', '::ffff:0:0/96', '64:ff9b::/96', '64:ff9b:1::/48', '100::/64',
+            '2001::/32', '2001:db8::/32', '2002::/16', 'fc00::/7', 'fe80::/10', 'fec0::/10',
+            'ff00::/8'];
+}
+
+function themer_ip_in_cidr($ip, $cidr) {
+    [$net, $bits] = explode('/', $cidr);
+    $a = @inet_pton($ip);
+    $b = @inet_pton($net);
+    if ($a === false || $b === false || strlen($a) !== strlen($b)) return false;
+    $bits = (int) $bits;
+    $bytes = intdiv($bits, 8);
+    if (substr($a, 0, $bytes) !== substr($b, 0, $bytes)) return false;
+    if ($bits % 8 === 0) return true;
+    $mask = 0xff << (8 - $bits % 8) & 0xff;
+    return (ord($a[$bytes]) & $mask) === (ord($b[$bytes]) & $mask);
+}
+
+// true only for an address a host on the internet could also reach
+function themer_ip_public($ip) {
+    if (filter_var($ip, FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) return false;
+    foreach (themer_ip_blocked_ranges() as $cidr) {
+        if (themer_ip_in_cidr($ip, $cidr)) return false;
+    }
+    return true;
+}
+
+// The networks this server sits in, from its interface addresses ("ip -o
+// addr"): the connected prefix of each, and for a global IPv6 address the
+// whole /48 around it, since an ISP delegates one prefix for all VLANs of a
+// site and those hosts carry public-looking addresses too. null when the
+// interfaces cannot be read, which refuses every download. $text replaces
+// the command in tests.
+function themer_local_prefixes($text = null) {
+    static $cache = null;
+    $live = $text === null;
+    if ($live) {
+        if ($cache !== null) return $cache;
+        $ip = is_executable('/sbin/ip') ? '/sbin/ip' : 'ip';
+        $text = (string) shell_exec("$ip -o addr show 2>/dev/null");
+    }
+    preg_match_all('#\binet6?\s+([0-9a-f.:]+)/(\d+)#i', $text, $m, PREG_SET_ORDER);
+    if (!$m) return null;
+    $out = [];
+    foreach ($m as [, $addr, $len]) {
+        $len = (int) $len;
+        if (strpos($addr, ':') !== false) $len = min($len, 48);
+        $out[] = "$addr/$len";
+    }
+    if ($live) $cache = $out;
+    return $out;
+}
+
+// Every address a host name resolves to, IPv4 and IPv6, through the system
+// resolver (which also reads /etc/hosts), the same one curl would use. It runs
+// under timeout(1): PHP's own lookups cannot be bounded, and a dead DNS
+// server would otherwise hold the settings page. $resolver replaces it in tests.
+function themer_resolve_host($host, $seconds = 5, $resolver = null) {
+    if ($resolver) return $resolver($host);
+    $out = [];
+    exec('timeout ' . max(1, (int) $seconds) . ' getent ahosts ' . escapeshellarg($host) . ' 2>/dev/null', $out);
+    $ips = [];
+    foreach ($out as $line) {
+        $ip = strtok($line, " \t");
+        if ($ip !== false && filter_var($ip, FILTER_VALIDATE_IP)) $ips[] = $ip;
+    }
+    return array_values(array_unique($ips));
+}
+
+// Check one URL: [host, addresses curl may connect to, error]. $resolver and $local
+// (interface list as "ip -o addr" prints it) replace the system in tests.
+function themer_url_target($url, $resolver = null, $local = null, $dns_seconds = 5) {
+    if (!preg_match('#^https://[^\s\'"<>\\\\]+$#i', $url)) return ['', '', 'only https:// URLs can be used'];
+    $p = parse_url($url);
+    if (!$p || strtolower($p['scheme'] ?? '') !== 'https' || empty($p['host']))
+        return ['', '', 'not a valid https:// URL'];
+    if (isset($p['user']) || isset($p['pass'])) return ['', '', 'URLs with a user name are not accepted'];
+    if (isset($p['port']) && (int) $p['port'] !== 443) return ['', '', 'only the standard https port (443) can be used'];
+    // a trailing dot names the same host but would not match curl's pin
+    if (substr($p['host'], -1) === '.') return ['', '', 'not a valid host name'];
+    $host = strtolower($p['host']);
+    $literal = trim($host, '[]');
+    if (filter_var($literal, FILTER_VALIDATE_IP)) {
+        $ips = [$literal];
+    } else {
+        // a top-level label of digits (2130706433, 0x7f.1, 127.1) makes the
+        // name an address in disguise; the resolver would read it as one
+        $labels = explode('.', $host);
+        if (!preg_match('/^[a-z0-9.-]+$/', $host) || !preg_match('/^[a-z][a-z0-9-]*$/', end($labels)))
+            return ['', '', 'not a valid host name'];
+        $ips = themer_resolve_host($host, $dns_seconds, $resolver);
+    }
+    if (!$ips) return ['', '', "cannot resolve $host"];
+    $nets = themer_local_prefixes($local);
+    if ($nets === null) return ['', '', "cannot read this server's network addresses"];
+    foreach ($ips as $ip) {
+        if (!themer_ip_public($ip)) return ['', '', 'that address is on a private or local network'];
+        foreach ($nets as $cidr) {
+            if (themer_ip_in_cidr($ip, $cidr)) return ['', '', "that address is in this server's own network"];
+        }
+    }
+    return [$host, $ips, ''];
+}
+
+// Download a URL: [body, error]. At most $max bytes; redirects are followed
+// only to URLs that pass the same check. $timeout covers everything: name
+// lookups and every hop.
+function themer_fetch($url, $max, $timeout = 20) {
+    $deadline = microtime(true) + $timeout;
+    for ($hop = 0; $hop <= THEMER_FETCH_HOPS; $hop++) {
+        $left = (int) ceil($deadline - microtime(true));
+        if ($left <= 0) return ['', 'the download timed out'];
+        [$host, $ips, $err] = themer_url_target($url, null, null, min(5, $left));
+        if ($err) return ['', $err];
+        $left = (int) ceil($deadline - microtime(true));
+        if ($left <= 0) return ['', 'the download timed out'];
+        // an address in the URL needs no lookup (curl refuses a pin for an
+        // IPv6 literal); a name is pinned to the checked address
+        $literal = filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false;
+        // every checked address, so curl can still fall back between them
+        $pin = implode(',', array_map(fn($a) => strpos($a, ':') !== false ? "[$a]" : $a, $ips));
+        $tmp = tempnam(sys_get_temp_dir(), 'themer-');
+        $cmd = 'curl -q -sS --proto =https --max-redirs 0 --noproxy ' . escapeshellarg('*')
+             . ' --connect-timeout ' . min(6, $left) . ' --max-time ' . $left . ' --max-filesize ' . (int) $max
+             . ($literal ? '' : ' --resolve ' . escapeshellarg("$host:443:$pin"))
+             . ' -o ' . escapeshellarg($tmp) . ' -w ' . escapeshellarg('%{http_code} %{remote_ip} %{redirect_url}')
+             . ' ' . escapeshellarg($url) . ' 2>/dev/null';
+        $out = [];
+        exec($cmd, $out, $rc);
+        $body = (string) @file_get_contents($tmp, false, null, 0, $max + 1);
+        @unlink($tmp);
+        [$code, $peer, $next] = array_pad(explode(' ', trim(implode('', $out)), 3), 3, '');
+        $code = (int) $code;
+        // a transfer that broke off after the headers is not a download
+        if ($rc !== 0) return ['', 'could not download that URL'];
+        // the pin must have held: connected to the checked address, nothing else
+        $peer_bin = @inet_pton($peer);
+        if ($peer_bin === false || !in_array($peer_bin, array_map('inet_pton', $ips), true))
+            return ['', 'could not download that URL'];
+        if ($code >= 300 && $code < 400 && $next !== '') { $url = $next; continue; }
+        if ($code !== 200) return ['', $code ? "the server answered HTTP $code" : 'could not download that URL'];
+        if (strlen($body) > $max) return ['', 'download too large'];
+        return [$body, ''];
+    }
+    return ['', 'too many redirects'];
+}
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/migrate-assets.php">
+<INLINE>
+<![CDATA[<?php
+/* Boot-time pass over everything the user stored on flash (themes, icon
+ * overrides, logo, background): check it with the current rules and publish
+ * it to the webroot. Earlier versions checked themes with a weaker blocklist,
+ * stored SVGs with a weaker check, or none for logo and background, and took
+ * a picked server file by its name alone, so a fix to the rules only protects
+ * anyone once those files are checked too.
+ *
+ * This is the only way a stored theme or image reaches the webroot at boot;
+ * the boot script copies none itself. If PHP or this script fails, nothing is
+ * published, which costs a custom look until the next boot but never serves
+ * an unchecked file. For each theme (presets/*.css):
+ *   - passes the CSS rules: published as it is
+ *   - breaks one: stays on flash untouched, is not published, and is listed
+ *     in blocked-themes in the webroot, so the settings page can say why. It
+ *     is the user's file and may be theirs to fix; nothing is moved.
+ * For each image:
+ *   - an SVG that cleans: the cleaned bytes are published. The original on
+ *     flash is never rewritten: cleaning can drop parts the allowlist does not
+ *     know, and the user's file must survive that. It is cleaned again at
+ *     every boot.
+ *   - a raster image (logo, background): published as it is if its bytes are
+ *     an image, and an SVG only under an .svg name
+ *   - refused: it moves to quarantine/ on flash under a name that never
+ *     replaces an earlier one, and is not published
+ * Running it again changes nothing. Exit status 1 if anything failed.
+ *
+ * Usage (from the .plg boot script): php migrate-assets.php <flash dir> <webroot dir> */
+if (PHP_SAPI !== 'cli') exit;   // never as a web request
+require __DIR__ . '/svg.php';
+require __DIR__ . '/asset.php';
+require __DIR__ . '/css.php';
+
+$flash   = rtrim($argv[1] ?? '', '/');
+$webroot = rtrim($argv[2] ?? '', '/');
+if ($flash === '' || $webroot === '' || !is_dir($flash) || !is_dir($webroot)) exit(1);
+
+function themer_write_atomic($path, $data) {
+    $tmp = "$path.tmp";
+    if (file_put_contents($tmp, $data) !== strlen($data)) { @unlink($tmp); return false; }
+    if (!rename($tmp, $path)) { @unlink($tmp); return false; }
+    return true;
+}
+
+// [bytes to publish, error] for one stored file
+function themer_check_stored($raw, $name, $dir, $max) {
+    // the plugin only ever stores bg.<ext> and logo.<ext>; under any other name
+    // (logo.php, bg.html) the webroot would run or render it as something else
+    if ($dir !== 'overrides' && !preg_match("/^$dir\\.(jpg|jpeg|png|webp|gif|avif|bmp|svg)\$/", $name))
+        return ['', 'not a name the plugin stores'];
+    $is_svg = strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'svg';
+    if ($is_svg) return themer_sanitize_svg($raw, $max);
+    // icon overrides are SVG only; anything else there is not ours to serve
+    if ($dir === 'overrides') return ['', 'not an SVG'];
+    $type = themer_image_type($raw);
+    if ($type === '') return ['', 'not an image'];
+    if ($type === 'svg') return ['', 'an SVG under a raster name'];
+    return [$raw, ''];
+}
+
+$failed = false;
+
+// themes: a theme that breaks a rule stays on flash but is never served
+@mkdir("$webroot/presets", 0755, true);
+$blocked = '';
+foreach (glob("$flash/presets/*.css") ?: [] as $file) {
+    $name = basename($file);
+    $css = file_get_contents($file);
+    if ($css === false) { $failed = true; echo "Unraid Themer: cannot read presets/$name\n"; continue; }
+    $why = themer_css_violation($css);
+    if ($why !== '') {
+        $blocked .= basename($name, '.css') . "\t$why\n";
+        echo "Unraid Themer: not loading theme presets/$name ($why)\n";
+        continue;
+    }
+    if (!themer_write_atomic("$webroot/presets/$name", $css)) {
+        $failed = true;
+        echo "Unraid Themer: could not publish presets/$name\n";
+    }
+}
+if (!themer_write_atomic("$webroot/blocked-themes", $blocked)) $failed = true;
+
+foreach (['overrides' => 65536, 'bg' => THEMER_IMAGE_MAX, 'logo' => THEMER_IMAGE_MAX] as $dir => $max) {
+    $files = $dir === 'overrides' ? glob("$flash/$dir/*.svg") : glob("$flash/$dir/*");
+    foreach ($files ?: [] as $file) {
+        if (!is_file($file)) continue;
+        $name = basename($file);
+        $raw = file_get_contents($file);
+        if ($raw === false) { $failed = true; echo "Unraid Themer: cannot read $dir/$name\n"; continue; }
+        // an SVG logo or background keeps its own 1 MB limit
+        [$clean, $err] = themer_check_stored($raw, $name, $dir, $dir === 'overrides' ? $max : 1024 * 1024);
+        if ($err === '' && strlen($clean) > $max) $err = 'too large';
+        if ($err !== '') {
+            @mkdir("$flash/quarantine", 0700, true);
+            $dest = "$flash/quarantine/$dir-$name";
+            for ($i = 1; file_exists($dest); $i++) $dest = "$flash/quarantine/$dir-$i-$name";
+            if (rename($file, $dest)) {
+                echo "Unraid Themer: quarantined $dir/$name as " . basename($dest) . " ($err)\n";
+            } else {
+                $failed = true;   // stays on flash, but is not published
+                echo "Unraid Themer: could not quarantine $dir/$name ($err), not served\n";
+            }
+            continue;
+        }
+        @mkdir("$webroot/$dir", 0755, true);
+        if (!themer_write_atomic("$webroot/$dir/$name", $clean)) {
+            $failed = true;
+            echo "Unraid Themer: could not publish $dir/$name\n";
+        }
+    }
+}
+exit($failed ? 1 : 0);
+]]>
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/unraid.themer/include/svg.php">
+<INLINE>
+<![CDATA[<?php
+/* SVG sanitiser for everything a user can bring in as SVG: icon overrides
+ * (pasted, uploaded, by URL) and the logo and background image.
+ *
+ * These files are served from the webGui's own origin, so a script inside one
+ * runs with the admin's session when the file is opened directly. A blocklist
+ * of regexes was beaten by namespace prefixes (<s:script>) and entity-encoded
+ * values (jav&#x61;script:). This parses the document instead and rebuilds it
+ * from an allowlist: only SVG-namespace drawing elements, only un-namespaced
+ * presentation attributes, url() only as a reference to an id in the same
+ * document, no href, text content only in <text>, <tspan>, <title> and <desc>
+ * (it is escaped on output, so it can only ever be text). A style
+ * attribute is not kept as CSS: each declaration that names an allowed
+ * presentation attribute with a safe value becomes that attribute, the rest
+ * is dropped, so `style="fill:none;stroke:currentColor"` still draws.
+ * Anything else is dropped, and the result is serialised fresh, so what gets
+ * stored is only what passed the allowlist.
+ *
+ * Returns [clean, error]. test/test_svg_rules.py runs it against an attack
+ * corpus and every bundled icon. */
+
+const THEMER_SVG_NS = 'http://www.w3.org/2000/svg';
+
+function themer_svg_allowed_elements() {
+    return array_flip(['svg', 'g', 'path', 'circle', 'ellipse', 'line', 'polyline',
+        'polygon', 'rect', 'defs', 'title', 'desc', 'linearGradient', 'radialGradient',
+        'stop', 'clipPath', 'mask', 'symbol', 'text', 'tspan']);
+}
+
+function themer_svg_allowed_attributes() {
+    return array_flip(['id', 'd', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx',
+        'ry', 'fx', 'fy', 'width', 'height', 'viewBox', 'preserveAspectRatio', 'points',
+        'transform', 'fill', 'fill-rule', 'fill-opacity', 'stroke', 'stroke-width',
+        'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-dasharray',
+        'stroke-dashoffset', 'stroke-opacity', 'opacity', 'offset', 'stop-color',
+        'stop-opacity', 'gradientUnits', 'gradientTransform', 'spreadMethod',
+        'clip-path', 'clip-rule', 'clipPathUnits', 'mask', 'maskUnits',
+        'maskContentUnits', 'color', 'version', 'dx', 'dy', 'rotate', 'textLength',
+        'lengthAdjust', 'font-family', 'font-size', 'font-weight', 'font-style',
+        'font-variant', 'font-stretch', 'text-anchor', 'dominant-baseline',
+        'alignment-baseline', 'baseline-shift', 'letter-spacing', 'word-spacing',
+        'text-decoration', 'writing-mode']);
+}
+
+// An attribute value may reference another element of the same document
+// (fill="url(#grad)") but never load anything or carry a scheme.
+function themer_svg_value_ok($value) {
+    $v = strtolower(preg_replace('/\s+/', '', $value));
+    if (strpos($v, 'url(') !== false) {
+        return preg_match('/^url\(#[a-z0-9_.:-]+\)$/', $v) === 1;
+    }
+    return strpos($v, ':') === false && strpos($v, '\\') === false && strpos($v, '<') === false;
+}
+
+// LIBXML_NONET: never fetch anything; no LIBXML_NOENT, so entities stay unexpanded
+function themer_svg_parse($xml) {
+    $prev = libxml_use_internal_errors(true);
+    $doc = new DOMDocument();
+    $ok = $doc->loadXML($xml, LIBXML_NONET | LIBXML_COMPACT);
+    libxml_clear_errors();
+    libxml_use_internal_errors($prev);
+    return ($ok && $doc->documentElement) ? $doc : null;
+}
+
+// Turn a style attribute into plain presentation attributes. CSS gives the
+// style declaration precedence over an attribute of the same name, so it wins.
+function themer_svg_style_to_attrs(DOMElement $el, $style, $attrs) {
+    foreach (explode(';', $style) as $decl) {
+        $parts = explode(':', $decl, 2);
+        if (count($parts) !== 2) continue;
+        $prop = strtolower(trim($parts[0]));
+        $val  = trim(preg_replace('/\s*!important\s*$/i', '', $parts[1]));
+        if ($prop === 'id' || !isset($attrs[$prop]) || $val === '' || !themer_svg_value_ok($val)) continue;
+        $el->setAttribute($prop, $val);
+    }
+}
+
+// Clean the attributes of one element in place.
+function themer_svg_clean_attrs(DOMElement $el, $attrs) {
+    foreach (iterator_to_array($el->attributes) as $a) {
+        if ($a->namespaceURI === null && $a->localName === 'style') {
+            $el->removeAttributeNode($a);
+            themer_svg_style_to_attrs($el, $a->value, $attrs);
+        }
+    }
+    foreach (iterator_to_array($el->attributes) as $a) {
+        // a namespaced attribute (xlink:href, xml:base, foreign prefixes)
+        // is never needed for drawing
+        if ($a->namespaceURI !== null || !isset($attrs[$a->localName]) || !themer_svg_value_ok($a->value))
+            $el->removeAttributeNode($a);
+    }
+}
+
+function themer_sanitize_svg($svg, $max = 65536) {
+    $svg = (string) $svg;
+    if (trim($svg) === '')  return ["", "empty or download failed"];
+    if (strlen($svg) > $max) return ["", "too large (>" . intdiv($max, 1024) . " KB)"];
+    // entities are how XML smuggles content past a parser; no DTD at all
+    if (preg_match('/<!(DOCTYPE|ENTITY)/i', $svg)) return ["", "contains a DOCTYPE or entity"];
+
+    $doc = themer_svg_parse($svg);
+    if (!$doc) return ["", "not a well-formed SVG document"];
+    // the byte check above misses a DOCTYPE in UTF-16; the parsed document does not
+    if ($doc->doctype !== null) return ["", "contains a DOCTYPE or entity"];
+    $root = $doc->documentElement;
+    // inline <svg> copied out of a web page has no xmlns; as a file it would not
+    // even render. Give it the SVG namespace and clean it like any other.
+    if ($root->namespaceURI === null && $root->localName === 'svg') {
+        $doc = themer_svg_parse(preg_replace('/<svg\b/i', '<svg xmlns="' . THEMER_SVG_NS . '"', $svg, 1));
+        if (!$doc) return ["", "not a well-formed SVG document"];
+        $root = $doc->documentElement;
+    }
+    if ($root->namespaceURI !== THEMER_SVG_NS || $root->localName !== 'svg')
+        return ["", "not an <svg> document"];
+
+    $elements = themer_svg_allowed_elements();
+    $attrs = themer_svg_allowed_attributes();
+    $text_ok = ['title' => 1, 'desc' => 1, 'text' => 1, 'tspan' => 1];
+
+    // collect first, then remove: removing while iterating a live list skips nodes
+    $drop = [];
+    $walk = function (DOMNode $node) use (&$walk, &$drop, $elements, $attrs, $text_ok) {
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            if ($child instanceof DOMElement) {
+                if ($child->namespaceURI !== THEMER_SVG_NS || !isset($elements[$child->localName])) {
+                    $drop[] = $child;
+                    continue;
+                }
+                themer_svg_clean_attrs($child, $attrs);
+                $walk($child);
+            } elseif ($child instanceof DOMText && !($child instanceof DOMCdataSection)) {
+                if (!isset($text_ok[$node->localName ?? ''])) $drop[] = $child;
+            } else {
+                // comments, processing instructions, CDATA, entity references
+                $drop[] = $child;
+            }
+        }
+    };
+    themer_svg_clean_attrs($root, $attrs);
+    $walk($root);
+    foreach ($drop as $n) {
+        if ($n->parentNode) $n->parentNode->removeChild($n);
+    }
+
+    // serialise fresh: only the root element, so no prolog or stray nodes survive
+    $clean = $doc->saveXML($root);
+    if ($clean === false || $clean === '') return ["", "could not be cleaned"];
+    return [$clean, ""];
+}
+]]>
+</INLINE>
+</FILE>
+
 <FILE Name="/usr/local/emhttp/plugins/unraid.themer/js/themer-branding.js">
 <INLINE>
 <![CDATA[/* Unraid Themer — branding (background image picker). External file on purpose:
@@ -20641,6 +21565,20 @@ html.Theme--gray {
   --ca-medium-text-color: var(--alt-text-color) !important;
   --ca-light-text-color: var(--text-color) !important;
   --ca-lighter-text-color: var(--text-color) !important;
+
+  /* CA paints these surfaces from the BASE Dynamix theme, so their text colours
+     have to travel with them. Overriding only the backgrounds left the popup
+     buttons and the app description in the base theme's ink: black on a dark
+     preset, near-white on a light one. */
+  --support-popup-text: var(--text-color) !important;
+  --sidebar-text: var(--text-color) !important;
+  --a-color: var(--link-text-color) !important;
+  --tooltipster-content: var(--text-color) !important;
+  --chart-grid: var(--border-color) !important;
+  --template-favourite: var(--shade-bg-color) !important;
+  --ca-grey-color: var(--alt-text-color) !important;
+  /* .caButton:hover puts this on the accent, same job as --button-text-color */
+  --ca-white-color: var(--button-text-color) !important;
 }
 ]]>
 </INLINE>
@@ -20659,24 +21597,90 @@ if [ ! -f /boot/config/plugins/unraid.themer/presets/.seeded ]; then
     touch /boot/config/plugins/unraid.themer/presets/.seeded
 fi
 
+# Refresh the bundled themes that are still installed, so fixing a theme in a
+# release actually reaches servers that already run it. Three rules:
+#   - only files that ARE there get touched, so an uninstalled theme stays gone
+#   - a copy the user edited is theirs; .origin records what we last wrote, and
+#     anything that no longer matches is left alone
+#   - no record at all means the theme predates .origin: refresh it once and
+#     start recording, otherwise old installs would never pick a fix up
+# Only a package that actually changed a theme counts as an update. .bundled
+# remembers the packaged hash last seen per theme: while it is unchanged, the
+# copy on flash may be NEWER than the package (taken from the store after a
+# registry fix) and must survive the reboot. The next release ships the
+# registry state again, so it is at least as new as anything taken from there.
+ORIGIN=/boot/config/plugins/unraid.themer/presets/.origin
+SEEN=/boot/config/plugins/unraid.themer/presets/.bundled
+for src in /usr/local/emhttp/plugins/unraid.themer/defaults/*.css; do
+    [ -f "$src" ] || continue
+    stem=$(basename "$src" .css)
+    dst=/boot/config/plugins/unraid.themer/presets/$stem.css
+    [ -f "$dst" ] || continue
+    new=$(sha256sum "$src" | cut -d' ' -f1)
+    cur=$(sha256sum "$dst" | cut -d' ' -f1)
+    rec=$(grep "^$stem|" "$ORIGIN" 2>/dev/null | head -n1 | cut -d'|' -f3)
+    seen=$(grep "^$stem|" "$SEEN" 2>/dev/null | head -n1 | cut -d'|' -f2)
+    # NOTE: keep this script free of ampersands and angle brackets. These INLINE
+    # blocks are not CDATA, so one of them makes the .plg invalid XML; use an
+    # "if" where a shell and-list would be shorter. build.py refuses to write one.
+    act=none
+    if [ "$new" = "$cur" ]; then
+        # already current; record it once so the store stops guessing
+        if [ -z "$rec" ]; then act=record; fi
+    elif [ "$seen" = "$new" ]; then
+        # same package as last boot: whatever is on flash now came from the
+        # store or the user, never from an older package
+        act=none
+    elif [ -n "$rec" ]; then
+        # a copy that no longer matches what we wrote is the user's edit
+        if [ "$rec" = "$cur" ]; then act=copy; fi
+    else
+        act=copy
+    fi
+    if [ "$act" = "copy" ]; then
+        # a failed copy records nothing, so the next boot tries again
+        if ! cp -f "$src" "$dst"; then continue; fi
+    fi
+    if [ "$act" != "none" ]; then
+        grep -v "^$stem|" "$ORIGIN" 2>/dev/null > "$ORIGIN.tmp"
+        printf '%s|%s|%s\n' "$stem" "$new" "$new" >> "$ORIGIN.tmp"
+        mv -f "$ORIGIN.tmp" "$ORIGIN"
+    fi
+    # mark this package version as handled only now: a boot interrupted above
+    # retries the refresh instead of skipping it for good
+    if [ "$seen" != "$new" ]; then
+        grep -v "^$stem|" "$SEEN" 2>/dev/null > "$SEEN.tmp"
+        printf '%s|%s\n' "$stem" "$new" >> "$SEEN.tmp"
+        mv -f "$SEEN.tmp" "$SEEN"
+    fi
+done
+
 # User custom overrides live on flash; recreate the webroot copy nginx serves.
 if [ ! -f /boot/config/plugins/unraid.themer/custom.css ]; then
     echo '/* Your custom CSS overrides — loaded on top of the selected preset. */' > /boot/config/plugins/unraid.themer/custom.css
 fi
 cp -f /boot/config/plugins/unraid.themer/custom.css /usr/local/emhttp/plugins/unraid.themer/custom.css 2>/dev/null
 
-# Activate every flash theme (seeded defaults + imports) in the webroot nginx serves.
-cp -f /boot/config/plugins/unraid.themer/presets/*.css /usr/local/emhttp/plugins/unraid.themer/presets/ 2>/dev/null
+# Stored themes (seeded defaults, imports, store downloads) and images (icon
+# overrides, background, logo) reach the webroot only through
+# migrate-assets.php, which checks each with the current rules. A theme that
+# breaks one stays on flash but is not loaded (older versions checked themes
+# with a weaker blocklist). SVGs are cleaned and the cleaned bytes published,
+# a raster image must really be one (older versions stored SVGs unchecked and
+# took a picked server file by its name alone); a refused image moves to
+# quarantine/ on flash. The old webroot copies go first, so nothing stale
+# stays reachable after an update without a reboot, and if PHP or the script
+# fails no stored theme or image is served at all.
+rm -f /usr/local/emhttp/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/bg/* /usr/local/emhttp/plugins/unraid.themer/logo/*
+if [ -x /usr/bin/php ]; then
+    if [ -f /usr/local/emhttp/plugins/unraid.themer/include/migrate-assets.php ]; then
+        /usr/bin/php /usr/local/emhttp/plugins/unraid.themer/include/migrate-assets.php /boot/config/plugins/unraid.themer /usr/local/emhttp/plugins/unraid.themer
+    fi
+fi
 
 # Per-icon overrides (custom SVGs + generated overrides.css) live on flash; restore them.
 mkdir -p /usr/local/emhttp/plugins/unraid.themer/overrides
-cp -f /boot/config/plugins/unraid.themer/overrides/*.svg /usr/local/emhttp/plugins/unraid.themer/overrides/ 2>/dev/null
 cp -f /boot/config/plugins/unraid.themer/overrides.css /usr/local/emhttp/plugins/unraid.themer/overrides.css 2>/dev/null
-
-# Background image + custom logo (URL cached or a picked file) live on flash; restore.
-mkdir -p /usr/local/emhttp/plugins/unraid.themer/bg /usr/local/emhttp/plugins/unraid.themer/logo
-cp -f /boot/config/plugins/unraid.themer/bg/* /usr/local/emhttp/plugins/unraid.themer/bg/ 2>/dev/null
-cp -f /boot/config/plugins/unraid.themer/logo/* /usr/local/emhttp/plugins/unraid.themer/logo/ 2>/dev/null
 
 echo "----------------------------------------------------"
 echo " Unraid Themer installed."

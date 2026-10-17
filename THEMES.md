@@ -82,10 +82,15 @@ scrollbar) so the overlays stay subtle on a light background. Use a dark
   colour strip so people see your theme before downloading it. CI checks that
   every entry has a current swatch.
 
-  CI also runs [`scripts/check_contrast.py`](scripts/check_contrast.py): filled
-  buttons paint your accent as their background, so the label must clear WCAG AA
-  (4.5:1) against it. A hard-coded white label on a light accent lands near 2:1 and
-  is unreadable — run the script with `--fix` and it picks a readable colour for you.
+  CI also runs [`scripts/check_contrast.py`](scripts/check_contrast.py), which
+  checks two pairs. Filled buttons paint your accent as their background, so the
+  label must clear WCAG AA (4.5:1) against it. A hard-coded white label on a
+  light accent lands near 2:1 and is unreadable; run the script with `--fix` and
+  it picks a readable colour for you. Community Applications is the second pair:
+  its app-detail popup takes both its surfaces and its text colours from the base
+  Dynamix theme, and the compat block at the bottom of every theme remaps that
+  pair onto `--mild-background-color` / `--text-color`, so those two must clear AA
+  against each other as well. That one has no `--fix`, it is a palette choice.
 
   A GitHub Action ([`scripts/sanitize_css.py`](scripts/sanitize_css.py)) validates
   every submitted theme (no scripts, `javascript:`, `@import` or external
