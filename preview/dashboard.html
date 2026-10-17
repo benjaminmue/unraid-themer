@@ -1,0 +1,168 @@
+<!doctype html>
+<!-- Dummy Unraid dashboard for theme previews. scripts/render_previews.py fills
+     the placeholders: {{base}} (Dynamix base, white or black), {{css}} (the
+     stylesheets: plugin fonts, this base, the theme) and {{icon:<name>}} (an
+     inline Lucide icon from the plugin's icon set). All data is made up. -->
+<html lang="en" class="Theme--{{base}}">
+<head>
+<meta charset="utf-8">
+<title>Dashboard</title>
+{{css}}
+</head>
+<body>
+
+<header id="header">
+  <div class="logo"><b>UNRAID</b><small>7.3.3</small></div>
+  <div class="head-right">
+    <div class="uptime">Uptime 12 days 4 hours 37 minutes &nbsp;&bull;&nbsp; Unraid OS <em>Pro</em></div>
+    <div class="server">
+      <span>Tower &nbsp;&bull;&nbsp; Media and backup server</span>
+      {{icon:bell}} {{icon:menu}}
+      <span class="avatar"></span>
+    </div>
+  </div>
+</header>
+
+<nav id="menu">
+  <ul>
+    <li class="nav-item active"><a href="#">DASHBOARD</a></li>
+    <li class="nav-item"><a href="#">MAIN</a></li>
+    <li class="nav-item"><a href="#">SHARES</a></li>
+    <li class="nav-item"><a href="#">USERS</a></li>
+    <li class="nav-item"><a href="#">SETTINGS</a></li>
+    <li class="nav-item"><a href="#">PLUGINS</a></li>
+    <li class="nav-item"><a href="#">DOCKER</a></li>
+    <li class="nav-item"><a href="#">VMS</a></li>
+    <li class="nav-item"><a href="#">APPS</a></li>
+    <li class="nav-item"><a href="#">STATS</a></li>
+    <li class="nav-item"><a href="#">TOOLS</a></li>
+  </ul>
+  <div class="menu-right">
+    <div class="meter"><div class="usage-bar big" data-label="42%"><span class="greenbar" style="width:42%"></span></div></div>
+    {{icon:search}} {{icon:log-out}} {{icon:terminal}} {{icon:copy}} {{icon:message-square}} {{icon:monitor}} {{icon:circle-help}}
+  </div>
+</nav>
+
+<main>
+  <div>
+    <table class="dashboard">
+      <tbody><tr><td>
+        <div class="tile-header">
+          {{icon:gauge}}
+          <div class="tile-header-left"><span class="tile-header-main">Tower</span><span class="tile-header-sub">Media and backup server</span></div>
+          <div class="tile-header-right"><span>{{icon:settings}}</span><span>{{icon:chevron-up}}</span></div>
+        </div>
+        <div class="clock">14:32</div>
+        <div>Saturday, 17.10.2026, CEST</div>
+        <dl class="kv"><dt>Model</dt><dd>Custom</dd></dl>
+        <dl class="kv"><dt>Registration</dt><dd>Unraid OS <em>Pro</em></dd></dl>
+        <dl class="kv"><dt>Uptime</dt><dd>12 days, 4 hours, 37 minutes</dd></dl>
+      </td></tr></tbody>
+
+      <tbody><tr><td>
+        <div class="tile-header">
+          {{icon:cpu}}
+          <div class="tile-header-left"><span class="tile-header-main">Processor</span><span class="tile-header-sub">8-Core CPU @ 3.4 GHz</span></div>
+          <div class="tile-header-right"><span>{{icon:settings}}</span><span>{{icon:chevron-up}}</span></div>
+        </div>
+        <div class="meta"><span>{{icon:plug}} Total Power: 24.6 W</span><span>{{icon:thermometer}} Temperature: 47 &deg;C</span></div>
+        <div class="bars">
+          <span>Overall Load:</span><span class="pct">18%</span><div class="usage-bar"><span class="greenbar" style="width:18%"></span></div>
+          <span><a class="blue-text" href="#">Hide details</a></span><span></span><span></span>
+          <span>CPU 0 - HT 8</span><span class="pct">24%</span><div class="usage-bar"><span class="greenbar" style="width:24%"></span></div>
+          <span>CPU 1 - HT 9</span><span class="pct">11%</span><div class="usage-bar"><span class="greenbar" style="width:11%"></span></div>
+          <span>CPU 2 - HT 10</span><span class="pct">37%</span><div class="usage-bar"><span class="greenbar" style="width:37%"></span></div>
+          <span>CPU 3 - HT 11</span><span class="pct">6%</span><div class="usage-bar"><span class="greenbar" style="width:6%"></span></div>
+          <span>CPU 4 - HT 12</span><span class="pct">15%</span><div class="usage-bar"><span class="greenbar" style="width:15%"></span></div>
+          <span>CPU 5 - HT 13</span><span class="pct">9%</span><div class="usage-bar"><span class="greenbar" style="width:9%"></span></div>
+        </div>
+      </td></tr></tbody>
+
+      <tbody><tr><td>
+        <div class="tile-header">
+          {{icon:memory-stick}}
+          <div class="tile-header-left"><span class="tile-header-main">Memory</span><span class="tile-header-sub">64 GiB DDR4</span></div>
+          <div class="tile-header-right"><span>{{icon:chevron-up}}</span></div>
+        </div>
+        <div class="bars">
+          <span>RAM usage</span><span class="pct">38%</span><div class="usage-bar"><span class="greenbar" style="width:38%"></span></div>
+          <span>ZFS cache</span><span class="pct">21%</span><div class="usage-bar"><span class="greenbar" style="width:21%"></span></div>
+          <span>Docker image</span><span class="pct">64%</span><div class="usage-bar"><span class="orangebar" style="width:64%"></span></div>
+          <span>Log</span><span class="pct">3%</span><div class="usage-bar"><span class="greenbar" style="width:3%"></span></div>
+        </div>
+      </td></tr></tbody>
+    </table>
+  </div>
+
+  <div>
+    <table class="dashboard">
+      <tbody><tr><td>
+        <div class="tile-header">
+          {{icon:container}}
+          <div class="tile-header-left"><span class="tile-header-main">Docker Containers</span><span class="toggle"><i></i> All Apps</span></div>
+          <div class="tile-header-right"><span>{{icon:settings}}</span><span>{{icon:chevron-up}}</span></div>
+        </div>
+        <div class="apps">
+          <div class="app"><span class="ico" style="background:#e5a00d">P</span><div><b>plex</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#0082c9">N</span><div><b>nextcloud</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#41bdf5">H</span><div><b>home-assistant</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#68bc71">A</span><div><b>adguard-home</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#f15833">N</span><div><b>nginx-proxy-manager</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#4250af">I</span><div><b>immich</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#17541f">P</span><div><b>paperless-ngx</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#175ddc">V</span><div><b>vaultwarden</b><small>started</small></div></div>
+          <div class="app stopped"><span class="ico" style="background:#7f8c8d">J</span><div><b>jellyfin</b><small>stopped</small></div></div>
+          <div class="app"><span class="ico" style="background:#2f9fd8">S</span><div><b>sonarr</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#ffc230">R</span><div><b>radarr</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#2f67ba">Q</span><div><b>qbittorrent</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#c0765a">M</span><div><b>mariadb</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#d82c20">R</span><div><b>redis</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#f46800">G</span><div><b>grafana</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#5cdd8b">U</span><div><b>uptime-kuma</b><small>started</small></div></div>
+          <div class="app stopped"><span class="ico" style="background:#0b8ac9">S</span><div><b>syncthing</b><small>stopped</small></div></div>
+          <div class="app"><span class="ico" style="background:#2d6a9f">D</span><div><b>duplicati</b><small>started</small></div></div>
+        </div>
+      </td></tr></tbody>
+
+      <tbody><tr><td>
+        <div class="tile-header">
+          {{icon:hard-drive}}
+          <div class="tile-header-left"><span class="tile-header-main">Array</span><span class="tile-header-sub">Started &nbsp;&bull;&nbsp; 4 disks, 1 parity</span></div>
+          <div class="tile-header-right"><span>{{icon:settings}}</span><span>{{icon:chevron-up}}</span></div>
+        </div>
+        <div class="disks">
+          <span></span><span class="hd">Device</span><span class="hd">Temp</span><span class="hd">Utilization</span><span class="hd">Free</span>
+          {{icon:hard-drive}}<span>Parity</span><span>34 &deg;C</span><div class="usage-bar"><span class="greenbar" style="width:0%"></span></div><span>-</span>
+          {{icon:hard-drive}}<span>Disk 1</span><span>36 &deg;C</span><div class="usage-bar"><span class="greenbar" style="width:72%"></span></div><span>5.0 TB</span>
+          {{icon:hard-drive}}<span>Disk 2</span><span>35 &deg;C</span><div class="usage-bar"><span class="greenbar" style="width:58%"></span></div><span>7.6 TB</span>
+          {{icon:hard-drive}}<span>Disk 3</span><span>37 &deg;C</span><div class="usage-bar"><span class="orangebar" style="width:86%"></span></div><span>2.5 TB</span>
+          {{icon:hard-drive}}<span>Cache</span><span>41 &deg;C</span><div class="usage-bar"><span class="greenbar" style="width:31%"></span></div><span>1.4 TB</span>
+        </div>
+        <div class="actions"><input type="button" value="Stop array"><input type="button" value="Spin down"></div>
+      </td></tr></tbody>
+
+      <tbody><tr><td>
+        <div class="tile-header">
+          {{icon:monitor}}
+          <div class="tile-header-left"><span class="tile-header-main">Virtual Machines</span><span class="tile-header-sub">2 started, 1 stopped</span></div>
+          <div class="tile-header-right"><span>{{icon:settings}}</span><span>{{icon:chevron-up}}</span></div>
+        </div>
+        <div class="apps">
+          <div class="app"><span class="ico" style="background:#0078d4">W</span><div><b>Windows 11</b><small>started</small></div></div>
+          <div class="app"><span class="ico" style="background:#e95420">U</span><div><b>Ubuntu Server</b><small>started</small></div></div>
+          <div class="app stopped"><span class="ico" style="background:#6e6e6e">H</span><div><b>Home Assistant OS</b><small>stopped</small></div></div>
+        </div>
+      </td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<footer id="footer">
+  <span class="ok">&#9679; Array Started</span>
+  <span>{{icon:thermometer}} 47 &deg;C</span>
+  <span>{{icon:fan}} 1240 rpm</span>
+  <span class="right">Unraid&reg; webGui &copy;2026, Lime Technology, Inc. &nbsp; manual</span>
+</footer>
+
+</body>
+</html>
