@@ -30,8 +30,8 @@ FLASH = f"/boot/config/plugins/{NAME}"
 
 # version per channel — a beta build must never claim a stable version number
 VERSIONS = {
-    "main": "2026.08.23",
-    "beta": "2026.10.12.b08",
+    "main": "2026.10.17",
+    "beta": "2026.10.17.b01",
 }
 
 
@@ -74,6 +74,35 @@ META = {
 }
 
 CHANGES = """## Unraid Themer
+## 2026.10.17
+- Fixed: the custom logo was ignored on Unraid 7.3.3 (and on 7.3.2 with a
+  current Unraid Connect / API plugin), where the header draws the wordmark as
+  an inline SVG. Both header variants are covered.
+- Security: this release closes several ways a theme, an icon or an image URL
+  could be turned against the webGui. Nothing changes for themes from the
+  store or for normal images.
+  - Themes may not load anything from elsewhere: no url(), image-set() or
+    similar, no CSS escapes, no at-rules besides @media and @supports, plain
+    UTF-8 only. Before, a crafted theme could leak Unraid's CSRF token.
+  - SVG icons, logos and backgrounds are rebuilt from an allowlist of drawing
+    elements, so an SVG can no longer run script.
+  - Downloads (theme import, store, icon / logo / background by URL) only reach
+    public https hosts, never the server itself, the LAN or Tailscale.
+    Background and logo URLs must be https.
+  - A background or logo picked on the server must be a real image under /mnt/;
+    symlinks are refused.
+  - Everything stored by an earlier version is checked the same way at every
+    boot. A theme that breaks the rules is not loaded and the settings page says
+    why; an image that is not one moves to quarantine/ in the plugin folder on
+    the flash drive. Your files are never rewritten.
+- Installed themes now receive theme fixes: bundled themes refresh on update,
+  "Update installed" in the store covers registry themes, and a theme you
+  edited yourself is left alone. A theme updated from the store stays updated
+  after a reboot.
+- Community Applications is readable on every theme again (the app-detail popup
+  kept the base theme's text colour), and One Dark's button label keeps its
+  contrast fix.
+
 ## 2026.10.12.b08
 - Security: a theme must be plain UTF-8 text. A theme saved as UTF-16 hid its
   content from the theme checks while the browser still read it, so it could
