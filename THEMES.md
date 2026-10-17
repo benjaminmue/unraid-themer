@@ -82,6 +82,12 @@ scrollbar) so the overlays stay subtle on a light background. Use a dark
   colour strip so people see your theme before downloading it. CI checks that
   every entry has a current swatch.
 
+  For the [theme gallery](https://themer.bebamu.ch/themes.html), run
+  `python3 scripts/render_previews.py my-theme` (needs Google Chrome and
+  Pillow). It applies your CSS to a dashboard mock-up with made-up data
+  ([`preview/`](preview/)), saves the screenshots under `docs/assets/themes/`
+  and rebuilds `docs/themes.html`. Without it CI only warns.
+
   CI also runs [`scripts/check_contrast.py`](scripts/check_contrast.py), which
   checks two pairs. Filled buttons paint your accent as their background, so the
   label must clear WCAG AA (4.5:1) against it. A hard-coded white label on a

@@ -273,3 +273,15 @@ pre {
 @media (max-width: 600px) {
   .scroller img { width: 640px; max-width: none; }
 }
+
+/* ---------------------------------------------------------------- theme gallery (themes.html) */
+.gallery { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 28px; }
+@media (max-width: 760px) { .gallery { grid-template-columns: 1fr; } }
+.g__shots { display: grid; gap: 8px; }
+.g__shots--pair { grid-template-columns: 1fr 1fr; }
+.g__shot { display: block; border-radius: var(--radius); overflow: hidden; box-shadow: 0 0 0 1px var(--line), 0 6px 18px rgba(0, 0, 0, 0.12); }
+.g__shot img { display: block; width: 100%; height: auto; }
+.g__by { font-size: 0.8rem; color: var(--ink-soft); margin-top: 4px; }
+.g__by a { color: inherit; }
+.top__nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+.g__card--pair { grid-column: 1 / -1; }
