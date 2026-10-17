@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live preview - Unraid Themer</title>
+<meta name="description" content="Try every Unraid Themer theme and icon set live on an Unraid 7 dashboard mock-up.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://themer.bebamu.ch/live.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Unraid Themer">
+<meta property="og:title" content="Unraid Themer - live preview">
+<meta property="og:description" content="Switch themes and icon sets live on an Unraid 7 dashboard mock-up.">
+<meta property="og:url" content="https://themer.bebamu.ch/live.html">
+<meta property="og:image" content="https://themer.bebamu.ch/assets/themes/nord.webp">
+<link rel="stylesheet" href="site.css">
+</head>
+<body class="live">
+
+<header class="top">
+  <div class="wrap wrap--wide top__inner">
+    <a class="brand" href="./" aria-label="Unraid Themer, overview">
+      <img src="assets/icon.svg" width="22" height="22" alt="">
+      <span>Unraid Themer</span>
+    </a>
+    <nav class="top__nav" aria-label="Sections">
+      <a href="./">Overview</a>
+      <a href="themes.html">Themes</a>
+      <a href="live.html" aria-current="page">Live preview</a>
+      <a href="./#install">Install</a>
+      <a href="https://github.com/benjaminmue/unraid-themer">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap wrap--wide">
+  <div class="live__head">
+    <h1>Live preview</h1>
+    <p>Pick a theme and an icon set. The dashboard is a mock-up with made-up data; each theme file is applied unchanged, the same file the plugin installs from its store.</p>
+  </div>
+
+  <div class="controls">
+    <div class="controls__group">
+      <p class="controls__label">Theme</p>
+      <div class="chips" id="theme-chips" role="group" aria-label="Theme"></div>
+    </div>
+    <div class="controls__row">
+      <div class="controls__group">
+        <p class="controls__label">Mode</p>
+        <div class="filter" id="mode" role="group" aria-label="Mode">
+          <button type="button" data-base="white" aria-pressed="false">Light</button>
+          <button type="button" data-base="black" aria-pressed="false">Dark</button>
+        </div>
+      </div>
+      <div class="controls__group">
+        <p class="controls__label">Icon set</p>
+        <div class="filter filter--wrap" id="iconsets" role="group" aria-label="Icon set"></div>
+      </div>
+    </div>
+    <p class="controls__desc" id="theme-desc"></p>
+  </div>
+
+  <div class="stage">
+    <iframe id="dash" src="live/dashboard.html" title="Unraid dashboard mock-up with the selected theme"></iframe>
+  </div>
+  <noscript><p>The live preview needs JavaScript. The <a href="themes.html">theme gallery</a> shows every theme as a picture.</p></noscript>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap--wide foot__inner">
+    <p>Unraid Themer · MIT licence · Built by Benjamin Müller. A community plugin, not an official Lime Technology product. Icon glyphs and fonts remain under their own licenses.</p>
+    <nav aria-label="Project links">
+      <a href="https://github.com/benjaminmue/unraid-themer">Source</a>
+      <a href="https://github.com/benjaminmue/unraid-themer/issues">Issues</a>
+      <a href="https://github.com/benjaminmue/unraid-themer/blob/main/THEMES.md">Theme guide</a>
+    </nav>
+  </div>
+</footer>
+<script src="live/data.js"></script>
+<script src="live.js"></script>
+</body>
+</html>
