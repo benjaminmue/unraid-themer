@@ -86,7 +86,8 @@ scrollbar) so the overlays stay subtle on a light background. Use a dark
   `python3 scripts/render_previews.py my-theme` (needs Google Chrome and
   Pillow). It applies your CSS to a dashboard mock-up with made-up data
   ([`preview/`](preview/)), saves the screenshots under `docs/assets/themes/`
-  and rebuilds `docs/themes.html`. Without it CI only warns.
+  and rebuilds `docs/themes.html` and the [live preview](https://themer.bebamu.ch/live.html)
+  (`docs/live/`). Without it CI only warns.
 
   CI also runs [`scripts/check_contrast.py`](scripts/check_contrast.py), which
   checks two pairs. Filled buttons paint your accent as their background, so the
