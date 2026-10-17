@@ -1,0 +1,220 @@
+/* A stand-in for the Unraid 7 webGUI dashboard, used to render theme previews
+   (scripts/render_previews.py). Not a copy of Unraid's CSS: it only has to look
+   recognisably like the dashboard and read the same variables and selectors the
+   themes set, so a theme file applies to it unchanged.
+
+   The defaults sit in :where() so they carry no specificity, the way Unraid's
+   base themes load before a preset: anything a theme sets on :root or on
+   html.Theme--black wins. html.Theme--white / --black is the Dynamix base the
+   preview is rendered on, as on a real server. */
+
+:where(:root) {
+  --background-color: #f2f2f2;
+  --mild-background-color: #ffffff;
+  --text-color: #1c1c1c;
+  --alt-text-color: #6b6b6b;
+  --link-text-color: #486dba;
+  --border-color: #dcdcdc;
+  --header-background-color: #f2f2f2;
+  --header-text-primary: #1c1c1c;
+  --header-text-secondary: #6b6b6b;
+  --title-header-background-color: #ffffff;
+  --footer-background-color: #e4e4e4;
+  --footer-text: #1c1c1c;
+  --usage-bar-background-color: #e0e0e0;
+  --usage-bar-used-background-color: #8bc34a;
+  --button-text-color: #ff8c2f;
+  --button-background: transparent;
+  --button-border: 1px solid #ff8c2f;
+  --dashboard-icon-color: #6b6b6b;
+  --brand-orange: #ff8c2f;
+  --brand-red: #e22828;
+}
+
+:where(html.Theme--black) {
+  --background-color: #1c1b1b;
+  --mild-background-color: #262626;
+  --text-color: #f2f2f2;
+  --alt-text-color: #a6a6a6;
+  --link-text-color: #6d9eeb;
+  --border-color: #353535;
+  --header-background-color: #1c1b1b;
+  --header-text-primary: #f2f2f2;
+  --header-text-secondary: #a6a6a6;
+  --title-header-background-color: #262626;
+  --footer-background-color: #121212;
+  --footer-text: #f2f2f2;
+  --usage-bar-background-color: #3a3a3a;
+  --dashboard-icon-color: #a6a6a6;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--background-color);
+  color: var(--text-color);
+  font: 14px/1.45 var(--font-sans, "clear-sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+svg.i { width: 18px; height: 18px; flex: none; stroke-width: 2; }
+
+/* ---------- header ---------- */
+#header {
+  background: var(--header-background-color);
+  color: var(--header-text-primary);
+  padding: 14px 22px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 92px;
+}
+.logo { display: block; }
+.logo b {
+  display: block;
+  font: 600 38px/1 var(--font-sans, -apple-system, sans-serif);
+  letter-spacing: 0.12em;
+  background: linear-gradient(90deg, #e22828, #ff8c2f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.logo small { display: block; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--header-text-primary); }
+.logo small::before { content: "\25CF"; font-size: 10px; margin-right: 6px; color: var(--header-text-secondary); }
+.head-right { text-align: right; }
+.head-right .uptime { font-size: 12px; font-weight: 600; color: var(--header-text-primary); }
+.head-right .uptime em { font-style: italic; }
+.head-right .server {
+  margin-top: 16px;
+  display: flex; gap: 16px; align-items: center; justify-content: flex-end;
+  font-size: 16px; color: var(--header-text-primary);
+}
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, #e22828, #ff8c2f);
+}
+
+/* ---------- top navigation ---------- */
+#menu {
+  background: var(--header-background-color);
+  display: flex; align-items: center;
+  padding: 0 10px; height: 38px;
+  border-bottom: 1px solid var(--border-color);
+}
+#menu .nav-item { position: relative; list-style: none; }
+#menu .nav-item a {
+  display: block; padding: 10px 10px;
+  color: var(--header-text-primary); text-decoration: none;
+  font-size: 12.5px; font-weight: 600; letter-spacing: 0.16em;
+}
+#menu .nav-item.active a { color: var(--brand-orange); }
+#menu .nav-item.active:after {
+  content: ""; position: absolute; left: 10px; right: 10px; bottom: 4px; height: 2px;
+  background: linear-gradient(90deg, #e22828, #ff8c2f);
+}
+#menu ul { display: flex; margin: 0; padding: 0; }
+.menu-right { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--header-text-primary); }
+.menu-right .meter { width: 140px; }
+.menu-right svg.i { width: 15px; height: 15px; }
+
+/* ---------- usage bars ---------- */
+.usage-bar {
+  position: relative; height: 12px; width: 100%;
+  background: var(--usage-bar-background-color);
+}
+.usage-bar > span { display: block; height: 100%; }
+.greenbar { background: var(--usage-bar-used-background-color); }
+.orangebar { background: #f0a30a; }
+.redbar { background: #e22828; }
+.usage-bar.big { height: 18px; }
+.usage-bar.big::after {
+  content: attr(data-label); position: absolute; inset: 0;
+  font-size: 11px; line-height: 18px; font-weight: 700; text-align: center; letter-spacing: 0.08em;
+  color: var(--header-text-primary); mix-blend-mode: difference;
+}
+
+/* ---------- dashboard tiles ---------- */
+main { flex: 1; padding: 22px 10px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; align-items: start; }
+table.dashboard { display: block; width: 100%; border-collapse: separate; }
+table.dashboard tbody {
+  display: block;
+  background: var(--title-header-background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: var(--small-shadow, 0 1px 3px rgba(0, 0, 0, 0.12));
+  margin-bottom: 18px;
+  padding: 14px 14px 16px;
+}
+table.dashboard tr { display: block; }
+table.dashboard td { display: block; padding: 0; }
+
+.tile-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.tile-header > svg.i { width: 28px; height: 28px; color: var(--dashboard-icon-color); stroke-width: 1.6; margin-top: 2px; }
+.tile-header-left { display: flex; flex-direction: column; flex: 1; justify-content: center; }
+.tile-header-main { font-size: 15px; font-weight: 700; letter-spacing: 0.06em; color: var(--text-color); }
+.tile-header-sub { font-size: 12px; color: var(--alt-text-color); margin-top: 2px; }
+.tile-header-right { display: flex; gap: 6px; }
+.tile-header-right span {
+  width: 22px; height: 18px; display: grid; place-items: center;
+  background: var(--usage-bar-background-color); border-radius: 3px; color: var(--alt-text-color);
+}
+.tile-header-right svg.i { width: 12px; height: 12px; }
+
+.clock { font-size: 40px; font-weight: 300; letter-spacing: 0.04em; margin: 4px 0 2px; }
+.kv { margin-top: 12px; }
+.kv dt { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--alt-text-color); }
+.kv dd { margin: 1px 0 0; }
+
+.bars { display: grid; grid-template-columns: 150px 38px 1fr; gap: 7px 10px; align-items: center; font-size: 13px; }
+.bars .pct { font-size: 11px; text-align: right; color: var(--usage-bar-used-background-color); }
+.meta { display: flex; gap: 18px; font-size: 13px; margin-bottom: 10px; color: var(--text-color); }
+.meta span { display: inline-flex; align-items: center; gap: 5px; }
+.meta svg.i { width: 14px; height: 14px; }
+
+a.blue-text, .blue-text { color: var(--link-text-color); text-decoration: none; }
+
+/* Docker / VM grid */
+.apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 10px; }
+.app { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.app .ico {
+  width: 34px; height: 34px; border-radius: 8px; flex: none;
+  display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 15px;
+}
+.app b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app small { display: flex; align-items: center; gap: 5px; color: var(--alt-text-color); font-size: 12px; }
+.app small::before { content: ""; width: 0; height: 0; border-left: 7px solid #8bc34a; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.app.stopped small::before { border: 0; width: 8px; height: 8px; background: #e22828; }
+.toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 12px; color: var(--alt-text-color); }
+.toggle i { width: 26px; height: 13px; border-radius: 7px; background: var(--usage-bar-background-color); position: relative; }
+.toggle i::after { content: ""; position: absolute; left: 2px; top: 2px; width: 9px; height: 9px; border-radius: 50%; background: var(--text-color); }
+
+/* array */
+.disks { display: grid; grid-template-columns: 22px 110px 54px 1fr 64px; gap: 8px 10px; align-items: center; font-size: 13px; }
+.disks .hd { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--alt-text-color); }
+.disks svg.i { width: 15px; height: 15px; color: #8bc34a; }
+.actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* buttons, as Dynamix draws them before a theme flattens them */
+input[type="button"], button, .button {
+  font: 600 12px/1 inherit; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 9px 16px; border-radius: 4px; cursor: pointer;
+  background: var(--button-background); color: var(--button-text-color); border: var(--button-border);
+}
+
+div.title {
+  margin: 0 0 12px; padding: 6px 10px; font-weight: 700; letter-spacing: 0.06em;
+  background: var(--title-header-background-color); border-left: 3px solid var(--brand-orange);
+}
+
+/* ---------- footer ---------- */
+/* fixed to the bottom of the window, as in Unraid */
+#footer {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 2;
+  background: var(--footer-background-color); color: var(--footer-text);
+  height: 28px; display: flex; align-items: center; gap: 18px; padding: 0 12px;
+  font-size: 12px;
+}
+#footer svg.i { width: 13px; height: 13px; vertical-align: -2px; }
+#footer .ok { color: #8bc34a; font-weight: 600; }
+#footer .right { margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }

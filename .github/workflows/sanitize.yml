@@ -52,6 +52,12 @@ jobs:
       - name: Check swatches are present and current
         run: python3 scripts/gen_swatches.py --check
 
+      # The gallery on themes.html shows every registry theme on a dashboard
+      # mock-up. A missing picture is a warning, not a failure: a theme the bot
+      # just staged has none until someone renders it on a machine with Chrome.
+      - name: Check theme previews for the gallery
+        run: python3 scripts/render_previews.py --check
+
       # A theme whose button labels sit below WCAG AA ships unreadable buttons.
       - name: Check button label contrast
         run: python3 scripts/check_contrast.py
