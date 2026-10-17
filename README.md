@@ -1,8 +1,8 @@
 # Unraid Themer
 
-> 🧪 **Beta.** This is a beta release — testing and contributing are very welcome.
 > Found a glitch or have an idea? Open an [issue](https://github.com/benjaminmue/unraid-themer/issues)
-> or start a [discussion](https://github.com/benjaminmue/unraid-themer/discussions). Thanks for helping shape it.
+> or start a [discussion](https://github.com/benjaminmue/unraid-themer/discussions). Testing and
+> contributions are very welcome, and the [beta channel](#beta-channel) is where new features land first.
 
 A generic theming plugin for the **Unraid 7** webGUI. Pick a theme (or build your
 own), flip it on, and the whole interface restyles — the classic Dynamix pages
@@ -53,7 +53,9 @@ in a theme + icon system instead of a raw CSS textarea.
 
 ## Install
 
-**Plugins → Install Plugin**, paste:
+In **Apps** (Community Applications), search for **Unraid Themer**. The entry
+*Unraid Themer* is the stable release; *Unraid Themer Beta* is the beta channel
+described below. Or install it by URL: **Plugins → Install Plugin**, paste:
 
 ```
 https://github.com/benjaminmue/unraid-themer/raw/refs/heads/main/unraid-themer.plg
@@ -72,7 +74,8 @@ over to stable:
 https://github.com/benjaminmue/unraid-themer/raw/refs/heads/beta/unraid-themer.plg
 ```
 
-Install it the same way; it replaces the stable build in place. Your settings live
+Install it the same way, or pick *Unraid Themer Beta* in Apps; it replaces the
+stable build in place. Your settings live
 on the flash drive and survive the switch in both directions — to go back, install
 the `main` URL above again. Beta versions carry a `bNN` suffix.
 
